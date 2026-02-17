@@ -5,7 +5,6 @@ function updateHuntStatus(){var h=document.getElementById('hunt-hp');if(h){h.tex
 function updateAutoHuntUI(){document.getElementById('auto-hunt-indicator').innerHTML=G.autoHunt?'<span class="auto-hunt-badge">자동</span>':'';document.getElementById('auto-hunt-btn').textContent=G.autoHunt?'⏹️ 자동 중지':'🔄 자동사냥'}
 function toggleAutoHunt(){G.autoHunt=!G.autoHunt;updateAutoHuntUI();if(G.autoHunt&&!huntInProgress)startHunt()}
 
-// Mood multiplier helper
 function getMoodMultiplier(){
 if(G.mood>=80)return{exp:1.2,gold:1.2,drop:0.1};
 if(G.mood>=50)return{exp:1.0,gold:1.0,drop:0};
@@ -24,16 +23,14 @@ const moodMult=getMoodMultiplier();
 const tmpl=HUNT_TEMPLATES[Math.floor(Math.random()*HUNT_TEMPLATES.length)];
 const enemy=isBoss?tmpl.boss:tmpl.enemies[Math.floor(Math.random()*tmpl.enemies.length)];
 const enemyCount=isBoss?1:Math.floor(Math.random()*3)+1;
-const enemyHP=isBoss?(30+G.floor*8):(10+G.floor*3);
-let totalEnemyHP=enemyHP*enemyCount;
 
-// 로딩 텍스트 1~8초 표시
+// === Phase 1: 이동 로딩 (1~8초) ===
 const loadingText=LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
 await addHuntLine(loadingText,'loading',log);
 const loadingDelay=1000+Math.floor(Math.random()*7000);
 await wait(loadingDelay);
 
-// 스토리
+// === Phase 2: 조우 스토리 ===
 const story=isBoss?BOSS_STORIES[Math.floor(Math.random()*BOSS_STORIES.length)]:NORMAL_STORIES[Math.floor(Math.random()*NORMAL_STORIES.length)];
 await addHuntLine(story.intro.replace('{enemy}',enemy),'story',log);
 await wait(700);
@@ -41,56 +38,60 @@ if(isBoss){await addHuntLine(`⚠️ 보스 출현! ${tmpl.bossEmoji} ${enemy}!`
 else{await addHuntLine(`${enemy} ${enemyCount}마리가 나타났다!`,'story',log)}
 await wait(600);
 
-let rounds=isBoss?5:3+Math.floor(Math.random()*2);
-let playerHPLoss=0;
+// === Phase 3: 보스 스킬체크 (수동만) ===
+let skillCheckResults=null;
 if(isBoss&&!G.autoHunt){
-// 스킬체크 팝업
-const scResult=await bossSkillCheckPopup(rounds);
-for(const r of scResult.rounds){
-const skill=G.equippedSkills[r.skillIdx%G.equippedSkills.length];
-let baseDmg=Math.floor((skill.dmg||20)*(1+G.atk/30));
-if(G.equipment.weapon)baseDmg+=Math.floor(G.equipment.weapon.stats.ATK||0);
-let dmg=r.type==='critical'?Math.floor(baseDmg*2.5):r.type==='hit'?Math.floor(baseDmg*1):Math.floor(baseDmg*0.3);
-totalEnemyHP-=dmg;
-const tag=r.type==='critical'?'💥크리티컬!! ':r.type==='hit'?'✅ ':'❌빗나감... ';
-await addHuntLine(`${skill.icon} ${skill.name} → ${tag}${dmg} 데미지`,'action',log);
-if(r.type==='miss'){const eDmg=Math.max(1,Math.floor((5+G.floor*2)*(0.8+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log)}
-await wait(600)}
-}else{
-for(let r=0;r<rounds&&totalEnemyHP>0;r++){
-const skill=G.equippedSkills[r%G.equippedSkills.length];
-let baseDmg=Math.floor((skill.dmg||20)*(1+G.atk/30));
-if(G.equipment.weapon)baseDmg+=Math.floor(G.equipment.weapon.stats.ATK||0);
-const roll=Math.random()*100;
-let dmg,tag;
-if(isBoss){
-if(roll<15){dmg=Math.floor(baseDmg*2.5);tag='💥크리티컬!! '}
-else if(roll<70){dmg=Math.floor(baseDmg*(0.8+Math.random()*0.4));tag=''}
-else{dmg=Math.floor(baseDmg*0.3);tag='❌빗나감... '}
-}else{
-const critChance=10+(G.critBonus||0);
-if(roll<critChance){dmg=Math.floor(baseDmg*1.5);tag='💥크리티컬! '}
-else{dmg=Math.floor(baseDmg*(0.8+Math.random()*0.4));tag=''}
-}
-totalEnemyHP-=dmg;
-await addHuntLine(`${skill.icon} ${skill.name} 시전! → ${tag}${dmg} 데미지`,'action',log);
-await wait(600);
-if(tag.includes('빗나감')){const eDmg=Math.max(1,Math.floor((5+G.floor*2)*(0.8+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log);await wait(500)}
-else if(totalEnemyHP>0&&Math.random()<0.4){const eDmg=Math.max(1,Math.floor((3+G.floor)*(0.6+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log);await wait(500)}}
+const rounds=5;
+skillCheckResults=await bossSkillCheckPopup(rounds);
 }
 
-const won=totalEnemyHP<=0;
-G.hp=Math.max(1,G.hp-playerHPLoss);
+// === Phase 4: AI 전투 생성 (한번에) ===
+await addHuntLine('⚔️ 전투 개시!','story',log);
+
+// 전투 생성 (AI or 로컬)
+let combat;
+if(!G.autoHunt){
+// 수동: AI 전투 시도
+combat=await generateCombatAI(enemy,enemyCount,isBoss);
+}else{
+// 자동: 로컬 전투 (토큰 절약)
+combat=generateCombatLocal(enemy,enemyCount,isBoss);
+}
+
+// 보스 스킬체크 결과 반영
+if(skillCheckResults){
+// 스킬체크에 따라 보상 보정
+let scBonus=0;
+skillCheckResults.rounds.forEach(r=>{
+if(r.type==='critical')scBonus+=0.3;
+else if(r.type==='hit')scBonus+=0.1;
+else scBonus-=0.1;
+});
+combat.goldReward=Math.floor((combat.goldReward||0)*(1+scBonus));
+combat.expReward=Math.floor((combat.expReward||0)*(1+scBonus));
+}
+
+// === Phase 5: 한줄씩 표시 ===
+for(const line of combat.lines){
+const type=mapLineType(line.type);
+await addHuntLine(line.text,type,log);
+await wait(500);
+}
+
+// === Phase 6: 결과 처리 ===
+const won=combat.result==='win';
+const totalTaken=combat.totalTaken||0;
+G.hp=Math.max(1,G.hp-totalTaken);
 G.hunger=Math.max(0,G.hunger-(isBoss?8:4));
+
 if(won){
-await addHuntLine('전투 승리! 🎉','victory',log);
-let goldReward=Math.floor((10+G.floor*5)*(isBoss?3:1)*(0.8+Math.random()*0.4));
-let expReward=Math.floor((15+G.floor*3)*(isBoss?2.5:1));
-goldReward=Math.floor(goldReward*moodMult.exp);
-expReward=Math.floor(expReward*moodMult.exp);
+let goldReward=Math.floor((combat.goldReward||10)*moodMult.gold);
+let expReward=Math.floor((combat.expReward||15)*moodMult.exp);
 G.gold+=goldReward;G.exp+=expReward;
 G.mood=Math.min(100,G.mood+(isBoss?15:5));
 await addHuntLine(`획득: 💰 +${goldReward}, 경험치 +${expReward}`,'loot',log);
+
+// 아이템 드롭
 const baseDropRate=isBoss?0.9:0.4;
 const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop));
 if(Math.random()<adjustedDropRate){
@@ -98,16 +99,26 @@ await addHuntLine('✨ 뭔가 반짝이는 것이 보인다...','loot',log);
 const item=await generateItemAI();
 G.inventory.push(item);
 await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log);
-showItemDropPopup(item)}
+showItemDropPopup(item);
+if(item.skillMods&&item.skillMods.length){
+for(const m of item.skillMods){
+await addHuntLine(`  ✦ ${m.mod}`,'loot',log);
+}}}
 if(!isBoss)G.floor++;
 else{G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log)}
 while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=20;G.atk+=3;G.def+=2;G.hp=G.maxHP;showLevelUp()}
 }else{
-await addHuntLine('전투 패배... 💀','damage',log);
 G.mood=Math.max(0,G.mood-10)}
+
 updateBars();updateHuntStatus();renderCharacter();renderEquipRow();saveGame();
 huntInProgress=false;document.getElementById('hunt-btn').disabled=false;
 if(G.autoHunt&&G.hp>G.maxHP*0.2){setTimeout(()=>{if(G.autoHunt)startHunt()},1500)}else{G.autoHunt=false;updateAutoHuntUI()}}
+
+// Map AI line types to CSS classes
+function mapLineType(type){
+const map={action:'action',damage:'damage',critical:'action',miss:'action',buff:'story',story:'story',victory:'victory',defeat:'damage',loot:'loot'};
+return map[type]||'story';
+}
 
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';
 if(cls==='action'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px'}
@@ -123,13 +134,11 @@ const results=[];let round=0;
 const speed=2.5+G.floor*0.15;
 const normalZone=18;const critZone=5;
 
-// 팝업 생성
 const overlay=document.createElement('div');
 overlay.className='sc-popup-overlay';
 overlay.innerHTML='<div class="sc-popup"><div class="sc-popup-title">⚡ 스킬 체크</div><div class="sc-popup-content" id="sc-popup-content"></div></div>';
 document.body.appendChild(overlay);
 requestAnimationFrame(()=>overlay.classList.add('active'));
-
 const content=overlay.querySelector('#sc-popup-content');
 
 function runRound(){
@@ -141,7 +150,7 @@ resolve({rounds:results});return}
 const critStart=Math.floor(Math.random()*360);
 const normalStart=(critStart-normalZone+360)%360;
 const critEnd=(critStart+critZone)%360;
-const skill=G.equippedSkills[round%G.equippedSkills.length];
+const skill=G.equippedSkills[round%G.equippedSkills.length]||{icon:'👊',name:'평타'};
 
 content.innerHTML=`
 <div class="sc-round-info">${skill.icon} ${skill.name} — 라운드 ${round+1}/${totalRounds}</div>
@@ -176,7 +185,6 @@ results.push({skillIdx:round,type});round++;
 setTimeout(runRound,800);
 }
 
-// touchstart + mousedown for instant response
 btn.addEventListener('touchstart',function(e){e.preventDefault();doCheck()},{passive:false,once:true});
 btn.addEventListener('mousedown',function(e){e.preventDefault();doCheck()},{once:true});
 }

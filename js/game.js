@@ -137,12 +137,13 @@ function toast(msg){const t=document.createElement('div');t.className='toast';t.
 
 // ===== ITEM DROP POPUP =====
 function showItemDropPopup(item){
-const gradeColors={일반:'#999',레어:'var(--blue)',유니크:'var(--purple)',에픽:'var(--orange)'};
+const gradeColors={일반:'#999',매직:'#2ecc71',레어:'var(--blue)',유니크:'var(--purple)',에픽:'var(--orange)'};
 const statsText=Object.entries(item.stats).map(([k,v])=>`${k}+${v}`).join('  ');
+const modsText=(item.skillMods&&item.skillMods.length)?item.skillMods.map(m=>`<div style="color:#00d4ff;font-size:11px">✦ ${m.mod}</div>`).join(''):'';
 const el=document.createElement('div');
 el.className='item-drop-popup';
 const isAuto=G.autoHunt;
-el.innerHTML=`<div class="idp-shine"></div><div class="idp-emoji">${item.emoji}</div><div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div><div class="idp-desc">${item.desc||''}</div><div class="idp-buttons"><button class="btn btn-sm idp-equip-btn" onclick="equipFromPopup(this)">⚔️ 바로 착용</button></div>`;
+el.innerHTML=`<div class="idp-shine"></div><div class="idp-emoji">${item.emoji}</div><div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons"><button class="btn btn-sm idp-equip-btn" onclick="equipFromPopup(this)">⚔️ 바로 착용</button></div>`;
 document.body.appendChild(el);
 el._item=item;
 

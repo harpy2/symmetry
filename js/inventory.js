@@ -7,15 +7,15 @@ const prefix=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];
 const material=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];
 const name=`${prefix} ${material}의 ${suffixes[si]}`;
 const roll=Math.random()*100;let grade='일반';
-if(roll<3)grade='에픽';else if(roll<15)grade='유니크';else if(roll<40)grade='레어';
-const gMult={일반:1,레어:1.5,유니크:2.2,에픽:3.5}[grade];
+if(roll<2)grade='에픽';else if(roll<10)grade='유니크';else if(roll<25)grade='레어';else if(roll<55)grade='매직';
+const gMult={일반:1,매직:1.3,레어:1.5,유니크:2.2,에픽:3.5}[grade];
 const floorMult=1+G.floor*0.1;
 const stats={};
 if(type==='weapon'){stats.ATK=Math.floor((5+Math.random()*10)*gMult*floorMult);if(Math.random()>.5)stats['치명타']=Math.floor(Math.random()*5*gMult)+'%'}
 else if(type==='armor'){stats.DEF=Math.floor((3+Math.random()*8)*gMult*floorMult);if(Math.random()>.5)stats.HP=Math.floor(Math.random()*20*gMult)}
 else{stats.ATK=Math.floor((2+Math.random()*5)*gMult*floorMult);stats.DEF=Math.floor((1+Math.random()*3)*gMult*floorMult)}
-const durability=Math.floor({일반:50,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
-return{id:Date.now()+Math.random(),name,type,grade,emoji:emojis[si],stats,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
+const durability=Math.floor({일반:50,매직:65,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
+return{id:Date.now()+Math.random(),name,type,grade,emoji:emojis[si],stats,skillMods:[],durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
 
 // ===== INVENTORY =====
 let invFilter=null;
@@ -29,8 +29,10 @@ grid.appendChild(d)}}
 function showItemDetail(idx){const item=G.inventory[idx];if(!item)return;
 const d=document.getElementById('item-detail-area');
 const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${k}: +${v}</div>`).join('');
+const modsHTML=(item.skillMods&&item.skillMods.length)?'<div class="item-mods"><div style="color:var(--gold);font-size:11px;margin-top:6px">✦ 스킬 옵션</div>'+item.skillMods.map(m=>`<div style="color:var(--cyan);font-size:12px">• ${m.mod}</div>`).join('')+'</div>':'';
 const isEquipped=Object.values(G.equipment).some(e=>e&&e.id===item.id);
-d.innerHTML=`<div class="item-detail"><div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${item.type==='weapon'?'무기':item.type==='armor'?'방어구':'장신구'}</div><div class="item-stats">${statsHTML}</div><div style="font-size:12px;color:var(--text2)">내구도: ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${isEquipped?`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">해제</button>`:`<button class="btn btn-sm" onclick="equipItem(${idx})">장착</button>`}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">수리 (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">판매 (💰${Math.floor(({일반:5,레어:15,유니크:40,에픽:100}[item.grade])*(1+G.floor*0.1))})</button></div></div>`}
+const sellPrice=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));
+d.innerHTML=`<div class="item-detail"><div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${item.type==='weapon'?'무기':item.type==='armor'?'방어구':'장신구'}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">내구도: ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${isEquipped?`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">해제</button>`:`<button class="btn btn-sm" onclick="equipItem(${idx})">장착</button>`}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">수리 (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">판매 (💰${sellPrice})</button></div></div>`}
 
 function equipItem(idx){const item=G.inventory[idx];if(!item)return;
 if(G.equipment[item.type])G.inventory.push(G.equipment[item.type]);
@@ -39,7 +41,7 @@ toast(`${item.name} 장착!`);renderInventory();renderEquipRow();renderCharacter
 function unequipItem(type){if(!G.equipment[type])return;G.inventory.push(G.equipment[type]);G.equipment[type]=null;
 toast('장비 해제');renderInventory();renderEquipRow();renderCharacter();saveGame()}
 function repairItem(idx){const item=G.inventory[idx];if(!item)return;const cost=Math.floor((item.maxDurability-item.durability)*0.5);if(G.gold<cost){toast('골드가 부족합니다!');return}G.gold-=cost;item.durability=item.maxDurability;toast('수리 완료!');renderInventory();showItemDetail(idx);updateBars();saveGame()}
-function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=Math.floor(({일반:5,레어:15,유니크:40,에픽:100}[item.grade])*(1+G.floor*0.1));G.gold+=price;G.inventory.splice(idx,1);toast(`판매 완료! 💰+${price}`);document.getElementById('item-detail-area').innerHTML='';renderInventory();updateBars();saveGame()}
+function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));G.gold+=price;G.inventory.splice(idx,1);toast(`판매 완료! 💰+${price}`);document.getElementById('item-detail-area').innerHTML='';renderInventory();updateBars();saveGame()}
 
 // ===== SHOP =====
 let currentShopTab='gold';

@@ -222,8 +222,8 @@ const ITEM_PREFIX=['고대의','불타는','얼어붙은','저주받은','축복
 const ITEM_MATERIAL=['강철','미스릴','흑요석','드래곤','오리할콘','아다만티움'];
 const ITEM_SUFFIX={weapon:['검','지팡이','활','도끼','총'],armor:['갑옷','투구','장갑'],accessory:['목걸이','반지','부적']};
 const ITEM_EMOJIS={weapon:['🗡️','🪄','🏹','🪓','🔫'],armor:['🛡️','⛑️','🧤'],accessory:['📿','💍','🔮']};
-const GRADE_WEIGHTS=[{g:'일반',w:60},{g:'레어',w:25},{g:'유니크',w:12},{g:'에픽',w:3}];
-const GRADE_COLORS={일반:'#999',레어:'var(--blue)',유니크:'var(--purple)',에픽:'var(--orange)'};
+const GRADE_WEIGHTS=[{g:'일반',w:45},{g:'매직',w:30},{g:'레어',w:15},{g:'유니크',w:8},{g:'에픽',w:2}];
+const GRADE_COLORS={일반:'#999',매직:'#2ecc71',레어:'var(--blue)',유니크:'var(--purple)',에픽:'var(--orange)'};
 const FLAVOR_TEXTS=['이 장비에서 알 수 없는 힘이 느껴진다.','오래된 전장의 기억이 서려있다.','제작자의 혼이 담긴 명품이다.','어둠 속에서 희미하게 빛난다.','손에 쥐면 전율이 느껴진다.','수많은 전투를 겪은 흔적이 있다.','신비로운 문양이 새겨져 있다.','전설 속 장인이 만들었다고 전해진다.'];
 
 const LEVELUP_BUFFS=[
