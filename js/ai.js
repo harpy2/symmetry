@@ -116,48 +116,71 @@ async function generateCombatAI(enemy, enemyCount, isBoss) {
 // Local fallback combat (no AI)
 function generateCombatLocal(enemy, enemyCount, isBoss) {
   const lines = [];
-  const rounds = isBoss ? 5 : 3 + Math.floor(Math.random() * 2);
-  const enemyHP = isBoss ? (30 + G.floor * 8) : (10 + G.floor * 3);
-  let totalEnemyHP = enemyHP * enemyCount;
+  const singleHP = isBoss ? (30 + G.floor * 8) : (10 + G.floor * 3);
+  let enemies = []; // 각 적의 HP 추적
+  for (let i = 0; i < enemyCount; i++) enemies.push({ hp: singleHP, alive: true });
   let totalDmg = 0, totalTaken = 0;
   const effectiveAtk = G.atk + (G.equipment.weapon ? (G.equipment.weapon.stats.ATK || 0) : 0);
   const effectiveDef = G.def + (G.equipment.armor ? (G.equipment.armor.stats.DEF || 0) : 0);
   const hasSkills = G.equippedSkills.length > 0;
+  const maxRounds = isBoss ? 8 : 3 + enemyCount + Math.floor(Math.random() * 2);
 
-  for (let r = 0; r < rounds && totalEnemyHP > 0; r++) {
-    const skill = hasSkills ? G.equippedSkills[r % G.equippedSkills.length] : { name: '평타', icon: '👊', dmg: 10 };
+  for (let r = 0; r < maxRounds; r++) {
+    const aliveEnemies = enemies.filter(e => e.alive);
+    if (aliveEnemies.length === 0) break;
+
+    const skill = hasSkills ? G.equippedSkills[r % G.equippedSkills.length] : { name: '평타', icon: '👊', dmg: 10, aoe: false };
     let baseDmg = Math.floor((skill.dmg || 10) * (1 + effectiveAtk / 30));
     const roll = Math.random() * 100;
     const critChance = isBoss ? 15 : 10 + (G.critBonus || 0);
-    let dmg, type;
+    let dmgMult = 1, tag = '';
 
     if (roll < critChance) {
-      dmg = Math.floor(baseDmg * (isBoss ? 2.5 : 1.5));
-      type = 'critical';
-      lines.push({ text: `${skill.icon} ${skill.name} — 💥크리티컬! ${dmg} 데미지!`, type: 'action', dmg });
+      dmgMult = isBoss ? 2.5 : 1.5;
+      tag = '💥크리티컬! ';
     } else if (isBoss && roll > 70) {
-      dmg = Math.floor(baseDmg * 0.3);
-      type = 'miss';
-      lines.push({ text: `${skill.icon} ${skill.name} — ❌빗나감... ${dmg} 데미지`, type: 'action', dmg });
+      dmgMult = 0.3;
+      tag = '❌빗나감... ';
     } else {
-      dmg = Math.floor(baseDmg * (0.8 + Math.random() * 0.4));
-      type = 'action';
-      lines.push({ text: `${skill.icon} ${skill.name} 시전! → ${dmg} 데미지`, type: 'action', dmg });
+      dmgMult = 0.8 + Math.random() * 0.4;
     }
-    totalEnemyHP -= dmg;
-    totalDmg += dmg;
 
-    // Enemy counterattack
-    if (type === 'miss' || (totalEnemyHP > 0 && Math.random() < 0.4)) {
+    const isAoe = skill.aoe || false;
+    const dmg = Math.floor(baseDmg * dmgMult);
+
+    if (isAoe && aliveEnemies.length > 1) {
+      // 광역 공격: 모든 적에게 데미지
+      let killed = 0;
+      aliveEnemies.forEach(e => { e.hp -= dmg; if (e.hp <= 0) { e.alive = false; killed++; } });
+      totalDmg += dmg * aliveEnemies.length;
+      const remaining = enemies.filter(e => e.alive).length;
+      lines.push({ text: `${skill.icon} ${skill.name} — ${tag}전체 공격! ${aliveEnemies.length}마리에게 ${dmg} 데미지!${killed > 0 ? ` ${killed}마리 처치!` : ''}${remaining > 0 ? ` 남은 적: ${remaining}` : ''}`, type: tag.includes('크리티컬') ? 'critical' : 'action', dmg: dmg * aliveEnemies.length });
+    } else {
+      // 단일 공격: 첫 번째 살아있는 적
+      const target = aliveEnemies[0];
+      target.hp -= dmg;
+      totalDmg += dmg;
+      let killText = '';
+      if (target.hp <= 0) {
+        target.alive = false;
+        const remaining = enemies.filter(e => e.alive).length;
+        killText = enemyCount > 1 ? ` → 1마리 처치!${remaining > 0 ? ` 남은 적: ${remaining}` : ''}` : '';
+      }
+      lines.push({ text: `${skill.icon} ${skill.name} 시전! → ${tag}${dmg} 데미지${killText}`, type: tag.includes('크리티컬') ? 'critical' : tag.includes('빗나감') ? 'miss' : 'action', dmg });
+    }
+
+    // 적 반격 (살아있는 적 중 랜덤)
+    const stillAlive = enemies.filter(e => e.alive);
+    if (stillAlive.length > 0 && (tag.includes('빗나감') || Math.random() < 0.4)) {
       const eDmg = Math.max(1, Math.floor((isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (0.6 + Math.random() * 0.4) - effectiveDef / 3));
       totalTaken += eDmg;
       lines.push({ text: `${enemy}의 반격! → -${eDmg} HP`, type: 'damage', dmg: eDmg });
     }
   }
 
-  const won = totalEnemyHP <= 0;
-  const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * (0.8 + Math.random() * 0.4)) : 0;
-  const expReward = won ? Math.floor((15 + G.floor * 3) * (isBoss ? 2.5 : 1)) : 0;
+  const won = enemies.every(e => !e.alive);
+  const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * enemyCount * (0.8 + Math.random() * 0.4)) : 0;
+  const expReward = won ? Math.floor((15 + G.floor * 3) * (isBoss ? 2.5 : 1) * enemyCount) : 0;
 
   if (won) {
     lines.push({ text: '전투 승리! 🎉', type: 'victory' });

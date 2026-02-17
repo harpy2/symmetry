@@ -29,6 +29,8 @@ Rules:
 - If player has no skills (low level), use basic attacks ("평타", "기본 공격")
 - Apply ALL skillMods from equipment (e.g., "파이어볼 2연속 시전" means fireball fires twice, "광역 공격" means AoE hits)
 - Include skill mod effects in narration (e.g., "장비 효과로 파이어볼이 2연속 발사됐다!")
+- IMPORTANT: When enemyCount > 1, non-AoE skills can only hit ONE enemy per attack. Player must attack each enemy separately. AoE skills (aoe:true) hit ALL enemies at once. Narrate this clearly (e.g., "고블린 1마리를 쓰러뜨렸다! 남은 적: 2마리", "휠윈드로 전체 공격! 3마리 모두에게 피해!")
+- If 3 enemies and no AoE, player needs at least 3 attacks to clear all
 - Balance: higher floor = harder enemies, but player stats should matter
 - 3-5 lines for normal, 5-7 lines for boss (keep it concise!)
 - goldReward and expReward should scale with floor and boss status
