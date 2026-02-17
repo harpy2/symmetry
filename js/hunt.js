@@ -71,15 +71,8 @@ skillCheckResults=await bossSkillCheckPopup(rounds);
 // === Phase 4: AI 전투 생성 (한번에) ===
 await addHuntLine('⚔️ 전투 개시!','story',log);
 
-// 전투 생성 (AI or 로컬)
-let combat;
-if(!G.autoHunt){
-// 수동: AI 전투 시도
-combat=await generateCombatAI(enemy,enemyCount,isBoss);
-}else{
-// 자동: 로컬 전투 (토큰 절약)
-combat=generateCombatLocal(enemy,enemyCount,isBoss);
-}
+// 전투 생성 (항상 로컬 — 스킬은 로컬이 제어)
+let combat=generateCombatLocal(enemy,enemyCount,isBoss);
 
 // 보스 스킬체크 결과 반영
 if(skillCheckResults){
