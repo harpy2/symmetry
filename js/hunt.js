@@ -156,10 +156,6 @@ var item=G.equipment[slot];
 if(item&&item.skillMods&&item.skillMods.length){
 item.skillMods.forEach(function(m){mods.push({item:item.name,emoji:item.emoji||'',grade:item.grade||'',mod:m.mod||m})});
 }});
-// 레벨업 버프도 표시
-if(G._appliedBuffs&&G._appliedBuffs.length){
-G._appliedBuffs.forEach(function(b){mods.push({item:'레벨업',emoji:'⭐',grade:'',mod:b})});
-}
 if(mods.length===0){list.innerHTML='<div class="hm-empty">장착된 효과 없음</div>';return}
 list.innerHTML=mods.map(function(m){return'<div class="hm-item"><div class="hm-item-name">'+(m.emoji||'')+' '+m.item+'</div><div class="hm-item-mod">✦ '+m.mod+'</div></div>'}).join('');
 }
