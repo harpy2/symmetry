@@ -7,7 +7,10 @@ Object.entries(CLASSES).forEach(([name,cls])=>{
 const d=document.createElement('div');d.className='class-card';d.onclick=()=>{document.querySelectorAll('.class-card').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');G=newGame();G.className=name;G.classData=cls;G.maxHP=cls.baseHP;G.hp=cls.baseHP;G.atk=cls.baseATK;G.def=cls.baseDEF;G.allSkills=[...cls.skills];G.allPassives=[...cls.passives];document.getElementById('class-confirm-btn').disabled=false};
 d.innerHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span style="font-size:36px">${cls.weapon}</span></div><div class="class-info"><h3>${name}</h3><p>${cls.desc}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
 c.appendChild(d)})}
-function confirmClass(){if(!G.className)return;showScreen('skill-screen');renderSkillSelect()}
+function confirmClass(){if(!G.className)return;
+// Auto-equip first 3 skills and first 2 passives
+G.equippedSkills=G.allSkills.slice(0,3);G.equippedPassives=G.allPassives.slice(0,2);
+saveGame();showScreen('main-screen')}
 
 // ===== SKILL SELECT =====
 let selectedActive=new Set(),selectedPassive=new Set(),hoveredSkill=null;
@@ -62,3 +65,25 @@ if(G.autoLevelUp){setTimeout(()=>pickLevelBuff(Math.floor(Math.random()*3)),500)
 function pickLevelBuff(i){window._levelChoices[i].apply(G);
 document.getElementById('levelup-overlay').classList.remove('active');
 toast(`${window._levelChoices[i].name} 획득!`);updateBars();renderCharacter();saveGame()}
+
+// ===== PARTY SYSTEM =====
+let activeSlot=0;
+const partySlots=[{unlocked:true},{unlocked:false},{unlocked:false}];
+
+function switchCharacter(idx){
+if(!partySlots[idx].unlocked){toast('💎 포인트로 슬롯을 구매하세요');return}
+activeSlot=idx;
+document.querySelectorAll('.char-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+document.querySelectorAll('.char-panel').forEach((p,i)=>{p.classList.toggle('active',i===idx)});
+}
+
+function renderPartyLayout(){
+const tabs=document.getElementById('char-tab-bar');
+if(tabs){tabs.innerHTML='';
+partySlots.forEach((_,i)=>{
+const t=document.createElement('button');
+t.className='char-tab'+(i===activeSlot?' active':'');
+t.onclick=()=>switchCharacter(i);
+t.textContent=partySlots[i].unlocked?`캐릭${i+1}`:`캐릭${i+1}🔒`;
+tabs.appendChild(t)})}
+}

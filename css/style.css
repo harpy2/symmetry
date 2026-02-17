@@ -138,6 +138,35 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .menu-btn:active .icon{transform:scale(1.15)}
 .menu-btn .label{font-size:10px;font-weight:700;letter-spacing:.3px}
 
+/* ============ PARTY SYSTEM ============ */
+.char-tab-bar{display:flex;gap:4px;padding:8px 12px 4px;justify-content:center}
+.char-tab{background:var(--glass);border:2px solid var(--glass-border);color:var(--text2);padding:8px 16px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;font-family:inherit;flex:1;max-width:120px;text-align:center}
+.char-tab.active{background:linear-gradient(135deg,rgba(240,192,64,.15),rgba(240,192,64,.05));border-color:var(--gold);color:var(--gold);box-shadow:0 0 16px var(--gold-glow)}
+.char-tab:active{transform:scale(.95)}
+
+.party-container{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.char-panel{display:none;flex-direction:column;flex:1;animation:panelFadeIn .3s ease}
+.char-panel.active{display:flex}
+
+@keyframes panelFadeIn{from{opacity:0}to{opacity:1}}
+
+.locked-overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(10,10,15,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:10;border-radius:16px}
+.locked-overlay .lock-icon{font-size:48px;filter:drop-shadow(0 0 20px rgba(255,255,255,.1))}
+.locked-overlay .lock-text{color:var(--text2);font-size:14px;font-weight:700;letter-spacing:1px}
+
+@media(min-width:768px){
+.char-tab-bar{display:none}
+.party-container{flex-direction:row;gap:8px;padding:0 8px}
+.char-panel{display:flex!important;flex:1;position:relative;background:var(--glass);border-radius:16px;border:2px solid var(--glass-border);overflow:hidden;padding:8px}
+.char-panel.active{border-color:var(--gold);box-shadow:0 0 20px var(--gold-glow)}
+.char-panel .status-bars{padding:8px 8px 4px}
+.char-panel .char-area{min-height:140px}
+.char-panel .equip-row{gap:6px;padding:4px 8px}
+.char-panel .equip-slot{width:40px;height:40px;font-size:18px}
+.char-panel .skill-equip-row{gap:4px;padding:2px 8px 6px}
+.char-panel .skill-slot{width:36px;height:36px;font-size:16px}
+}
+
 /* ============ OVERLAYS ============ */
 .overlay{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(10,10,15,.97),rgba(26,16,37,.97));z-index:100;flex-direction:column;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .overlay.active{display:flex;animation:overlayIn .3s cubic-bezier(.4,0,.2,1)}
