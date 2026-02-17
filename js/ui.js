@@ -52,17 +52,26 @@ if(ei>=0)G.equippedPassives.splice(ei,1);else if(G.equippedPassives.length<2)G.e
 renderSkillManage();renderSkillRow();saveGame()}
 
 // ===== LEVEL UP =====
-function showLevelUp(){const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
+async function showLevelUp(){const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
 document.getElementById('levelup-sub').textContent=`Lv.${G.level} 달성! HP+20, ATK+3, DEF+2`;
-const choices=[];const pool=[...LEVELUP_BUFFS];
+
+// AI 레벨업 보상 시도, 실패 시 기존 랜덤
+let choices = await generateLevelUpAI();
+if(!choices){
+const pool=[...LEVELUP_BUFFS];choices=[];
 for(let i=0;i<3;i++){const idx=Math.floor(Math.random()*pool.length);choices.push(pool.splice(idx,1)[0])}
+}
+
 document.getElementById('levelup-choices').innerHTML=choices.map((c,i)=>`<div class="levelup-choice" onclick="pickLevelBuff(${i})"><div class="lc-name">${c.name}</div><div class="lc-desc">${c.desc}</div></div>`).join('');
 const pc=document.getElementById('levelup-particles');pc.innerHTML='';
 for(let i=0;i<30;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.top=Math.random()*100+'%';p.style.width=p.style.height=(4+Math.random()*8)+'px';p.style.background=['var(--gold)','#fff','var(--accent)','var(--success)'][Math.floor(Math.random()*4)];p.style.animationDelay=Math.random()*2+'s';p.style.animationDuration=(0.5+Math.random())+'s';pc.appendChild(p)}
 window._levelChoices=choices;
+if(!G._appliedBuffs)G._appliedBuffs=[];
 document.getElementById('auto-levelup-toggle').checked=!!G.autoLevelUp;
 if(G.autoLevelUp){setTimeout(()=>pickLevelBuff(Math.floor(Math.random()*3)),500);return}}
 function pickLevelBuff(i){window._levelChoices[i].apply(G);
+if(!G._appliedBuffs)G._appliedBuffs=[];
+G._appliedBuffs.push(window._levelChoices[i].name);
 document.getElementById('levelup-overlay').classList.remove('active');
 toast(`${window._levelChoices[i].name} 획득!`);updateBars();renderCharacter();saveGame()}
 

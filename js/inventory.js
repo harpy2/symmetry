@@ -65,9 +65,17 @@ const cur=tab==='gold'?'gold':'points';if(G[cur]<item.price)return toast('재화
 G[cur]-=item.price;item.action();updateBars();renderCharacter();saveGame()}
 
 // ===== MISSIONS =====
-function renderMissions(){const body=document.getElementById('mission-body');body.innerHTML='';
-MISSIONS.forEach((m,i)=>{const cd=G.missionCooldowns[i]||0;const remaining=Math.max(0,cd-Date.now());const onCD=remaining>0;
-body.innerHTML+=`<div class="mission-card"><div class="cpq-badge">CPQ 미션</div><div class="npc-row"><div class="npc-avatar" style="background:${m.color}">${m.avatar}</div><div><div class="npc-name">${m.npc}</div></div></div><div class="npc-dialogue">"${m.dialogue}"</div><div class="mission-reward">보상: ${m.reward}</div>${onCD?`<div class="cooldown">⏳ 대기 중... ${Math.ceil(remaining/1000)}초</div>`:`<button class="btn btn-sm" onclick="completeMission(${i})">완료</button>`}</div>`})}
+async function renderMissions(){const body=document.getElementById('mission-body');body.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px">NPC 소환 중...</div>';
+const cards=[];
+for(let i=0;i<MISSIONS.length;i++){
+const m=MISSIONS[i];
+const cd=G.missionCooldowns[i]||0;const remaining=Math.max(0,cd-Date.now());const onCD=remaining>0;
+// AI 대사 생성 시도
+let dialogue=m.dialogue;
+const aiDialogue=await generateNPCDialogueAI(m.npc,{reward:m.reward});
+if(aiDialogue)dialogue=aiDialogue;
+cards.push(`<div class="mission-card"><div class="cpq-badge">CPQ 미션</div><div class="npc-row"><div class="npc-avatar" style="background:${m.color}">${m.avatar}</div><div><div class="npc-name">${m.npc}</div></div></div><div class="npc-dialogue">"${dialogue}"</div><div class="mission-reward">보상: ${m.reward}</div>${onCD?`<div class="cooldown">⏳ 대기 중... ${Math.ceil(remaining/1000)}초</div>`:`<button class="btn btn-sm" onclick="completeMission(${i})">완료</button>`}</div>`);}
+body.innerHTML=cards.join('');}
 function completeMission(i){const m=MISSIONS[i];G.gold+=m.gold;G.points+=m.points;G.missionCooldowns[i]=Date.now()+30000;
 toast(`미션 완료! 💰+${m.gold} 💎+${m.points}`);updateBars();saveGame();renderMissions();
 const refreshTimer=setInterval(()=>{if(!document.getElementById('overlay-mission').classList.contains('active')){clearInterval(refreshTimer);return}renderMissions()},1000)}

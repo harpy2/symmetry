@@ -28,7 +28,10 @@ const enemyCount=isBoss?1:Math.floor(Math.random()*3)+1;
 const enemyHP=isBoss?(30+G.floor*8):(10+G.floor*3);
 let totalEnemyHP=enemyHP*enemyCount;
 
-for(const line of tmpl.intro)await addHuntLine(line,'story',log);
+// AI 스토리 생성 (비동기, 폴백 있음)
+const aiStory = await generateHuntStoryAI(enemy, isBoss, G.floor);
+const introText = aiStory.intro || tmpl.intro[0];
+await addHuntLine(introText,'story',log);
 await wait(700);
 if(isBoss){await addHuntLine(`⚠️ 보스 출현! ${tmpl.bossEmoji} ${enemy}!`,'boss',log)}
 else{await addHuntLine(`${enemy} ${enemyCount}마리가 나타났다!`,'story',log)}
@@ -88,7 +91,9 @@ await addHuntLine(`획득: 💰 +${goldReward}, 경험치 +${expReward}`,'loot',
 // Item drop with mood bonus
 const baseDropRate=isBoss?0.9:0.4;
 const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop));
-if(Math.random()<adjustedDropRate){const item=generateItem();G.inventory.push(item);
+if(Math.random()<adjustedDropRate){
+const item=await generateItemAI();
+G.inventory.push(item);
 await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log)}
 if(!isBoss)G.floor++;
 else{G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log)}
