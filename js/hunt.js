@@ -16,6 +16,9 @@ document.getElementById('hs-mood').textContent=Math.floor(G.mood)+'%';
 document.getElementById('hs-level').textContent=G.level;
 document.getElementById('hs-gold').textContent=G.gold;
 document.getElementById('hs-floor').textContent=G.floor;
+// 경험치 바
+var expBar=document.getElementById('hunt-exp-bar');if(expBar){expBar.style.width=Math.min(100,G.exp)+'%'}
+var expText=document.getElementById('hunt-exp-text');if(expText){expText.textContent=G.exp+'%'}
 // HP 색상
 hp.style.color=G.hp/G.maxHP>0.5?'var(--success)':G.hp/G.maxHP>0.25?'var(--hunger)':'var(--danger)';
 // 오른쪽 장비효과 패널

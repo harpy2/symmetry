@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=17">
+<link rel="stylesheet" href="css/style.css?v=18">
 </head>
 <body>
 
@@ -121,6 +121,11 @@
 <button class="btn btn-secondary" onclick="toggleAutoHunt()" id="auto-hunt-btn">🔄 자동사냥</button>
 </div>
 </div>
+<!-- 하단 경험치 바 -->
+<div class="hunt-exp-bar-wrap">
+<div class="hunt-exp-bar" id="hunt-exp-bar"></div>
+<span class="hunt-exp-text" id="hunt-exp-text">0%</span>
+</div>
 <!-- 오른쪽: 커스텀 옵션 현황 -->
 <div class="hunt-panel hunt-panel-right">
 <div class="hunt-panel-title">✦ 장비 효과</div>
@@ -172,7 +177,7 @@
 <script src="js/game.js?v=2"></script>
 <script src="js/ai.js?v=3"></script>
 <script src="js/ui.js?v=2"></script>
-<script src="js/hunt.js?v=4"></script>
+<script src="js/hunt.js?v=5"></script>
 <script src="js/inventory.js?v=2"></script>
 </body>
 </html>
