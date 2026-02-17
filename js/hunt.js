@@ -106,7 +106,13 @@ await addHuntLine(`  ✦ ${m.mod}`,'loot',log);
 }}}
 if(!isBoss)G.floor++;
 else{G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log)}
-while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=20;G.atk+=3;G.def+=2;G.hp=G.maxHP;showLevelUp()}
+// 레벨업 처리 (AI 응답 대기 중 로딩 메시지 표시)
+while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=20;G.atk+=3;G.def+=2;G.hp=G.maxHP;
+const lvlMsgs=['기분이 한결 좋아진 것 같다...','승리를 자축하는 중...','새로운 힘이 깨어나고 있다...','몸 속에서 에너지가 솟구친다...','한층 강해진 기분이다...','전투의 여운을 느끼는 중...','깊은 숨을 내쉬며 집중한다...','성장의 빛이 감싸고 있다...'];
+const lvlMsg=lvlMsgs[Math.floor(Math.random()*lvlMsgs.length)];
+await addHuntLine(`✨ ${lvlMsg}`,'loading',log);
+const lvlChoices=await generateLevelUpAI();
+await showLevelUp(lvlChoices);}
 }else{
 G.mood=Math.max(0,G.mood-10)}
 
