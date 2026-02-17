@@ -181,7 +181,7 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .hunt-status-bar{padding:8px 16px;display:flex;gap:10px;flex-wrap:wrap;font-size:12px;background:var(--glass);border-bottom:1px solid var(--glass-border);font-weight:700;font-variant-numeric:tabular-nums;justify-content:center}
 .hunt-status-bar span{display:flex;align-items:center;gap:3px}
 .hunt-log{display:flex;flex-direction:column;gap:6px;align-items:center;max-width:600px;margin:0 auto;padding:0 24px}
-.hunt-line{opacity:0;animation:huntLineIn .4s cubic-bezier(.4,0,.2,1) forwards;font-size:14px;line-height:1.7;padding:6px 16px;border-radius:10px;background:rgba(255,255,255,.02);text-align:center;display:inline-block;max-width:100%}
+.hunt-line{opacity:0;animation:huntLineIn .4s cubic-bezier(.4,0,.2,1) forwards;font-size:14px;line-height:1.7;padding:6px 20px;border-radius:10px;background:rgba(255,255,255,.02);text-align:center;width:fit-content;max-width:90%}
 @keyframes huntLineIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .hunt-line.story{color:var(--text2);font-style:italic;background:none}
 .hunt-line.action{color:var(--gold);background:rgba(240,192,64,.05)}
