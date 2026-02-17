@@ -82,9 +82,9 @@ p.style.opacity='0';
 document.body.appendChild(p);
 return{el:p,spd:0.4+Math.random()*0.8,wobble:(Math.random()-0.5)*3,delay:delay,y:_vh+10,age:0,life:5000+Math.random()*5000,x:Math.random()*100};
 }
-for(let i=0;i<100;i++)_pts.push(_mkP(Math.random()*1500));
-for(let i=0;i<60;i++)_pts.push(_mkP(600+Math.random()*1500));
-for(let i=0;i<40;i++)_pts.push(_mkP(1500+Math.random()*2000));
+for(let i=0;i<50;i++)_pts.push(_mkP(Math.random()*1500));
+for(let i=0;i<30;i++)_pts.push(_mkP(600+Math.random()*1500));
+for(let i=0;i<20;i++)_pts.push(_mkP(1500+Math.random()*2000));
 let _t0=performance.now(),_lastT=_t0;
 function _tick(now){
 const dt=Math.min(now-_lastT,50);_lastT=now;
