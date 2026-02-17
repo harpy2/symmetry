@@ -48,7 +48,7 @@ async function generateItemAI() {
 // Gather all skillMods from equipped items
 function getActiveSkillMods() {
   const mods = [];
-  ['weapon', 'armor', 'accessory'].forEach(slot => {
+  Object.keys(G.equipment).forEach(slot => {
     const item = G.equipment[slot];
     if (item && item.skillMods && item.skillMods.length) {
       item.skillMods.forEach(m => mods.push({ ...m, fromItem: item.name }));
@@ -87,16 +87,16 @@ async function generateCombatAI(enemy, enemyCount, isBoss) {
     floor: G.floor,
     hp: Math.floor(G.hp),
     maxHP: G.maxHP,
-    atk: G.atk + (G.equipment.weapon ? (G.equipment.weapon.stats.ATK || 0) : 0),
-    def: G.def + (G.equipment.armor ? (G.equipment.armor.stats.DEF || 0) : 0),
+    atk: G.atk + getEquipStat('ATK'),
+    def: G.def + getEquipStat('DEF'),
     critBonus: G.critBonus || 0,
     skills: hasSkills ? skills : [{ name: '평타', icon: '👊', desc: '기본 공격', dmg: 10, hits: 1, mods: [] }],
     passives: G.equippedPassives.map(p => ({ name: p.name, desc: p.desc })),
     skillMods: mods.map(m => ({ skillName: m.skillName, mod: m.mod, effect: m.effect, fromItem: m.fromItem })),
     equipment: {
       weapon: G.equipment.weapon ? { name: G.equipment.weapon.name, stats: G.equipment.weapon.stats } : null,
-      armor: G.equipment.armor ? { name: G.equipment.armor.name, stats: G.equipment.armor.stats } : null,
-      accessory: G.equipment.accessory ? { name: G.equipment.accessory.name, stats: G.equipment.accessory.stats } : null,
+      chest: G.equipment.chest ? { name: G.equipment.chest.name, stats: G.equipment.chest.stats } : null,
+      helmet: G.equipment.helmet ? { name: G.equipment.helmet.name, stats: G.equipment.helmet.stats } : null,
     },
     enemy,
     enemyCount,
@@ -121,7 +121,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
   for (let i = 0; i < enemyCount; i++) enemies.push({ hp: singleHP, alive: true });
   let totalDmg = 0, totalTaken = 0;
   const effectiveAtk = G.atk + (G.equipment.weapon ? (G.equipment.weapon.stats.ATK || 0) : 0);
-  const effectiveDef = G.def + (G.equipment.armor ? (G.equipment.armor.stats.DEF || 0) : 0);
+  const effectiveDef = G.def + getEquipStat('DEF');
   const hasSkills = G.equippedSkills.length > 0;
   const maxRounds = isBoss ? 8 : 3 + enemyCount + Math.floor(Math.random() * 2);
 

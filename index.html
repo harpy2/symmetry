@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=19">
+<link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body>
 
@@ -68,11 +68,13 @@
 <div class="stat-bar bar-hunger"><span class="label">🍖</span><div class="bar-bg"><div class="bar-fill" id="hunger-bar" style="width:100%"></div><span class="bar-text" id="hunger-text">100%</span></div></div>
 <div class="stat-bar bar-mood"><span class="label">⚡</span><div class="bar-bg"><div class="bar-fill" id="mood-bar" style="width:80%"></div><span class="bar-text" id="mood-text">80%</span></div></div>
 </div>
+<div class="char-equip-layout">
+<!-- 왼쪽 장비: 투구/상의/장갑/바지/신발/주무기 -->
+<div class="equip-col equip-col-left" id="equip-col-left"></div>
+<!-- 캐릭터 -->
 <div class="char-area" id="char-area"></div>
-<div class="equip-row" id="equip-row">
-<div class="equip-slot" onclick="openOverlay('inventory','weapon')" title="무기">⚔️</div>
-<div class="equip-slot" onclick="openOverlay('inventory','armor')" title="방어구">🛡️</div>
-<div class="equip-slot" onclick="openOverlay('inventory','accessory')" title="장신구">📿</div>
+<!-- 오른쪽 장비: 목걸이/반지1/반지2/보조무기 -->
+<div class="equip-col equip-col-right" id="equip-col-right"></div>
 </div>
 <div class="skill-equip-row" id="skill-equip-row"></div>
 </div>
@@ -173,11 +175,11 @@
 <div class="levelup-choices" id="levelup-choices"></div>
 </div>
 
-<script src="js/data.js?v=2"></script>
-<script src="js/game.js?v=2"></script>
-<script src="js/ai.js?v=3"></script>
+<script src="js/data.js?v=3"></script>
+<script src="js/game.js?v=3"></script>
+<script src="js/ai.js?v=4"></script>
 <script src="js/ui.js?v=2"></script>
-<script src="js/hunt.js?v=7"></script>
-<script src="js/inventory.js?v=2"></script>
+<script src="js/hunt.js?v=8"></script>
+<script src="js/inventory.js?v=3"></script>
 </body>
 </html>

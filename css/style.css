@@ -120,8 +120,10 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 @keyframes sparkle{0%,100%{opacity:0;transform:scale(0)}50%{opacity:.8;transform:scale(1)}}
 
 /* Equipment Row */
-.equip-row{display:flex;justify-content:center;gap:10px;padding:8px 16px}
-.equip-slot{width:50px;height:50px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;border:2px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1)}
+/* 캐릭터+장비 좌우 레이아웃 */
+.char-equip-layout{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-height:0}
+.equip-col{display:flex;flex-direction:column;gap:6px;align-items:center}
+.equip-slot{width:46px;height:46px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:10px;border:2px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1)}
 .equip-slot:active{transform:scale(.92)}
 .equip-slot.has-item{border-color:var(--gold);box-shadow:0 0 15px var(--gold-glow)}
 
@@ -161,8 +163,8 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .char-panel.active{border-color:var(--gold);box-shadow:0 0 20px var(--gold-glow)}
 .char-panel .status-bars{padding:8px 8px 4px}
 .char-panel .char-area{min-height:140px}
-.char-panel .equip-row{gap:6px;padding:4px 8px}
-.char-panel .equip-slot{width:40px;height:40px;font-size:18px}
+.char-panel .equip-col{gap:4px}
+.char-panel .equip-slot{width:38px;height:38px;font-size:16px}
 .char-panel .skill-equip-row{gap:4px;padding:2px 8px 6px}
 .char-panel .skill-slot{width:36px;height:36px;font-size:16px}
 }

@@ -11,7 +11,7 @@ level:1,exp:0,hp:opts.baseHP||100,maxHP:opts.baseHP||100,
 atk:opts.baseATK||15,def:opts.baseDEF||8,
 gold:100,points:10,hunger:100,mood:80,floor:1,
 equippedSkills:[],equippedPassives:[],allSkills:[],allPassives:[],
-equipment:{weapon:null,armor:null,accessory:null},inventory:[],
+equipment:{helmet:null,chest:null,gloves:null,pants:null,boots:null,weapon:null,necklace:null,ring1:null,ring2:null,offhand:null},inventory:[],
 critBonus:0,hpBonus:0,atkBonus:0,defBonus:0,expBonus:0,
 autoHunt:false,autoLevelUp:false,missionCooldowns:{},lastTick:Date.now()
 }}
@@ -92,16 +92,41 @@ moodText.textContent=Math.floor(G.mood)+'% '+getMoodStatus();
 function renderCharacter(){const area=document.getElementById('char-area');const cls=CLASSES[G.className];if(!cls)return;
 let mouthClass='';if(G.mood>=70)mouthClass='happy';else if(G.mood>=40)mouthClass='';else if(G.mood>=20)mouthClass='sad';else mouthClass='angry';
 let weaponEmoji=cls.weapon;if(G.equipment.weapon)weaponEmoji=G.equipment.weapon.emoji||cls.weapon;
-let armorStyle=cls.bodyColor;if(G.equipment.armor){const ac=GRADE_COLORS[G.equipment.armor.grade];armorStyle=`linear-gradient(180deg,${ac},#111)`}
+let armorStyle=cls.bodyColor;if(G.equipment.chest){const ac=GRADE_COLORS[G.equipment.chest.grade];armorStyle=`linear-gradient(180deg,${ac},#111)`}
 // Build sparkles
 let sparklesHTML='<div class="char-sparkles">';
 for(let i=0;i<6;i++){const x=20+Math.random()*160;const y=20+Math.random()*160;const delay=Math.random()*3;const dur=1.5+Math.random()*2;sparklesHTML+=`<span style="left:${x}px;top:${y}px;animation-delay:${delay}s;animation-duration:${dur}s"></span>`}
 sparklesHTML+='</div>';
 area.innerHTML=`<div class="character">${sparklesHTML}<div class="char-glow" style="background:${cls.glow}"></div><div class="char-body" style="background:${armorStyle}"><div class="char-face"><div class="char-eyes"><div class="char-eye"></div><div class="char-eye"></div></div><div class="char-mouth ${mouthClass}"></div></div></div><div class="char-weapon">${weaponEmoji}</div></div>`}
 
-function renderEquipRow(){const row=document.getElementById('equip-row');
-const slots=['weapon','armor','accessory'];const labels=['⚔️','🛡️','📿'];
-row.innerHTML=slots.map((s,i)=>{const item=G.equipment[s];return`<div class="equip-slot ${item?'has-item':''}" onclick="openOverlay('inventory','${s}')" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:labels[i]}</div>`}).join('')}
+// 장비 스탯 합산 헬퍼
+function getEquipStat(stat){
+var total=0;
+for(var k in G.equipment){if(G.equipment[k]&&G.equipment[k].stats){total+=(G.equipment[k].stats[stat]||0)}}
+return total;
+}
+
+const EQUIP_SLOTS_LEFT=[
+{key:'helmet',icon:'🪖',label:'투구'},
+{key:'chest',icon:'👕',label:'상의'},
+{key:'gloves',icon:'🧤',label:'장갑'},
+{key:'pants',icon:'👖',label:'바지'},
+{key:'boots',icon:'👢',label:'신발'},
+{key:'weapon',icon:'⚔️',label:'주무기'}
+];
+const EQUIP_SLOTS_RIGHT=[
+{key:'necklace',icon:'📿',label:'목걸이'},
+{key:'ring1',icon:'💍',label:'반지1'},
+{key:'ring2',icon:'💍',label:'반지2'},
+{key:'offhand',icon:'🛡️',label:'보조무기'}
+];
+function renderEquipRow(){
+const left=document.getElementById('equip-col-left');
+const right=document.getElementById('equip-col-right');
+if(!left||!right)return;
+left.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="openOverlay('inventory','${s.key}')" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
+right.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="openOverlay('inventory','${s.key}')" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
+}
 
 function renderSkillRow(){const row=document.getElementById('skill-equip-row');
 row.innerHTML=G.equippedSkills.map(s=>`<div class="skill-slot" title="${s.name}">${s.icon}</div>`).join('')}
@@ -207,6 +232,10 @@ if(G.party){G.party.forEach(slot=>{if(slot&&slot.className)slot.classData=CLASSE
 if(!G.party[0])saveCharToSlot();
 // Bonus stat defaults
 if(!G.hpBonus)G.hpBonus=0;if(!G.atkBonus)G.atkBonus=0;if(!G.defBonus)G.defBonus=0;if(!G.expBonus)G.expBonus=0;
+// 장비 슬롯 마이그레이션 (3슬롯→10슬롯)
+if(G.equipment.armor&&!G.equipment.chest){G.equipment.chest=G.equipment.armor;delete G.equipment.armor}
+if(G.equipment.accessory&&!G.equipment.necklace){G.equipment.necklace=G.equipment.accessory;delete G.equipment.accessory}
+['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'].forEach(k=>{if(!G.equipment.hasOwnProperty(k))G.equipment[k]=null});
 showScreen('main-screen');toast('게임 로드 완료!')}catch(e){toast('로드 실패: '+e.message)}}
 
 // Init

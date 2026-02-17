@@ -5,8 +5,8 @@ function updateHuntStatus(){
 // 왼쪽 상태 패널
 var hp=document.getElementById('hs-hp');if(!hp)return;
 hp.textContent=Math.floor(G.hp)+'/'+G.maxHP;
-var effectiveAtk=G.atk+(G.equipment.weapon?(G.equipment.weapon.stats.ATK||0):0);
-var effectiveDef=G.def+(G.equipment.armor?(G.equipment.armor.stats.DEF||0):0);
+var effectiveAtk=G.atk+getEquipStat('ATK');
+var effectiveDef=G.def+getEquipStat('DEF');
 document.getElementById('hs-atk').textContent=effectiveAtk;
 document.getElementById('hs-def').textContent=effectiveDef;
 document.getElementById('hs-crit').textContent=(10+(G.critBonus||0))+'%';
@@ -151,7 +151,7 @@ return map[type]||'story';
 function renderHuntMods(){
 var list=document.getElementById('hunt-mods-list');if(!list)return;
 var mods=[];
-['weapon','armor','accessory'].forEach(function(slot){
+Object.keys(G.equipment).forEach(function(slot){
 var item=G.equipment[slot];
 if(item&&item.skillMods&&item.skillMods.length){
 item.skillMods.forEach(function(m){mods.push({item:item.name,emoji:item.emoji||'',grade:item.grade||'',mod:m.mod||m})});
