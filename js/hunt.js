@@ -10,12 +10,11 @@ function getMoodMultiplier(){
 if(G.mood>=80)return{exp:1.2,gold:1.2,drop:0.1};
 if(G.mood>=50)return{exp:1.0,gold:1.0,drop:0};
 if(G.mood>=20)return{exp:0.85,gold:0.85,drop:-0.1};
-return{exp:0,gold:0,drop:0}; // 0-19: can't hunt
+return{exp:0,gold:0,drop:0};
 }
 
 async function startHunt(){
 if(huntInProgress)return;if(G.hp<=0){toast('HP가 부족합니다!');return}
-// Mood check: 0-19 cannot hunt
 if(G.mood<20){toast('기분이 너무 안 좋아서 사냥할 수 없습니다...');G.autoHunt=false;updateAutoHuntUI();return}
 huntInProgress=true;document.getElementById('hunt-btn').disabled=true;
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -28,8 +27,14 @@ const enemyCount=isBoss?1:Math.floor(Math.random()*3)+1;
 const enemyHP=isBoss?(30+G.floor*8):(10+G.floor*3);
 let totalEnemyHP=enemyHP*enemyCount;
 
-// 프리셋 스토리 (토큰 절약)
-const story = isBoss ? BOSS_STORIES[Math.floor(Math.random()*BOSS_STORIES.length)] : NORMAL_STORIES[Math.floor(Math.random()*NORMAL_STORIES.length)];
+// 로딩 텍스트 1~8초 표시
+const loadingText=LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
+await addHuntLine(loadingText,'loading',log);
+const loadingDelay=1000+Math.floor(Math.random()*7000);
+await wait(loadingDelay);
+
+// 스토리
+const story=isBoss?BOSS_STORIES[Math.floor(Math.random()*BOSS_STORIES.length)]:NORMAL_STORIES[Math.floor(Math.random()*NORMAL_STORIES.length)];
 await addHuntLine(story.intro.replace('{enemy}',enemy),'story',log);
 await wait(700);
 if(isBoss){await addHuntLine(`⚠️ 보스 출현! ${tmpl.bossEmoji} ${enemy}!`,'boss',log)}
@@ -39,8 +44,8 @@ await wait(600);
 let rounds=isBoss?5:3+Math.floor(Math.random()*2);
 let playerHPLoss=0;
 if(isBoss&&!G.autoHunt){
-await addHuntLine('⚡ 스킬체크! 타이밍을 맞춰라!','boss',log);
-const scResult=await bossSkillCheck(rounds,log);
+// 스킬체크 팝업
+const scResult=await bossSkillCheckPopup(rounds);
 for(const r of scResult.rounds){
 const skill=G.equippedSkills[r.skillIdx%G.equippedSkills.length];
 let baseDmg=Math.floor((skill.dmg||20)*(1+G.atk/30));
@@ -81,17 +86,14 @@ if(won){
 await addHuntLine('전투 승리! 🎉','victory',log);
 let goldReward=Math.floor((10+G.floor*5)*(isBoss?3:1)*(0.8+Math.random()*0.4));
 let expReward=Math.floor((15+G.floor*3)*(isBoss?2.5:1));
-// Apply mood multipliers
 goldReward=Math.floor(goldReward*moodMult.exp);
 expReward=Math.floor(expReward*moodMult.exp);
 G.gold+=goldReward;G.exp+=expReward;
 G.mood=Math.min(100,G.mood+(isBoss?15:5));
 await addHuntLine(`획득: 💰 +${goldReward}, 경험치 +${expReward}`,'loot',log);
-// Item drop with mood bonus
 const baseDropRate=isBoss?0.9:0.4;
 const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop));
 if(Math.random()<adjustedDropRate){
-const loadingText=LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
 await addHuntLine('✨ 뭔가 반짝이는 것이 보인다...','loot',log);
 const item=await generateItemAI();
 G.inventory.push(item);
@@ -110,57 +112,77 @@ if(G.autoHunt&&G.hp>G.maxHP*0.2){setTimeout(()=>{if(G.autoHunt)startHunt()},1500
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';
 if(cls==='action'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px'}
 else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px'}
+else if(cls==='loading'){d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
 else{d.style.textAlign='center';d.style.margin='0 auto'}
 log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();setTimeout(r,500)})}
 
-function bossSkillCheck(totalRounds,log){
+// ===== BOSS SKILL CHECK POPUP =====
+function bossSkillCheckPopup(totalRounds){
 return new Promise(resolve=>{
 const results=[];let round=0;
 const speed=2.5+G.floor*0.15;
 const normalZone=18;const critZone=5;
 
+// 팝업 생성
+const overlay=document.createElement('div');
+overlay.className='sc-popup-overlay';
+overlay.innerHTML='<div class="sc-popup"><div class="sc-popup-title">⚡ 스킬 체크</div><div class="sc-popup-content" id="sc-popup-content"></div></div>';
+document.body.appendChild(overlay);
+requestAnimationFrame(()=>overlay.classList.add('active'));
+
+const content=overlay.querySelector('#sc-popup-content');
+
 function runRound(){
-if(round>=totalRounds){resolve({rounds:results});return}
-const wrap=document.createElement('div');wrap.className='sc-wrap';
+if(round>=totalRounds){
+overlay.classList.remove('active');
+setTimeout(()=>overlay.remove(),300);
+resolve({rounds:results});return}
+
 const critStart=Math.floor(Math.random()*360);
 const normalStart=(critStart-normalZone+360)%360;
-const normalEnd=(critStart+critZone+normalZone)%360;
 const critEnd=(critStart+critZone)%360;
 const skill=G.equippedSkills[round%G.equippedSkills.length];
 
-wrap.innerHTML=`
-<div style="font-size:13px;color:var(--text2)">${skill.icon} ${skill.name} — 라운드 ${round+1}/${totalRounds}</div>
+content.innerHTML=`
+<div class="sc-round-info">${skill.icon} ${skill.name} — 라운드 ${round+1}/${totalRounds}</div>
 <div class="sc-gauge"><svg viewBox="0 0 200 200">
 <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="14"/>
 <path d="${descArc(100,100,85,normalStart,(normalStart+normalZone*2+critZone)%360)}" fill="none" stroke="rgba(0,232,143,.3)" stroke-width="14" stroke-linecap="round"/>
 <path d="${descArc(100,100,85,critStart,critEnd)}" fill="none" stroke="rgba(255,68,102,.5)" stroke-width="14" stroke-linecap="round"/>
-<line id="sc-needle-${round}" x1="100" y1="100" x2="100" y2="20" stroke="var(--gold)" stroke-width="3" stroke-linecap="round"/>
+<line id="sc-needle" x1="100" y1="100" x2="100" y2="20" stroke="var(--gold)" stroke-width="3" stroke-linecap="round"/>
 </svg></div>
 <div class="sc-info"><span>🟢 일반</span><span>🔴 크리티컬</span></div>
-<button class="sc-btn" id="sc-btn-${round}">⚡ 클릭!</button>
-<div class="sc-result" id="sc-res-${round}"></div>`;
-log.appendChild(wrap);log.scrollTop=log.scrollHeight;
+<button class="btn sc-popup-btn" id="sc-popup-btn">⚡ 공격!</button>
+<div class="sc-result" id="sc-popup-result"></div>`;
 
 let angle=0,running=true,anim;
-const needle=()=>wrap.querySelector('#sc-needle-'+round);
+const needle=()=>content.querySelector('#sc-needle');
 function tick(){if(!running)return;angle=(angle+speed)%360;const n=needle();if(n)n.setAttribute('transform','rotate('+angle+',100,100)');anim=requestAnimationFrame(tick)}
 tick();
 
-const btn=wrap.querySelector('#sc-btn-'+round);
-btn.onclick=()=>{
-running=false;if(anim)cancelAnimationFrame(anim);btn.disabled=true;
+const btn=content.querySelector('#sc-popup-btn');
+function doCheck(){
+if(!running)return;
+running=false;if(anim)cancelAnimationFrame(anim);btn.disabled=true;btn.style.opacity='.4';
 const a=angle;
 const inCrit=isInArc(a,critStart,critEnd);
 const inNormal=isInArc(a,normalStart,(normalStart+normalZone*2+critZone)%360);
-const res=wrap.querySelector('#sc-res-'+round);
+const res=content.querySelector('#sc-popup-result');
 let type='miss';
-if(inCrit){type='critical';res.innerHTML='<span style="color:var(--danger)">💥 크리티컬!!!</span>'}
-else if(inNormal){type='hit';res.innerHTML='<span style="color:var(--success)">✅ 적중!</span>'}
-else{res.innerHTML='<span style="color:var(--text2)">❌ 빗나감...</span>'}
+if(inCrit){type='critical';res.innerHTML='<span style="color:var(--danger);font-size:20px;font-weight:700">💥 크리티컬!!!</span>'}
+else if(inNormal){type='hit';res.innerHTML='<span style="color:var(--success);font-size:18px;font-weight:700">✅ 적중!</span>'}
+else{res.innerHTML='<span style="color:var(--text2);font-size:16px">❌ 빗나감...</span>'}
 results.push({skillIdx:round,type});round++;
-setTimeout(runRound,600)}}
-runRound()})
+setTimeout(runRound,800);
 }
+
+// touchstart + mousedown for instant response
+btn.addEventListener('touchstart',function(e){e.preventDefault();doCheck()},{passive:false,once:true});
+btn.addEventListener('mousedown',function(e){e.preventDefault();doCheck()},{once:true});
+}
+runRound();
+})}
+
 function descArc(cx,cy,r,s,e){s=s-90;e=e-90;const sr=s*Math.PI/180,er=e*Math.PI/180;const x1=cx+r*Math.cos(sr),y1=cy+r*Math.sin(sr),x2=cx+r*Math.cos(er),y2=cy+r*Math.sin(er);const large=((e-s+360)%360>180)?1:0;return`M${x1},${y1}A${r},${r},0,${large},1,${x2},${y2}`}
 function isInArc(a,s,e){if(e>s)return a>=s&&a<=e;return a>=s||a<=e}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
