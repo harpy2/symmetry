@@ -2,7 +2,7 @@ const SYSTEM_PROMPTS = {
   item: `You are an RPG item generator for a Korean dungeon crawler game. Generate a unique item based on the player's class, level, floor, and available skills. Be creative with names and descriptions in Korean. Stats should scale with level and floor.
 Respond with ONLY valid JSON, no markdown, no explanation:
 {"name":"string","type":"weapon|armor|accessory","grade":"일반|매직|레어|유니크|에픽","emoji":"single emoji","stats":{"ATK":number,"DEF":number,"HP":number,"치명타":number},"durability":number,"desc":"string","skillMods":[{"skillName":"string","mod":"string","effect":{"type":"multiHit|aoe|dmgBoost|dot|lifesteal|chain","value":number}}]}
-Only include relevant stats (omit zero values). Grade probability: 일반 45%, 매직 30%, 레어 15%, 유니크 8%, 에픽 2%. Higher floors increase chance of better grades. skillMods should ONLY be included for 유니크 and 에픽 grades (1-2 mods for 유니크, 2-3 for 에픽). skillMods must reference skills from the player's class. For 일반/매직/레어, do NOT include skillMods.`,
+Only include relevant stats (omit zero values). Grade probability: 일반 45%, 매직 30%, 레어 15%, 유니크 8%, 에픽 2%. Higher floors increase chance of better grades. skillMods should ONLY be included for 유니크 and 에픽 grades (exactly 1 mod for 유니크, exactly 2 mods for 에픽). skillMods must reference skills from the player's class. For 일반/매직/레어, do NOT include skillMods.`,
 
   skill: `You are an RPG skill generator for a Korean dungeon crawler game. Generate a new unique skill for the player based on their class, level, and existing skills. Make it thematic and creative. Avoid duplicating existing skills.
 Respond with ONLY valid JSON, no markdown, no explanation:
