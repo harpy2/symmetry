@@ -115,7 +115,7 @@ window._levelResolve=resolve;
 if(G.autoLevelUp){setTimeout(()=>pickLevelBuff(Math.floor(Math.random()*3)),500);return}});}
 function pickLevelBuff(i){window._levelChoices[i].apply(G);
 if(!G._appliedBuffs)G._appliedBuffs=[];
-G._appliedBuffs.push(window._levelChoices[i].name);
+G._appliedBuffs.push({name:window._levelChoices[i].name,desc:window._levelChoices[i].desc});
 document.getElementById('levelup-overlay').classList.remove('active');
 toast(`${window._levelChoices[i].name} 획득!`);updateBars();renderCharacter();saveGame();
 if(window._levelResolve){window._levelResolve();window._levelResolve=null}}

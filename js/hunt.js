@@ -167,7 +167,11 @@ html+='</div>';
 if(G._appliedBuffs&&G._appliedBuffs.length){
 html+='<div class="hm-divider"></div>';
 html+='<div class="hm-section-title">⭐ 레벨업 버프</div>';
-G._appliedBuffs.forEach(function(b){html+='<div class="hm-item"><div class="hm-item-mod">⭐ '+b+'</div></div>'});
+G._appliedBuffs.forEach(function(b){
+var name=typeof b==='string'?b:b.name;
+var desc=typeof b==='object'&&b.desc?b.desc:'';
+html+='<div class="hm-item"><div class="hm-item-mod">⭐ '+name+(desc?' - '+desc:'')+'</div></div>';
+});
 }
 if(!html){list.innerHTML='<div class="hm-empty">장착된 장비 없음</div>';return}
 list.innerHTML=html;
