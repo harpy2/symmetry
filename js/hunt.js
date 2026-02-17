@@ -16,6 +16,7 @@ document.getElementById('hs-mood').textContent=Math.floor(G.mood)+'%';
 document.getElementById('hs-level').textContent=G.level;
 document.getElementById('hs-gold').textContent=G.gold;
 document.getElementById('hs-floor').textContent=G.floor;
+var hf=document.getElementById('hunt-floor');if(hf)hf.textContent=G.floor;
 // 경험치 바
 var expBar=document.getElementById('hunt-exp-bar');if(expBar){expBar.style.width=Math.min(100,G.exp)+'%'}
 var expText=document.getElementById('hunt-exp-text');if(expText){expText.textContent=G.exp+'%'}
@@ -126,8 +127,7 @@ if(item.skillMods&&item.skillMods.length){
 for(const m of item.skillMods){
 await addHuntLine(`  ✦ ${m.mod}`,'loot',log);
 }}}
-if(!isBoss)G.floor++;
-else{G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log)}
+if(isBoss){G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log)}
 // 레벨업 처리 (AI 응답 대기 중 로딩 메시지 표시)
 while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=20;G.atk+=3;G.def+=2;G.hp=G.maxHP;
 const lvlMsgs=['기분이 한결 좋아진 것 같다...','승리를 자축하는 중...','새로운 힘이 깨어나고 있다...','몸 속에서 에너지가 솟구친다...','한층 강해진 기분이다...','전투의 여운을 느끼는 중...','깊은 숨을 내쉬며 집중한다...','성장의 빛이 감싸고 있다...'];
