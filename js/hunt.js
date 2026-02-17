@@ -1,7 +1,26 @@
 // ===== HUNTING =====
 let huntInProgress=false;
 function renderHunt(){document.getElementById('hunt-floor').textContent=G.floor;updateAutoHuntUI();updateHuntStatus()}
-function updateHuntStatus(){var h=document.getElementById('hunt-hp');if(h){h.textContent=Math.floor(G.hp)+'/'+G.maxHP;document.getElementById('hunt-hunger').textContent=Math.floor(G.hunger)+'%';document.getElementById('hunt-mood').textContent=Math.floor(G.mood)+'%';document.getElementById('hunt-level').textContent=G.level;document.getElementById('hunt-gold').textContent=G.gold}}
+function updateHuntStatus(){
+// 왼쪽 상태 패널
+var hp=document.getElementById('hs-hp');if(!hp)return;
+hp.textContent=Math.floor(G.hp)+'/'+G.maxHP;
+var effectiveAtk=G.atk+(G.equipment.weapon?(G.equipment.weapon.stats.ATK||0):0);
+var effectiveDef=G.def+(G.equipment.armor?(G.equipment.armor.stats.DEF||0):0);
+document.getElementById('hs-atk').textContent=effectiveAtk;
+document.getElementById('hs-def').textContent=effectiveDef;
+document.getElementById('hs-crit').textContent=(10+(G.critBonus||0))+'%';
+document.getElementById('hs-aspd').textContent=(1+(G.atkSpeed||0)*0.1).toFixed(1)+'x';
+document.getElementById('hs-hunger').textContent=Math.floor(G.hunger)+'%';
+document.getElementById('hs-mood').textContent=Math.floor(G.mood)+'%';
+document.getElementById('hs-level').textContent=G.level;
+document.getElementById('hs-gold').textContent=G.gold;
+document.getElementById('hs-floor').textContent=G.floor;
+// HP 색상
+hp.style.color=G.hp/G.maxHP>0.5?'var(--success)':G.hp/G.maxHP>0.25?'var(--hunger)':'var(--danger)';
+// 오른쪽 장비효과 패널
+renderHuntMods();
+}
 function updateAutoHuntUI(){document.getElementById('auto-hunt-indicator').innerHTML=G.autoHunt?'<span class="auto-hunt-badge">자동</span>':'';document.getElementById('auto-hunt-btn').textContent=G.autoHunt?'⏹️ 자동 중지':'🔄 자동사냥'}
 function toggleAutoHunt(){G.autoHunt=!G.autoHunt;updateAutoHuntUI();if(G.autoHunt&&!huntInProgress)startHunt()}
 
@@ -124,6 +143,22 @@ if(G.autoHunt&&G.hp>G.maxHP*0.2){setTimeout(()=>{if(G.autoHunt)startHunt()},1500
 function mapLineType(type){
 const map={action:'action',damage:'damage',critical:'action',miss:'action',buff:'story',story:'story',victory:'victory',defeat:'damage',loot:'loot'};
 return map[type]||'story';
+}
+
+function renderHuntMods(){
+var list=document.getElementById('hunt-mods-list');if(!list)return;
+var mods=[];
+['weapon','armor','accessory'].forEach(function(slot){
+var item=G.equipment[slot];
+if(item&&item.skillMods&&item.skillMods.length){
+item.skillMods.forEach(function(m){mods.push({item:item.name,emoji:item.emoji||'',grade:item.grade||'',mod:m.mod||m})});
+}});
+// 레벨업 버프도 표시
+if(G._appliedBuffs&&G._appliedBuffs.length){
+G._appliedBuffs.forEach(function(b){mods.push({item:'레벨업',emoji:'⭐',grade:'',mod:b})});
+}
+if(mods.length===0){list.innerHTML='<div class="hm-empty">장착된 효과 없음</div>';return}
+list.innerHTML=mods.map(function(m){return'<div class="hm-item"><div class="hm-item-name">'+(m.emoji||'')+' '+m.item+'</div><div class="hm-item-mod">✦ '+m.mod+'</div></div>'}).join('');
 }
 
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';

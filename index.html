@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=16">
+<link rel="stylesheet" href="css/style.css?v=17">
 </head>
 <body>
 
@@ -96,17 +96,39 @@
 <!-- OVERLAYS -->
 <div class="overlay" id="overlay-hunt">
 <div class="overlay-header"><h2>⚔️ 사냥 — <span id="hunt-floor">1</span>층</h2><div style="display:flex;gap:8px;align-items:center"><span id="auto-hunt-indicator"></span><button class="close-btn" onclick="closeOverlay('hunt')">✕</button></div></div>
-<div class="hunt-status-bar">
-<span>❤️ <span id="hunt-hp" style="color:var(--danger)">100/100</span></span>
-<span>🍖 <span id="hunt-hunger" style="color:var(--hunger)">100%</span></span>
-<span>⚡ <span id="hunt-mood" style="color:var(--cyan)">100%</span></span>
-<span>⭐ Lv.<span id="hunt-level">1</span></span>
-<span>💰 <span id="hunt-gold">0</span></span>
+<div class="overlay-body hunt-3panel">
+<!-- 왼쪽: 캐릭터 상태 -->
+<div class="hunt-panel hunt-panel-left">
+<div class="hunt-panel-title">📊 상태</div>
+<div class="hunt-stat-list" id="hunt-stat-list">
+<div class="hs-row"><span class="hs-label">❤️ HP</span><span class="hs-val" id="hs-hp">100/100</span></div>
+<div class="hs-row"><span class="hs-label">⚔️ 공격력</span><span class="hs-val" id="hs-atk">10</span></div>
+<div class="hs-row"><span class="hs-label">🛡️ 방어력</span><span class="hs-val" id="hs-def">5</span></div>
+<div class="hs-row"><span class="hs-label">💥 치명타</span><span class="hs-val" id="hs-crit">10%</span></div>
+<div class="hs-row"><span class="hs-label">⚡ 공격속도</span><span class="hs-val" id="hs-aspd">1.0x</span></div>
+<div class="hs-row"><span class="hs-label">🍖 배고픔</span><span class="hs-val" id="hs-hunger">100%</span></div>
+<div class="hs-row"><span class="hs-label">😊 기분</span><span class="hs-val" id="hs-mood">100%</span></div>
+<div class="hs-row"><span class="hs-label">⭐ 레벨</span><span class="hs-val" id="hs-level">1</span></div>
+<div class="hs-row"><span class="hs-label">💰 골드</span><span class="hs-val" id="hs-gold">0</span></div>
+<div class="hs-row"><span class="hs-label">🏔️ 층</span><span class="hs-val" id="hs-floor">1</span></div>
 </div>
-<div class="overlay-body"><div class="hunt-log" id="hunt-log"></div></div>
+</div>
+<!-- 가운데: 전투 로그 -->
+<div class="hunt-panel hunt-panel-center">
+<div class="hunt-log" id="hunt-log"></div>
 <div class="hunt-controls">
 <button class="btn" onclick="startHunt()" id="hunt-btn">🗡️ 사냥 시작</button>
 <button class="btn btn-secondary" onclick="toggleAutoHunt()" id="auto-hunt-btn">🔄 자동사냥</button>
+</div>
+</div>
+<!-- 오른쪽: 커스텀 옵션 현황 -->
+<div class="hunt-panel hunt-panel-right">
+<div class="hunt-panel-title">✦ 장비 효과</div>
+<div class="hunt-mods-list" id="hunt-mods-list">
+<div class="hm-empty">장착된 효과 없음</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 
@@ -150,7 +172,7 @@
 <script src="js/game.js?v=2"></script>
 <script src="js/ai.js?v=3"></script>
 <script src="js/ui.js?v=2"></script>
-<script src="js/hunt.js?v=3"></script>
+<script src="js/hunt.js?v=4"></script>
 <script src="js/inventory.js?v=2"></script>
 </body>
 </html>
