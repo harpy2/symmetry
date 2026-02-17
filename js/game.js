@@ -141,10 +141,40 @@ const gradeColors={일반:'#999',레어:'var(--blue)',유니크:'var(--purple)',
 const statsText=Object.entries(item.stats).map(([k,v])=>`${k}+${v}`).join('  ');
 const el=document.createElement('div');
 el.className='item-drop-popup';
-el.innerHTML=`<div class="idp-shine"></div><div class="idp-emoji">${item.emoji}</div><div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div><div class="idp-desc">${item.desc||''}</div>`;
+const isAuto=G.autoHunt;
+el.innerHTML=`<div class="idp-shine"></div><div class="idp-emoji">${item.emoji}</div><div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div><div class="idp-desc">${item.desc||''}</div><div class="idp-buttons"><button class="btn btn-sm idp-equip-btn" onclick="equipFromPopup(this)">⚔️ 바로 착용</button></div>`;
 document.body.appendChild(el);
-el.onclick=()=>{el.classList.add('closing');setTimeout(()=>el.remove(),300)};
-setTimeout(()=>{if(el.parentNode){el.classList.add('closing');setTimeout(()=>el.remove(),300)}},3000);
+el._item=item;
+
+// 자동사냥: 3초 후 자동 닫힘 → 인벤토리에 보관
+let autoTimer=null;
+if(isAuto){
+autoTimer=setTimeout(()=>{if(el.parentNode){el.classList.add('closing');setTimeout(()=>el.remove(),300)}},3000);
+}
+
+// 팝업 배경 클릭으로 닫기 (버튼 영역 제외)
+el.onclick=(e)=>{
+if(e.target.closest('.idp-equip-btn'))return;
+if(autoTimer)clearTimeout(autoTimer);
+el.classList.add('closing');setTimeout(()=>el.remove(),300);
+};
+}
+
+function equipFromPopup(btn){
+const el=btn.closest('.item-drop-popup');
+const item=el._item;
+if(!item)return;
+// 기존 장비 → 인벤토리
+if(G.equipment[item.type]){
+G.inventory.push(G.equipment[item.type]);
+}
+// 인벤토리에서 이 아이템 제거 후 장착
+const idx=G.inventory.findIndex(i=>i.id===item.id);
+if(idx>=0)G.inventory.splice(idx,1);
+G.equipment[item.type]=item;
+toast(`${item.name} 장착!`);
+renderEquipRow();renderCharacter();updateBars();saveGame();
+el.classList.add('closing');setTimeout(()=>el.remove(),300);
 }
 
 // ===== SAVE/LOAD =====
