@@ -28,8 +28,15 @@ const enemyCount=isBoss?1:Math.floor(Math.random()*3)+1;
 const enemyHP=isBoss?(30+G.floor*8):(10+G.floor*3);
 let totalEnemyHP=enemyHP*enemyCount;
 
-// AI 스토리 생성 (비동기, 폴백 있음)
+// 로딩 텍스트 표시 + AI 스토리 생성 병렬
+const loadingText = LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
+const loadingEl = document.createElement('div');
+loadingEl.className='hunt-line story loading-line';
+loadingEl.textContent=loadingText;
+loadingEl.style.cssText='width:fit-content;max-width:90%;text-align:center;margin:0 auto;opacity:.6;font-style:italic';
+log.appendChild(loadingEl);
 const aiStory = await generateHuntStoryAI(enemy, isBoss, G.floor);
+loadingEl.remove();
 const introText = aiStory.intro || tmpl.intro[0];
 await addHuntLine(introText,'story',log);
 await wait(700);
