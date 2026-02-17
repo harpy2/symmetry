@@ -282,11 +282,13 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 
 /* ============ PARTICLES ============ */
 .particles{position:absolute;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:150}
-.levelup-particle{position:fixed;border-radius:50%;pointer-events:none;animation:lvlParticleRise linear forwards;will-change:transform,opacity}
-@keyframes lvlParticleRise{0%{opacity:0;transform:translateY(0) scale(0)}8%{opacity:1;transform:translateY(-10vh) scale(1)}60%{opacity:.9}100%{opacity:0;transform:translateY(-105vh) scale(.2)}}
-.levelup-particle.spark{width:3px;height:3px;background:var(--gold);box-shadow:0 0 6px var(--gold),0 0 12px rgba(240,192,64,.5)}
-.levelup-particle.orb{width:8px;height:8px;background:radial-gradient(circle,#fff8e0,var(--gold));box-shadow:0 0 16px var(--gold),0 0 32px rgba(240,192,64,.4)}
-.levelup-particle.flare{width:2px;height:12px;border-radius:2px;background:linear-gradient(to top,transparent,var(--gold),#fff);box-shadow:0 0 8px var(--gold)}
+.lvl-particle-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+.lvl-p{position:absolute;border-radius:50%;pointer-events:none;bottom:-20px;animation:lvlRise linear forwards}
+@keyframes lvlRise{0%{bottom:-20px;opacity:0;transform:scale(0)}5%{opacity:1;transform:scale(1)}50%{opacity:.9}100%{bottom:110%;opacity:0;transform:scale(.2)}}
+.lvl-p.spark{width:4px;height:4px;background:#f0c040;box-shadow:0 0 8px #f0c040,0 0 16px rgba(240,192,64,.6)}
+.lvl-p.orb{background:radial-gradient(circle,#fff8e0,#f0c040);box-shadow:0 0 20px #f0c040,0 0 40px rgba(240,192,64,.5)}
+.lvl-p.flare{width:3px;border-radius:3px;background:linear-gradient(to top,transparent,#f0c040,#fff);box-shadow:0 0 10px #f0c040}
+.lvl-p.big{background:radial-gradient(circle,#fff,#f0c040,#d4912a);box-shadow:0 0 30px #f0c040,0 0 60px rgba(240,192,64,.6)}
 
 /* ============ TOAST ============ */
 .toast{position:fixed;top:calc(60px + var(--safe-top));left:50%;transform:translateX(-50%);background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--glass-border);color:var(--text);padding:12px 24px;border-radius:14px;font-size:13px;font-weight:700;z-index:300;animation:toastIn .35s cubic-bezier(.4,0,.2,1),toastOut .35s 2s forwards;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.4)}
