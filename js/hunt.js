@@ -29,10 +29,10 @@ const enemyHP=isBoss?(30+G.floor*8):(10+G.floor*3);
 let totalEnemyHP=enemyHP*enemyCount;
 
 for(const line of tmpl.intro)await addHuntLine(line,'story',log);
-await wait(400);
+await wait(700);
 if(isBoss){await addHuntLine(`⚠️ 보스 출현! ${tmpl.bossEmoji} ${enemy}!`,'boss',log)}
 else{await addHuntLine(`${enemy} ${enemyCount}마리가 나타났다!`,'story',log)}
-await wait(300);
+await wait(600);
 
 let rounds=isBoss?5:3+Math.floor(Math.random()*2);
 let playerHPLoss=0;
@@ -48,7 +48,7 @@ totalEnemyHP-=dmg;
 const tag=r.type==='critical'?'💥크리티컬!! ':r.type==='hit'?'✅ ':'❌빗나감... ';
 await addHuntLine(`${skill.icon} ${skill.name} → ${tag}${dmg} 데미지`,'action',log);
 if(r.type==='miss'){const eDmg=Math.max(1,Math.floor((5+G.floor*2)*(0.8+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log)}
-await wait(300)}
+await wait(600)}
 }else{
 for(let r=0;r<rounds&&totalEnemyHP>0;r++){
 const skill=G.equippedSkills[r%G.equippedSkills.length];
@@ -67,9 +67,9 @@ else{dmg=Math.floor(baseDmg*(0.8+Math.random()*0.4));tag=''}
 }
 totalEnemyHP-=dmg;
 await addHuntLine(`${skill.icon} ${skill.name} 시전! → ${tag}${dmg} 데미지`,'action',log);
-await wait(300);
-if(tag.includes('빗나감')){const eDmg=Math.max(1,Math.floor((5+G.floor*2)*(0.8+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log);await wait(200)}
-else if(totalEnemyHP>0&&Math.random()<0.4){const eDmg=Math.max(1,Math.floor((3+G.floor)*(0.6+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log);await wait(200)}}
+await wait(600);
+if(tag.includes('빗나감')){const eDmg=Math.max(1,Math.floor((5+G.floor*2)*(0.8+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log);await wait(500)}
+else if(totalEnemyHP>0&&Math.random()<0.4){const eDmg=Math.max(1,Math.floor((3+G.floor)*(0.6+Math.random()*0.4)-G.def/3));playerHPLoss+=eDmg;await addHuntLine(`${enemy}의 반격! → -${eDmg} HP`,'damage',log);await wait(500)}}
 }
 
 const won=totalEnemyHP<=0;
@@ -100,7 +100,7 @@ updateBars();updateHuntStatus();renderCharacter();renderEquipRow();saveGame();
 huntInProgress=false;document.getElementById('hunt-btn').disabled=false;
 if(G.autoHunt&&G.hp>G.maxHP*0.2){setTimeout(()=>{if(G.autoHunt)startHunt()},1500)}else{G.autoHunt=false;updateAutoHuntUI()}}
 
-function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();setTimeout(r,200)})}
+function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();setTimeout(r,500)})}
 
 function bossSkillCheck(totalRounds,log){
 return new Promise(resolve=>{
