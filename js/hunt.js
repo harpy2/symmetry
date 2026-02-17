@@ -150,14 +150,21 @@ return map[type]||'story';
 
 function renderHuntMods(){
 var list=document.getElementById('hunt-mods-list');if(!list)return;
-var mods=[];
+var html='';
+var slotNames={helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',weapon:'주무기',necklace:'목걸이',ring1:'반지1',ring2:'반지2',offhand:'보조무기'};
 Object.keys(G.equipment).forEach(function(slot){
-var item=G.equipment[slot];
-if(item&&item.skillMods&&item.skillMods.length){
-item.skillMods.forEach(function(m){mods.push({item:item.name,emoji:item.emoji||'',grade:item.grade||'',mod:m.mod||m})});
-}});
-if(mods.length===0){list.innerHTML='<div class="hm-empty">장착된 효과 없음</div>';return}
-list.innerHTML=mods.map(function(m){return'<div class="hm-item"><div class="hm-item-name">'+(m.emoji||'')+' '+m.item+'</div><div class="hm-item-mod">✦ '+m.mod+'</div></div>'}).join('');
+var item=G.equipment[slot];if(!item)return;
+var statsArr=[];
+Object.entries(item.stats).forEach(function(e){if(e[1])statsArr.push(e[0]+' +'+e[1])});
+var modsArr=[];
+if(item.skillMods&&item.skillMods.length){item.skillMods.forEach(function(m){modsArr.push(m.mod||m)})}
+html+='<div class="hm-item"><div class="hm-item-name">'+(item.emoji||'')+' '+(slotNames[slot]||slot)+'</div>';
+if(statsArr.length)html+='<div class="hm-item-stat">'+statsArr.join(', ')+'</div>';
+modsArr.forEach(function(m){html+='<div class="hm-item-mod">✦ '+m+'</div>'});
+html+='</div>';
+});
+if(!html){list.innerHTML='<div class="hm-empty">장착된 장비 없음</div>';return}
+list.innerHTML=html;
 }
 
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';
