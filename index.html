@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=23">
+<link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
 
@@ -76,7 +76,7 @@
 <!-- 오른쪽 장비: 목걸이/반지1/반지2/보조무기 -->
 <div class="equip-col equip-col-right" id="equip-col-right"></div>
 </div>
-<div class="skill-equip-row" id="skill-equip-row"></div>
+<!-- skill row removed -->
 </div>
 <div class="char-panel" data-slot="2">
 <div class="locked-overlay">
@@ -91,7 +91,7 @@
 <button class="menu-btn" onclick="openOverlay('mission')"><span class="icon">📋</span><span class="label">미션</span></button>
 <button class="menu-btn" onclick="openOverlay('shop')"><span class="icon">🏪</span><span class="label">상점</span></button>
 <button class="menu-btn" onclick="openOverlay('inventory')"><span class="icon">🎒</span><span class="label">장비</span></button>
-<button class="menu-btn" onclick="openOverlay('skills')"><span class="icon">✨</span><span class="label">스킬</span></button>
+<!-- skills menu removed -->
 </div>
 </div>
 
@@ -160,9 +160,7 @@
 </div>
 </div>
 
-<div class="overlay" id="overlay-skills">
-<div class="overlay-header"><h2>✨ 스킬 관리</h2><button class="close-btn" onclick="closeOverlay('skills')">✕</button></div>
-<div class="overlay-body" id="skills-body"></div>
+<!-- skills overlay removed -->
 </div>
 
 <!-- LEVEL UP -->
@@ -178,8 +176,8 @@
 <script src="js/data.js?v=3"></script>
 <script src="js/game.js?v=3"></script>
 <script src="js/ai.js?v=5"></script>
-<script src="js/ui.js?v=3"></script>
-<script src="js/hunt.js?v=12"></script>
+<script src="js/ui.js?v=4"></script>
+<script src="js/hunt.js?v=13"></script>
 <script src="js/inventory.js?v=4"></script>
 </body>
 </html>

@@ -8,8 +8,8 @@ const d=document.createElement('div');d.className='class-card';d.onclick=()=>{do
 d.innerHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span style="font-size:36px">${cls.weapon}</span></div><div class="class-info"><h3>${name}</h3><p>${cls.desc}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
 c.appendChild(d)})}
 function confirmClass(){if(!G.className)return;
-// Auto-equip first 3 skills and first 2 passives
-G.equippedSkills=G.allSkills.slice(0,3);G.equippedPassives=G.allPassives.slice(0,2);
+// 스킬 없이 시작 — 게임 내에서 획득
+G.equippedSkills=[];G.equippedPassives=[];G.allSkills=[];G.allPassives=[];
 saveGame();showScreen('main-screen')}
 
 // ===== SKILL SELECT =====
