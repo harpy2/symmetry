@@ -64,7 +64,29 @@ for(let i=0;i<3;i++){const idx=Math.floor(Math.random()*pool.length);choices.pus
 
 document.getElementById('levelup-choices').innerHTML=choices.map((c,i)=>`<div class="levelup-choice" onclick="pickLevelBuff(${i})"><div class="lc-name">${c.name}</div><div class="lc-desc">${c.desc}</div></div>`).join('');
 const pc=document.getElementById('levelup-particles');pc.innerHTML='';
-for(let i=0;i<30;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.top=Math.random()*100+'%';p.style.width=p.style.height=(4+Math.random()*8)+'px';p.style.background=['var(--gold)','#fff','var(--accent)','var(--success)'][Math.floor(Math.random()*4)];p.style.animationDelay=Math.random()*2+'s';p.style.animationDuration=(0.5+Math.random())+'s';pc.appendChild(p)}
+// 골드 파티클 폭발 — 바닥에서 위로 솟아오름
+const types=['spark','spark','spark','orb','flare'];
+for(let i=0;i<60;i++){
+const p=document.createElement('div');
+const t=types[Math.floor(Math.random()*types.length)];
+p.className='levelup-particle '+t;
+p.style.left=Math.random()*100+'%';
+p.style.bottom=(-5-Math.random()*10)+'px';
+p.style.animationDuration=(2+Math.random()*3)+'s';
+p.style.animationDelay=(Math.random()*2)+'s';
+if(t==='orb'){const s=6+Math.random()*10;p.style.width=s+'px';p.style.height=s+'px'}
+if(t==='flare'){p.style.height=(8+Math.random()*16)+'px';p.style.transform='rotate('+(Math.random()*20-10)+'deg)'}
+pc.appendChild(p)}
+// 연속 웨이브: 1초 후 추가 파티클
+setTimeout(()=>{for(let i=0;i<30;i++){
+const p=document.createElement('div');
+const t=types[Math.floor(Math.random()*types.length)];
+p.className='levelup-particle '+t;
+p.style.left=Math.random()*100+'%';
+p.style.bottom=(-5-Math.random()*10)+'px';
+p.style.animationDuration=(2.5+Math.random()*2.5)+'s';
+p.style.animationDelay=(Math.random()*1.5)+'s';
+pc.appendChild(p)}},1000);
 window._levelChoices=choices;
 if(!G._appliedBuffs)G._appliedBuffs=[];
 document.getElementById('auto-levelup-toggle').checked=!!G.autoLevelUp;
