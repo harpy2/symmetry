@@ -282,9 +282,8 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 
 /* ============ PARTICLES ============ */
 .particles{position:absolute;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:150}
-.lvl-particle-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
-.lvl-p{position:absolute;left:0;top:100%;border-radius:50%;pointer-events:none;animation:lvlRise linear forwards}
-@keyframes lvlRise{0%{transform:translateY(0) scale(0);opacity:0}5%{transform:translateY(-3vh) scale(1);opacity:1}40%{opacity:1}75%{opacity:.6}100%{transform:translateY(-110vh) scale(.3);opacity:0}}
+/* Level-up particles — generated via JS into #levelup-overlay directly */
+.lvl-p{position:absolute;border-radius:50%;pointer-events:none;z-index:201}
 .lvl-p.spark{width:4px;height:4px;background:#f0c040;box-shadow:0 0 8px #f0c040,0 0 16px rgba(240,192,64,.6)}
 .lvl-p.orb{background:radial-gradient(circle,#fff8e0,#f0c040);box-shadow:0 0 20px #f0c040,0 0 40px rgba(240,192,64,.5)}
 .lvl-p.flare{width:3px;border-radius:3px;background:linear-gradient(to top,transparent,#f0c040,#fff);box-shadow:0 0 10px #f0c040}

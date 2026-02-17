@@ -63,34 +63,51 @@ for(let i=0;i<3;i++){const idx=Math.floor(Math.random()*pool.length);choices.pus
 }
 
 document.getElementById('levelup-choices').innerHTML=choices.map((c,i)=>`<div class="levelup-choice" onclick="pickLevelBuff(${i})"><div class="lc-name">${c.name}</div><div class="lc-desc">${c.desc}</div></div>`).join('');
-// 골드 파티클 폭발
-const oldContainer=document.querySelector('.lvl-particle-container');
-if(oldContainer)oldContainer.remove();
-const pc2=document.createElement('div');
-pc2.className='lvl-particle-container';
-document.body.appendChild(pc2);
-function spawnWave(count,maxDelay){
+// 골드 파티클 폭발 — requestAnimationFrame 기반
+ol.querySelectorAll('.lvl-p').forEach(p=>p.remove());
+const particles=[];
 const types=['spark','spark','spark','orb','orb','flare','big'];
-for(let i=0;i<count;i++){
+function createParticle(delay){
 const p=document.createElement('div');
 const t=types[Math.floor(Math.random()*types.length)];
 p.className='lvl-p '+t;
-p.style.left=(Math.random()*100)+'%';
-const dur=3+Math.random()*4;
-p.style.animationDuration=dur+'s';
-const delay=Math.random()*maxDelay;
-p.style.animationDelay=delay+'s';
 if(t==='orb'){const s=6+Math.random()*14;p.style.width=s+'px';p.style.height=s+'px'}
 if(t==='flare'){p.style.height=(10+Math.random()*24)+'px'}
 if(t==='big'){const s=12+Math.random()*20;p.style.width=s+'px';p.style.height=s+'px'}
-pc2.appendChild(p);
-}}
-spawnWave(100,0.5);
-setTimeout(()=>spawnWave(60,1),600);
-setTimeout(()=>spawnWave(40,1.5),1500);
-setTimeout(()=>spawnWave(30,1),2500);
-setTimeout(()=>spawnWave(20,1),3500);
-setTimeout(()=>pc2.remove(),12000);
+const x=Math.random()*100;
+const speed=0.3+Math.random()*0.5;
+const wobble=Math.random()*2-1;
+p.style.left=x+'%';
+p.style.bottom='-10px';
+p.style.opacity='0';
+ol.appendChild(p);
+return{el:p,x,y:0,speed,wobble,delay,age:0,maxAge:4000+Math.random()*4000,born:false};
+}
+for(let i=0;i<120;i++)particles.push(createParticle(Math.random()*2000));
+for(let i=0;i<60;i++)particles.push(createParticle(800+Math.random()*2000));
+for(let i=0;i<40;i++)particles.push(createParticle(1600+Math.random()*2000));
+let startTime=performance.now();
+function animateParticles(now){
+const elapsed=now-startTime;
+let alive=false;
+for(const pt of particles){
+if(elapsed<pt.delay){alive=true;continue}
+if(!pt.born){pt.born=true;pt.age=0}
+pt.age+=16;
+if(pt.age>pt.maxAge){if(pt.el.parentNode)pt.el.remove();continue}
+alive=true;
+const progress=pt.age/pt.maxAge;
+pt.y+=pt.speed;
+const opacity=progress<0.05?progress/0.05:progress>0.7?1-(progress-0.7)/0.3:1;
+const scale=progress<0.05?progress/0.05*1:1-progress*0.7;
+pt.el.style.bottom=pt.y+'px';
+pt.el.style.left=(pt.x+Math.sin(pt.age*0.003)*pt.wobble*3)+'%';
+pt.el.style.opacity=Math.max(0,opacity);
+pt.el.style.transform='scale('+Math.max(0.1,scale)+')';
+}
+if(alive)requestAnimationFrame(animateParticles);
+}
+requestAnimationFrame(animateParticles);
 window._levelChoices=choices;
 if(!G._appliedBuffs)G._appliedBuffs=[];
 document.getElementById('auto-levelup-toggle').checked=!!G.autoLevelUp;
