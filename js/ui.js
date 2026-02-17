@@ -63,51 +63,52 @@ for(let i=0;i<3;i++){const idx=Math.floor(Math.random()*pool.length);choices.pus
 }
 
 document.getElementById('levelup-choices').innerHTML=choices.map((c,i)=>`<div class="levelup-choice" onclick="pickLevelBuff(${i})"><div class="lc-name">${c.name}</div><div class="lc-desc">${c.desc}</div></div>`).join('');
-// 골드 파티클 폭발 — requestAnimationFrame 기반
-ol.querySelectorAll('.lvl-p').forEach(p=>p.remove());
-const particles=[];
-const types=['spark','spark','spark','orb','orb','flare','big'];
-function createParticle(delay){
+// 골드 파티클 — body에 fixed로 붙임
+document.querySelectorAll('.lvl-p').forEach(p=>p.remove());
+const _types=['spark','spark','spark','orb','orb','flare','big'];
+const _vh=window.innerHeight;
+const _pts=[];
+function _mkP(delay){
 const p=document.createElement('div');
-const t=types[Math.floor(Math.random()*types.length)];
+const t=_types[Math.floor(Math.random()*_types.length)];
 p.className='lvl-p '+t;
+p.style.position='fixed';
+p.style.zIndex='99999';
 if(t==='orb'){const s=6+Math.random()*14;p.style.width=s+'px';p.style.height=s+'px'}
 if(t==='flare'){p.style.height=(10+Math.random()*24)+'px'}
 if(t==='big'){const s=12+Math.random()*20;p.style.width=s+'px';p.style.height=s+'px'}
-const x=Math.random()*100;
-const speed=0.3+Math.random()*0.5;
-const wobble=Math.random()*2-1;
-p.style.left=x+'%';
-p.style.bottom='-10px';
+p.style.left=(Math.random()*100)+'vw';
+p.style.top=(_vh+10)+'px';
 p.style.opacity='0';
-ol.appendChild(p);
-return{el:p,x,y:0,speed,wobble,delay,age:0,maxAge:4000+Math.random()*4000,born:false};
+document.body.appendChild(p);
+return{el:p,spd:1+Math.random()*2,wobble:(Math.random()-0.5)*4,delay:delay,y:_vh+10,age:0,life:3000+Math.random()*5000,x:Math.random()*100};
 }
-for(let i=0;i<120;i++)particles.push(createParticle(Math.random()*2000));
-for(let i=0;i<60;i++)particles.push(createParticle(800+Math.random()*2000));
-for(let i=0;i<40;i++)particles.push(createParticle(1600+Math.random()*2000));
-let startTime=performance.now();
-function animateParticles(now){
-const elapsed=now-startTime;
-let alive=false;
-for(const pt of particles){
-if(elapsed<pt.delay){alive=true;continue}
-if(!pt.born){pt.born=true;pt.age=0}
-pt.age+=16;
-if(pt.age>pt.maxAge){if(pt.el.parentNode)pt.el.remove();continue}
-alive=true;
-const progress=pt.age/pt.maxAge;
-pt.y+=pt.speed;
-const opacity=progress<0.05?progress/0.05:progress>0.7?1-(progress-0.7)/0.3:1;
-const scale=progress<0.05?progress/0.05*1:1-progress*0.7;
-pt.el.style.bottom=pt.y+'px';
-pt.el.style.left=(pt.x+Math.sin(pt.age*0.003)*pt.wobble*3)+'%';
-pt.el.style.opacity=Math.max(0,opacity);
-pt.el.style.transform='scale('+Math.max(0.1,scale)+')';
+for(let i=0;i<100;i++)_pts.push(_mkP(Math.random()*1500));
+for(let i=0;i<60;i++)_pts.push(_mkP(600+Math.random()*1500));
+for(let i=0;i<40;i++)_pts.push(_mkP(1500+Math.random()*2000));
+let _t0=performance.now(),_lastT=_t0;
+function _tick(now){
+const dt=Math.min(now-_lastT,50);_lastT=now;
+const elapsed=now-_t0;
+let any=false;
+for(const pt of _pts){
+if(elapsed<pt.delay){any=true;continue}
+pt.age+=dt;
+if(pt.age>pt.life){if(pt.el.parentNode)pt.el.remove();continue}
+any=true;
+const prog=pt.age/pt.life;
+pt.y-=pt.spd*(dt/16);
+const op=prog<0.06?prog/0.06:prog>0.65?(1-prog)/0.35:1;
+const sc=prog<0.06?prog/0.06:Math.max(0.15,1-prog*0.8);
+pt.el.style.top=pt.y+'px';
+pt.el.style.left=(pt.x+Math.sin(pt.age*0.002)*pt.wobble)+'vw';
+pt.el.style.opacity=Math.max(0,op).toFixed(2);
+pt.el.style.transform='scale('+sc.toFixed(2)+')';
 }
-if(alive)requestAnimationFrame(animateParticles);
+if(any)requestAnimationFrame(_tick);
+else document.querySelectorAll('.lvl-p').forEach(p=>p.remove());
 }
-requestAnimationFrame(animateParticles);
+requestAnimationFrame(_tick);
 window._levelChoices=choices;
 if(!G._appliedBuffs)G._appliedBuffs=[];
 document.getElementById('auto-levelup-toggle').checked=!!G.autoLevelUp;
