@@ -81,6 +81,15 @@ async function generateCombatAI(enemy, enemyCount, isBoss) {
   const hasSkills = G.equippedSkills.length > 0 && G.level >= 1;
   const mods = getActiveSkillMods();
 
+  // 전투 시퀀스를 미리 로컬에서 결정 (스킬 순서, 데미지 등)
+  const availSkills = hasSkills ? skills : [{ name: '평타', icon: '👊', desc: '기본 공격', dmg: 10, hits: 1, mods: [] }];
+  const rounds = isBoss ? 5 + Math.floor(Math.random()*3) : 3 + Math.floor(Math.random()*2);
+  const sequence = [];
+  for(let r=0;r<rounds;r++){
+    const sk = availSkills[r % availSkills.length];
+    sequence.push({ round: r+1, skillName: sk.name, skillIcon: sk.icon });
+  }
+
   const ctx = {
     class: G.className,
     level: G.level,
@@ -90,14 +99,8 @@ async function generateCombatAI(enemy, enemyCount, isBoss) {
     atk: G.atk + getEquipStat('ATK'),
     def: G.def + getEquipStat('DEF'),
     critBonus: G.critBonus || 0,
-    skills: hasSkills ? skills : [{ name: '평타', icon: '👊', desc: '기본 공격', dmg: 10, hits: 1, mods: [] }],
-    passives: G.equippedPassives.map(p => ({ name: p.name, desc: p.desc })),
-    skillMods: mods.map(m => ({ skillName: m.skillName, mod: m.mod, effect: m.effect, fromItem: m.fromItem })),
-    equipment: {
-      weapon: G.equipment.weapon ? { name: G.equipment.weapon.name, stats: G.equipment.weapon.stats } : null,
-      chest: G.equipment.chest ? { name: G.equipment.chest.name, stats: G.equipment.chest.stats } : null,
-      helmet: G.equipment.helmet ? { name: G.equipment.helmet.name, stats: G.equipment.helmet.stats } : null,
-    },
+    equippedSkillNames: availSkills.map(s => s.name),
+    battleSequence: sequence,
     enemy,
     enemyCount,
     isBoss

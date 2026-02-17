@@ -32,9 +32,8 @@ Respond with ONLY valid JSON:
 
 Rules:
 - type "action" = player attack (left-aligned), "damage" = enemy attack (right-aligned), "critical" = player crit, "miss" = player miss, "buff" = buff activation, "story" = narration, "victory"/"defeat" = outcome
-- CRITICAL: Player can ONLY use skills listed in the context "skills" array. Do NOT invent or use skills the player hasn't equipped. If player has no skills, use basic attacks ("평타", "기본 공격") only.
-- Apply ALL skillMods from equipment (e.g., "파이어볼 2연속 시전" means fireball fires twice, "광역 공격" means AoE hits)
-- Include skill mod effects in narration (e.g., "장비 효과로 파이어볼이 2연속 발사됐다!")
+- ABSOLUTE RULE: The context contains "battleSequence" — an array of {round, skillName, skillIcon}. You MUST follow this sequence EXACTLY. Each round, the player uses the skill specified in battleSequence for that round. Do NOT use any skill not in "equippedSkillNames". Do NOT invent new skills. NEVER use 검기, 칼날복제, 휠윈드 or any skill unless it appears in equippedSkillNames.
+- After each player attack, the enemy MUST attack back (type "damage").
 - IMPORTANT: When enemyCount > 1, non-AoE skills can only hit ONE enemy per attack. Player must attack each enemy separately. AoE skills (aoe:true) hit ALL enemies at once. Narrate this clearly (e.g., "고블린 1마리를 쓰러뜨렸다! 남은 적: 2마리", "휠윈드로 전체 공격! 3마리 모두에게 피해!")
 - If 3 enemies and no AoE, player needs at least 3 attacks to clear all
 - Balance: higher floor = harder enemies, but player stats should matter
