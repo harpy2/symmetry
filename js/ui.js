@@ -81,7 +81,7 @@ p.style.left=(Math.random()*100)+'vw';
 p.style.top=(_vh+10)+'px';
 p.style.opacity='0';
 document.body.appendChild(p);
-return{el:p,spd:1+Math.random()*2,wobble:(Math.random()-0.5)*4,delay:delay,y:_vh+10,age:0,life:3000+Math.random()*5000,x:Math.random()*100};
+return{el:p,spd:0.4+Math.random()*0.8,wobble:(Math.random()-0.5)*3,delay:delay,y:_vh+10,age:0,life:5000+Math.random()*5000,x:Math.random()*100};
 }
 for(let i=0;i<100;i++)_pts.push(_mkP(Math.random()*1500));
 for(let i=0;i<60;i++)_pts.push(_mkP(600+Math.random()*1500));
