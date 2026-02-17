@@ -28,17 +28,9 @@ const enemyCount=isBoss?1:Math.floor(Math.random()*3)+1;
 const enemyHP=isBoss?(30+G.floor*8):(10+G.floor*3);
 let totalEnemyHP=enemyHP*enemyCount;
 
-// 로딩 텍스트 표시 + AI 스토리 생성 병렬
-const loadingText = LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
-const loadingEl = document.createElement('div');
-loadingEl.className='hunt-line story loading-line';
-loadingEl.textContent=loadingText;
-loadingEl.style.cssText='width:fit-content;max-width:90%;text-align:center;margin:0 auto;opacity:.6;font-style:italic';
-log.appendChild(loadingEl);
-const aiStory = await generateHuntStoryAI(enemy, isBoss, G.floor);
-loadingEl.remove();
-const introText = aiStory.intro || tmpl.intro[0];
-await addHuntLine(introText,'story',log);
+// 프리셋 스토리 (토큰 절약)
+const story = isBoss ? BOSS_STORIES[Math.floor(Math.random()*BOSS_STORIES.length)] : NORMAL_STORIES[Math.floor(Math.random()*NORMAL_STORIES.length)];
+await addHuntLine(story.intro.replace('{enemy}',enemy),'story',log);
 await wait(700);
 if(isBoss){await addHuntLine(`⚠️ 보스 출현! ${tmpl.bossEmoji} ${enemy}!`,'boss',log)}
 else{await addHuntLine(`${enemy} ${enemyCount}마리가 나타났다!`,'story',log)}
@@ -99,6 +91,8 @@ await addHuntLine(`획득: 💰 +${goldReward}, 경험치 +${expReward}`,'loot',
 const baseDropRate=isBoss?0.9:0.4;
 const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop));
 if(Math.random()<adjustedDropRate){
+const loadingText=LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
+await addHuntLine('✨ 뭔가 반짝이는 것이 보인다...','loot',log);
 const item=await generateItemAI();
 G.inventory.push(item);
 await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log);
