@@ -66,7 +66,7 @@ export default {
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model: 'claude-3-5-haiku-20241022',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: MAX_TOKENS[type] || 300,
           system: SYSTEM_PROMPTS[type],
           messages: [{ role: 'user', content: JSON.stringify(context) }],
@@ -79,7 +79,11 @@ export default {
         return new Response(JSON.stringify({ error: 'Claude API error', detail: data }), { status: 502, headers: { ...headers, 'Content-Type': 'application/json' } });
       }
 
-      const text = data.content[0].text;
+      let text = data.content[0].text.trim();
+      // Strip markdown code fences if present
+      if (text.startsWith('```')) {
+        text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+      }
       const result = JSON.parse(text);
 
       return new Response(JSON.stringify(result), { headers: { ...headers, 'Content-Type': 'application/json' } });
