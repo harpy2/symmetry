@@ -32,7 +32,8 @@ Rules:
 - IMPORTANT: When enemyCount > 1, non-AoE skills can only hit ONE enemy per attack. Player must attack each enemy separately. AoE skills (aoe:true) hit ALL enemies at once. Narrate this clearly (e.g., "고블린 1마리를 쓰러뜨렸다! 남은 적: 2마리", "휠윈드로 전체 공격! 3마리 모두에게 피해!")
 - If 3 enemies and no AoE, player needs at least 3 attacks to clear all
 - Balance: higher floor = harder enemies, but player stats should matter
-- 3-5 lines for normal, 5-7 lines for boss (keep it concise!)
+- IMPORTANT: Combat MUST alternate between player and enemy turns! Player attacks (type "action"/"critical"/"miss"), then enemy attacks back (type "damage"). Every round should have BOTH a player action AND an enemy reaction. This is a turn-based RPG — no one-sided beatdowns!
+- 4-6 lines for normal (2-3 exchanges), 6-10 lines for boss (3-5 exchanges)
 - goldReward and expReward should scale with floor and boss status
 - All text in Korean, dramatic and varied`,
 

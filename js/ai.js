@@ -169,12 +169,22 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       lines.push({ text: `${skill.icon} ${skill.name} 시전! → ${tag}${dmg} 데미지${killText}`, type: tag.includes('크리티컬') ? 'critical' : tag.includes('빗나감') ? 'miss' : 'action', dmg });
     }
 
-    // 적 반격 (살아있는 적 중 랜덤)
+    // 적 반격 (살아있는 적 — 항상 반격, 턴제 느낌)
     const stillAlive = enemies.filter(e => e.alive);
-    if (stillAlive.length > 0 && (tag.includes('빗나감') || Math.random() < 0.4)) {
-      const eDmg = Math.max(1, Math.floor((isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (0.6 + Math.random() * 0.4) - effectiveDef / 3));
-      totalTaken += eDmg;
-      lines.push({ text: `${enemy}의 반격! → -${eDmg} HP`, type: 'damage', dmg: eDmg });
+    if (stillAlive.length > 0) {
+      const attackers = isBoss ? stillAlive : stillAlive.filter(() => Math.random() < 0.7);
+      const actualAttackers = attackers.length > 0 ? attackers : [stillAlive[0]];
+      for (const attacker of actualAttackers) {
+        const eRoll = Math.random();
+        if (eRoll < 0.15) {
+          lines.push({ text: `${enemy}의 공격이 빗나갔다!`, type: 'damage', dmg: 0 });
+        } else {
+          const eCrit = eRoll > 0.9;
+          const eDmg = Math.max(1, Math.floor((isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (eCrit ? 1.8 : (0.6 + Math.random() * 0.4)) - effectiveDef / 3));
+          totalTaken += eDmg;
+          lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격! → -${eDmg} HP`, type: 'damage', dmg: eDmg });
+        }
+      }
     }
   }
 
