@@ -173,6 +173,22 @@ if(!html){list.innerHTML='<div class="hm-empty">장착된 장비 없음</div>';r
 list.innerHTML=html;
 }
 
+// 모바일 팝업
+function showMobilePopup(type){
+const overlay=document.getElementById('mobile-popup-overlay');
+const title=document.getElementById('mobile-popup-title');
+const body=document.getElementById('mobile-popup-body');
+if(type==='stat'){
+title.textContent='📊 상태';
+body.innerHTML=document.getElementById('hunt-stat-list').innerHTML;
+}else{
+title.textContent='✦ 장비 효과';
+body.innerHTML=document.getElementById('hunt-mods-list').innerHTML;
+}
+overlay.classList.add('active');
+}
+function closeMobilePopup(){document.getElementById('mobile-popup-overlay').classList.remove('active')}
+
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';
 if(cls==='action'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px'}
 else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px'}

@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=24">
+<link rel="stylesheet" href="css/style.css?v=25">
 </head>
 <body>
 
@@ -122,6 +122,10 @@
 <button class="btn" onclick="startHunt()" id="hunt-btn">🗡️ 사냥 시작</button>
 <button class="btn btn-secondary" onclick="toggleAutoHunt()" id="auto-hunt-btn">🔄 자동사냥</button>
 </div>
+<div class="hunt-mobile-btns">
+<button class="btn btn-sm" onclick="showMobilePopup('stat')">📊 상태</button>
+<button class="btn btn-sm" onclick="showMobilePopup('mods')">✦ 장비효과</button>
+</div>
 </div>
 <!-- 오른쪽: 커스텀 옵션 현황 -->
 <div class="hunt-panel hunt-panel-right">
@@ -136,6 +140,14 @@
 <span class="hunt-exp-text" id="hunt-exp-text">0%</span>
 </div>
 </div>
+</div>
+</div>
+
+<!-- 모바일 팝업 -->
+<div class="mobile-popup-overlay" id="mobile-popup-overlay" onclick="closeMobilePopup()">
+<div class="mobile-popup" onclick="event.stopPropagation()">
+<div class="mobile-popup-header"><span id="mobile-popup-title"></span><button class="close-btn" onclick="closeMobilePopup()">✕</button></div>
+<div class="mobile-popup-body" id="mobile-popup-body"></div>
 </div>
 </div>
 
@@ -177,7 +189,7 @@
 <script src="js/game.js?v=3"></script>
 <script src="js/ai.js?v=5"></script>
 <script src="js/ui.js?v=7"></script>
-<script src="js/hunt.js?v=14"></script>
+<script src="js/hunt.js?v=15"></script>
 <script src="js/inventory.js?v=4"></script>
 </body>
 </html>
