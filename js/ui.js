@@ -70,26 +70,27 @@ const pc2=document.createElement('div');
 pc2.className='lvl-particle-container';
 document.body.appendChild(pc2);
 function spawnWave(count,maxDelay){
-const types=['spark','spark','spark','orb','flare','big'];
+const types=['spark','spark','spark','orb','orb','flare','big'];
 for(let i=0;i<count;i++){
 const p=document.createElement('div');
 const t=types[Math.floor(Math.random()*types.length)];
 p.className='lvl-p '+t;
 p.style.left=(Math.random()*100)+'%';
-const dur=1.5+Math.random()*2.5;
+const dur=3+Math.random()*4;
 p.style.animationDuration=dur+'s';
 const delay=Math.random()*maxDelay;
 p.style.animationDelay=delay+'s';
-if(t==='orb'){const s=6+Math.random()*12;p.style.width=s+'px';p.style.height=s+'px'}
-if(t==='flare'){p.style.height=(10+Math.random()*20)+'px'}
-if(t==='big'){const s=10+Math.random()*16;p.style.width=s+'px';p.style.height=s+'px'}
+if(t==='orb'){const s=6+Math.random()*14;p.style.width=s+'px';p.style.height=s+'px'}
+if(t==='flare'){p.style.height=(10+Math.random()*24)+'px'}
+if(t==='big'){const s=12+Math.random()*20;p.style.width=s+'px';p.style.height=s+'px'}
 pc2.appendChild(p);
 }}
-spawnWave(80,1.5);
-setTimeout(()=>spawnWave(40,1),800);
-setTimeout(()=>spawnWave(20,0.8),1800);
-// 6초 후 컨테이너 제거
-setTimeout(()=>pc2.remove(),7000);
+spawnWave(100,0.5);
+setTimeout(()=>spawnWave(60,1),600);
+setTimeout(()=>spawnWave(40,1.5),1500);
+setTimeout(()=>spawnWave(30,1),2500);
+setTimeout(()=>spawnWave(20,1),3500);
+setTimeout(()=>pc2.remove(),12000);
 window._levelChoices=choices;
 if(!G._appliedBuffs)G._appliedBuffs=[];
 document.getElementById('auto-levelup-toggle').checked=!!G.autoLevelUp;
