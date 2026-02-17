@@ -94,7 +94,8 @@ const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop));
 if(Math.random()<adjustedDropRate){
 const item=await generateItemAI();
 G.inventory.push(item);
-await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log)}
+await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log);
+showItemDropPopup(item)}
 if(!isBoss)G.floor++;
 else{G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log)}
 while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=20;G.atk+=3;G.def+=2;G.hp=G.maxHP;showLevelUp()}

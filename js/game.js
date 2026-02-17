@@ -135,6 +135,18 @@ G.mood=Math.min(100,G.mood+10);
 // ===== TOAST =====
 function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500)}
 
+// ===== ITEM DROP POPUP =====
+function showItemDropPopup(item){
+const gradeColors={일반:'#999',레어:'var(--blue)',유니크:'var(--purple)',에픽:'var(--orange)'};
+const statsText=Object.entries(item.stats).map(([k,v])=>`${k}+${v}`).join('  ');
+const el=document.createElement('div');
+el.className='item-drop-popup';
+el.innerHTML=`<div class="idp-shine"></div><div class="idp-emoji">${item.emoji}</div><div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div><div class="idp-desc">${item.desc||''}</div>`;
+document.body.appendChild(el);
+el.onclick=()=>{el.classList.add('closing');setTimeout(()=>el.remove(),300)};
+setTimeout(()=>{if(el.parentNode){el.classList.add('closing');setTimeout(()=>el.remove(),300)}},3000);
+}
+
 // ===== SAVE/LOAD =====
 function saveGame(){
 syncActiveChar();

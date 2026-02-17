@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -50,11 +50,18 @@
 <span class="points"><span class="currency-icon">💎</span> <span id="player-points">10</span></span>
 </div>
 <div class="char-tab-bar" id="char-tab-bar">
-<button class="char-tab active" onclick="switchCharacter(0)">캐릭1</button>
 <button class="char-tab" onclick="switchCharacter(1)">캐릭2🔒</button>
+<button class="char-tab active" onclick="switchCharacter(0)">캐릭1</button>
 <button class="char-tab" onclick="switchCharacter(2)">캐릭3🔒</button>
 </div>
 <div class="party-container">
+<div class="char-panel" data-slot="1">
+<div class="locked-overlay">
+<div class="lock-icon">🔒</div>
+<div class="lock-text">슬롯 구매</div>
+<button class="btn btn-sm" onclick="toast('💎 포인트로 슬롯을 구매하세요')">구매하기</button>
+</div>
+</div>
 <div class="char-panel active" data-slot="0">
 <div class="status-bars">
 <div class="stat-bar bar-hp"><span class="label">❤️</span><div class="bar-bg"><div class="bar-fill" id="hp-bar" style="width:100%"></div><span class="bar-text" id="hp-text">100/100</span></div></div>
@@ -68,13 +75,6 @@
 <div class="equip-slot" onclick="openOverlay('inventory','accessory')" title="장신구">📿</div>
 </div>
 <div class="skill-equip-row" id="skill-equip-row"></div>
-</div>
-<div class="char-panel" data-slot="1">
-<div class="locked-overlay">
-<div class="lock-icon">🔒</div>
-<div class="lock-text">슬롯 구매</div>
-<button class="btn btn-sm" onclick="toast('💎 포인트로 슬롯을 구매하세요')">구매하기</button>
-</div>
 </div>
 <div class="char-panel" data-slot="2">
 <div class="locked-overlay">
