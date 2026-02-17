@@ -282,8 +282,8 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 
 /* ============ PARTICLES ============ */
 .particles{position:absolute;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:150}
-.levelup-particle{position:absolute;border-radius:50%;pointer-events:none;animation:lvlParticleRise linear forwards;will-change:transform,opacity}
-@keyframes lvlParticleRise{0%{opacity:0;transform:translateY(0) scale(0)}8%{opacity:1;transform:translateY(-5vh) scale(1)}70%{opacity:.8}100%{opacity:0;transform:translateY(-110vh) scale(.3)}}
+.levelup-particle{position:fixed;border-radius:50%;pointer-events:none;animation:lvlParticleRise linear forwards;will-change:transform,opacity}
+@keyframes lvlParticleRise{0%{opacity:0;transform:translateY(0) scale(0)}8%{opacity:1;transform:translateY(-10vh) scale(1)}60%{opacity:.9}100%{opacity:0;transform:translateY(-105vh) scale(.2)}}
 .levelup-particle.spark{width:3px;height:3px;background:var(--gold);box-shadow:0 0 6px var(--gold),0 0 12px rgba(240,192,64,.5)}
 .levelup-particle.orb{width:8px;height:8px;background:radial-gradient(circle,#fff8e0,var(--gold));box-shadow:0 0 16px var(--gold),0 0 32px rgba(240,192,64,.4)}
 .levelup-particle.flare{width:2px;height:12px;border-radius:2px;background:linear-gradient(to top,transparent,var(--gold),#fff);box-shadow:0 0 8px var(--gold)}
