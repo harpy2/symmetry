@@ -52,6 +52,33 @@ if(ei>=0)G.equippedPassives.splice(ei,1);else if(G.equippedPassives.length<2)G.e
 renderSkillManage();renderSkillRow();saveGame()}
 
 // ===== LEVEL UP =====
+// ===== 스킬 습득 (레벨 5/10/15/20/25/30) =====
+function showSkillLearn(type){return new Promise(resolve=>{
+const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
+const isActive=type==='active';
+const classData=CLASSES[G.className];
+const pool=isActive?classData.skills:classData.passives;
+const learned=isActive?G.equippedSkills:G.equippedPassives;
+const unlearned=pool.filter(s=>!learned.some(e=>e.name===s.name));
+// 3개 후보 (배우지 않은 것 중 랜덤)
+const shuffled=[...unlearned].sort(()=>Math.random()-0.5);
+const candidates=shuffled.slice(0,3);
+if(candidates.length===0){resolve();ol.classList.remove('active');return}
+document.getElementById('levelup-sub').textContent=`Lv.${G.level} — ${isActive?'⚔️ 액티브 스킬':'🛡️ 패시브 스킬'} 습득!`;
+document.getElementById('levelup-choices').innerHTML=candidates.map((c,i)=>`<div class="levelup-choice" onclick="pickSkillLearn(${i})"><div class="lc-name">${c.icon} ${c.name}</div><div class="lc-desc">${c.desc}${c.dmg?' | DMG: '+c.dmg:''}${c.aoe?' | 광역':''}${c.dot?' | 지속뎀':''}${c.hits>1?' | '+c.hits+'회타':''}</div></div>`).join('');
+window._skillCandidates=candidates;window._skillType=type;window._skillResolve=resolve;
+})}
+function pickSkillLearn(i){
+const s=window._skillCandidates[i];
+if(window._skillType==='active')G.equippedSkills.push(s);
+else G.equippedPassives.push(s);
+toast(`${s.icon} ${s.name} 습득!`);
+document.getElementById('levelup-overlay').classList.remove('active');
+saveGame();
+if(window._skillResolve){window._skillResolve();window._skillResolve=null}
+}
+
+// ===== LEVEL UP (스탯 선택) =====
 async function showLevelUp(preloadedChoices){return new Promise(resolve=>{const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
 document.getElementById('levelup-sub').textContent=`Lv.${G.level} 달성! HP+20, ATK+3, DEF+2`;
 

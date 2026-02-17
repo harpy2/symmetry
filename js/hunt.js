@@ -121,29 +121,16 @@ for(const m of item.skillMods){
 await addHuntLine(`  ✦ ${m.mod}`,'loot',log);
 }}}
 if(isBoss){G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log);
-// 보스 클리어 시 스킬 획득
-const classSkills=CLASSES[G.className]?CLASSES[G.className].skills:[];
-const classPassives=CLASSES[G.className]?CLASSES[G.className].passives:[];
-const unlearnedSkills=classSkills.filter(s=>!G.equippedSkills.some(e=>e.name===s.name));
-const unlearnedPassives=classPassives.filter(s=>!G.equippedPassives.some(e=>e.name===s.name));
-if(unlearnedSkills.length>0&&Math.random()<0.6){
-const newSkill=unlearnedSkills[Math.floor(Math.random()*unlearnedSkills.length)];
-G.equippedSkills.push(newSkill);
-await addHuntLine(`🌟 새로운 스킬 습득! ${newSkill.icon} ${newSkill.name} — ${newSkill.desc}`,'loot',log);
-toast(`스킬 습득! ${newSkill.icon} ${newSkill.name}`);}
-else if(unlearnedPassives.length>0&&Math.random()<0.4){
-const newPassive=unlearnedPassives[Math.floor(Math.random()*unlearnedPassives.length)];
-G.equippedPassives.push(newPassive);
-await addHuntLine(`🌟 패시브 습득! ${newPassive.icon} ${newPassive.name} — ${newPassive.desc}`,'loot',log);
-toast(`패시브 습득! ${newPassive.icon} ${newPassive.name}`);}
 }
-// 레벨업 처리 (AI 응답 대기 중 로딩 메시지 표시)
+// 레벨업 처리
 while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=20;G.atk+=3;G.def+=2;G.hp=G.maxHP;
 const lvlMsgs=['기분이 한결 좋아진 것 같다...','승리를 자축하는 중...','새로운 힘이 깨어나고 있다...','몸 속에서 에너지가 솟구친다...','한층 강해진 기분이다...','전투의 여운을 느끼는 중...','깊은 숨을 내쉬며 집중한다...','성장의 빛이 감싸고 있다...'];
 const lvlMsg=lvlMsgs[Math.floor(Math.random()*lvlMsgs.length)];
 await addHuntLine(`✨ ${lvlMsg}`,'loading',log);
-const lvlChoices=await generateLevelUpAI();
-await showLevelUp(lvlChoices);}
+const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
+if(SKILL_LEVELS.includes(G.level)){await showSkillLearn('active');}
+else if(PASSIVE_LEVELS.includes(G.level)){await showSkillLearn('passive');}
+else{const lvlChoices=await generateLevelUpAI();await showLevelUp(lvlChoices);}}
 }else{
 G.mood=Math.max(0,G.mood-10)}
 
