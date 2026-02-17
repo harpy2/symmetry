@@ -22,7 +22,20 @@ else if(type==='boots'){stats.DEF=Math.floor((1+Math.random()*4)*gMult*floorMult
 else if(type==='necklace'){stats.ATK=Math.floor((2+Math.random()*5)*gMult*floorMult);stats.DEF=Math.floor((1+Math.random()*3)*gMult*floorMult)}
 else if(type==='ring1'||type==='ring2'){stats.ATK=Math.floor((1+Math.random()*4)*gMult*floorMult);if(Math.random()>.5)stats['치명타']=Math.floor(Math.random()*4*gMult)+'%'}
 const durability=Math.floor({일반:50,매직:65,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
-return{id:Date.now()+Math.random(),name,type,grade,emoji:emojis[si],stats,skillMods:[],durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
+// 부위별 커스텀 옵션 (유니크/에픽만)
+let skillMods=[];
+const modCount=grade==='에픽'?2:grade==='유니크'?1:0;
+if(modCount>0){
+const DEF_MODS=['피해감소 5%','방어력 +10','HP 자동회복 2/턴','데미지 반사 8%','실드 15'];
+const ATK_MODS=['공격력 +8','치명타 확률 +5%','연속공격 확률 +10%','관통 데미지 +12','출혈 부여'];
+const UTIL_MODS=['골드 획득 +15%','경험치 +10%','아이템 드롭률 +8%','회피율 +5%','행운 +10'];
+const SKILL_MODS=(G.equippedSkills||[]).length?G.equippedSkills.map(s=>s.name+' 데미지 +20%').concat(['스킬 쿨다운 -15%','스킬 범위 확대']):['스킬 데미지 +15%','스킬 쿨다운 -10%','스킬 범위 확대'];
+const SPD_MODS=['공격속도 +10%','선제공격 확률 +15%','연속턴 확률 +8%'];
+const pool={helmet:DEF_MODS,chest:DEF_MODS,pants:DEF_MODS,gloves:ATK_MODS,weapon:ATK_MODS,offhand:ATK_MODS,ring1:UTIL_MODS,ring2:UTIL_MODS,necklace:SKILL_MODS,boots:SPD_MODS}[type]||ATK_MODS;
+const used=new Set();
+for(let m=0;m<modCount;m++){let pick;do{pick=pool[Math.floor(Math.random()*pool.length)]}while(used.has(pick)&&used.size<pool.length);used.add(pick);skillMods.push({mod:pick})}
+}
+return{id:Date.now()+Math.random(),name,type,grade,emoji:emojis[si],stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
 
 // ===== INVENTORY =====
 let invFilter=null;
