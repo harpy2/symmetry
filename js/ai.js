@@ -157,7 +157,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       aliveEnemies.forEach(e => { e.hp -= dmg; if (e.hp <= 0) { e.alive = false; killed++; } });
       totalDmg += dmg * aliveEnemies.length;
       const remaining = enemies.filter(e => e.alive).length;
-      lines.push({ text: `${skill.icon} ${skill.name} — ${tag}전체 공격! ${aliveEnemies.length}마리에게 ${dmg} 데미지!${killed > 0 ? ` ${killed}마리 처치!` : ''}${remaining > 0 ? ` 남은 적: ${remaining}` : ''}`, type: tag.includes('크리티컬') ? 'critical' : 'action', dmg: dmg * aliveEnemies.length });
+      lines.push({ text: `${skill.icon} ${skill.name} — ${tag}전체 공격!`, type: tag.includes('크리티컬') ? 'critical' : 'action' });
+      lines.push({ text: `${enemy} ${aliveEnemies.length}마리에게 ${dmg} 데미지!${killed > 0 ? ` ${killed}마리 처치!` : ''}${remaining > 0 ? ` 남은 적: ${remaining}` : ''}`, type: 'damage' });
     } else {
       // 단일 공격: 첫 번째 살아있는 적
       const target = aliveEnemies[0];
@@ -167,9 +168,12 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       if (target.hp <= 0) {
         target.alive = false;
         const remaining = enemies.filter(e => e.alive).length;
-        killText = enemyCount > 1 ? ` → 1마리 처치!${remaining > 0 ? ` 남은 적: ${remaining}` : ''}` : '';
+        killText = enemyCount > 1 ? ` 남은 적: ${remaining}` : '';
       }
-      lines.push({ text: `${skill.icon} ${skill.name} 시전! → ${tag}${dmg} 데미지${killText}`, type: tag.includes('크리티컬') ? 'critical' : tag.includes('빗나감') ? 'miss' : 'action', dmg });
+      lines.push({ text: `${skill.icon} ${skill.name} 시전!${tag ? ' — '+tag.trim() : ''}`, type: tag.includes('크리티컬') ? 'critical' : tag.includes('빗나감') ? 'miss' : 'action' });
+      if (!tag.includes('빗나감')) {
+        lines.push({ text: `${enemy}에게 ${dmg} 피해!${target.hp <= 0 ? ' 처치!' : ''}${killText}`, type: 'damage' });
+      }
     }
 
     // 적 반격 (살아있는 적 — 항상 반격, 턴제 느낌)
