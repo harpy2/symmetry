@@ -4,7 +4,12 @@
 // ===== CLASS SELECT =====
 function renderClassSelect(){const c=document.getElementById('class-cards');c.innerHTML='';
 Object.entries(CLASSES).forEach(([name,cls])=>{
-const d=document.createElement('div');d.className='class-card';d.onclick=()=>{document.querySelectorAll('.class-card').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');G=newGame();G.className=name;G.classData=cls;G.maxHP=cls.baseHP;G.hp=cls.baseHP;G.atk=cls.baseATK;G.def=cls.baseDEF;G.allSkills=[...cls.skills];G.allPassives=[...cls.passives];document.getElementById('class-confirm-btn').disabled=false};
+const d=document.createElement('div');d.className='class-card';d.onclick=()=>{document.querySelectorAll('.class-card').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');
+// 추가 슬롯 생성 시 기존 전역 상태 보존
+const savedParty=G.party;const savedUnlocked=G.slotUnlocked;const savedGold=G.gold;const savedPoints=G.points;const savedInv=G.inventory;const savedSlot=G.activeSlot;const savedPending=G._pendingSlot;
+G=newGame();G.className=name;G.classData=cls;G.maxHP=cls.baseHP;G.hp=cls.baseHP;G.atk=cls.baseATK;G.def=cls.baseDEF;G.allSkills=[...cls.skills];G.allPassives=[...cls.passives];
+if(savedParty){G.party=savedParty;G.slotUnlocked=savedUnlocked;G.gold=savedGold;G.points=savedPoints;G.inventory=savedInv;G.activeSlot=savedSlot;G._pendingSlot=savedPending}
+document.getElementById('class-confirm-btn').disabled=false};
 d.innerHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span style="font-size:36px">${cls.weapon}</span></div><div class="class-info"><h3>${name}</h3><p>${cls.desc}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
 c.appendChild(d)})}
 function confirmClass(){if(!G.className)return;
