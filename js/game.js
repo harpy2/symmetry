@@ -75,12 +75,20 @@ for(let i=1;i<=2;i++){
 const overlay=document.getElementById('lock-overlay-'+i);
 if(overlay){overlay.style.display=G.slotUnlocked[i]?'none':'flex'}
 }
-// 탭 버튼 업데이트
+// 탭 버튼 업데이트 + active 표시
 const tabs=document.querySelectorAll('.char-tab');
+const slotOrder=[1,0,2]; // HTML 탭 순서: 캐릭2, 캐릭1, 캐릭3
 if(tabs.length>=3){
 tabs[0].textContent=G.slotUnlocked[1]?(G.party[1]?'캐릭2':'캐릭2 (빈)'):'캐릭2🔒';
+tabs[1].textContent='캐릭1';
 tabs[2].textContent=G.slotUnlocked[2]?(G.party[2]?'캐릭3':'캐릭3 (빈)'):'캐릭3🔒';
+tabs.forEach((t,i)=>{t.classList.toggle('active',slotOrder[i]===G.activeSlot)});
 }
+// 캐릭 패널 active 전환
+document.querySelectorAll('.char-panel').forEach(p=>{
+const s=parseInt(p.dataset.slot);
+p.classList.toggle('active',s===G.activeSlot);
+});
 }
 
 function syncActiveChar(){saveCharToSlot()}
