@@ -9,7 +9,7 @@ return{
 className:opts.className||'',classData:opts.classData||null,
 level:1,exp:0,hp:opts.baseHP||100,maxHP:opts.baseHP||100,
 atk:opts.baseATK||15,def:opts.baseDEF||8,
-gold:100,points:10,hunger:100,mood:80,floor:1,
+gold:999999,points:10,hunger:100,mood:80,floor:1,
 equippedSkills:[],equippedPassives:[],allSkills:[],allPassives:[],
 equipment:{helmet:null,chest:null,gloves:null,pants:null,boots:null,weapon:null,necklace:null,ring1:null,ring2:null,offhand:null},inventory:[],
 critBonus:0,hpBonus:0,atkBonus:0,defBonus:0,expBonus:0,
