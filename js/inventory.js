@@ -50,9 +50,11 @@ return{mod:templates[Math.floor(Math.random()*templates.length)],skillName:sk.na
 async function fetchRandomItemFromAPI(type){
 try{
 const res=await fetch(`https://symmetry-api.harpy922.workers.dev/api/items/random?type=${type}`);
-if(!res.ok)return null;
-return await res.json();
-}catch(e){return null}}
+if(!res.ok){console.warn('[SVG] API fail:',res.status);return null}
+const data=await res.json();
+console.log('[SVG] OK:',data.name,!!data.svg);
+return data;
+}catch(e){console.warn('[SVG] fetch error:',e.message);return null}}
 
 async function generateItem(){
 const allTypes=['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'];
@@ -62,6 +64,7 @@ const type=allTypes[Math.floor(Math.random()*allTypes.length)];
 const apiItem=await fetchRandomItemFromAPI(type);
 
 let name,emoji,svgData;
+console.log('[ITEM] apiItem:',apiItem?'loaded':'null','type:',type);
 if(apiItem){
 name=apiItem.name;
 emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';
