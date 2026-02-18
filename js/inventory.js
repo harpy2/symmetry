@@ -47,7 +47,7 @@ const templates=[
 return{mod:templates[Math.floor(Math.random()*templates.length)],skillName:sk.name};
 }
 
-function generateItem(){
+async function generateItem(){
 const allTypes=['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'];
 const type=allTypes[Math.floor(Math.random()*allTypes.length)];
 const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];
@@ -70,16 +70,19 @@ const stat=pool.splice(idx,1)[0];
 stats[stat]=rollStatValue(stat,gMult,floorMult);
 }
 
-// 스킬 강화 커스텀 옵션: 유니크=1, 에픽=2
+// 스킬 강화 커스텀 옵션: 유니크=1, 에픽=2 (AI 우선, fallback 로컬)
 let skillMods=[];
 const modCount=grade==='에픽'?2:grade==='유니크'?1:0;
+if(modCount>0){
+const aiMods=await generateSkillCustomAI(modCount);
+if(aiMods&&aiMods.length>=modCount){skillMods=aiMods.slice(0,modCount)}
+else{
 const usedMods=new Set();
 for(let m=0;m<modCount;m++){
 let custom;let tries=0;
 do{custom=generateSkillCustom();tries++}while(usedMods.has(custom.mod)&&tries<10);
-usedMods.add(custom.mod);
-skillMods.push(custom);
-}
+usedMods.add(custom.mod);skillMods.push(custom);
+}}}
 
 const durability=Math.floor({일반:50,매직:65,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
 return{id:Date.now()+Math.random(),name,type,grade,emoji:emojis[si],stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}

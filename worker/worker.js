@@ -42,10 +42,31 @@ Rules:
   levelup: `You are a level-up buff designer for a Korean dungeon crawler game. Generate 3 unique and creative buff choices. Go beyond simple stat boosts - include interesting mechanics and creative effects.
 Respond with ONLY valid JSON, no markdown, no explanation:
 {"choices":[{"name":"string in Korean","desc":"string in Korean","effect":{"stat":"string","value":number}},{"name":"string","desc":"string","effect":{"stat":"string","value":number}},{"name":"string","desc":"string","effect":{"stat":"string","value":number}}]}
-Be creative with effect stats - use things like ATK, DEF, HP, 치명타, 회피, 흡혈, 반사, 연속공격 etc.`
+Be creative with effect stats - use things like ATK, DEF, HP, 치명타, 회피, 흡혈, 반사, 연속공격 etc.`,
+
+  skillcustom: `You are a skill upgrade designer for a Korean dungeon crawler RPG. The player has equipped skills, and you must generate custom upgrade options that enhance specific skills.
+
+IMPORTANT: Each mod MUST start with the exact skill name from the context, followed by the effect description.
+The mod text must be parseable by these patterns:
+- "[스킬명] 2연속 발사" or "3연속 발사" → multi-hit
+- "[스킬명] 데미지 +30%" or "+50%" → damage boost
+- "[스킬명] 범위 2배 확대" → becomes AoE
+- "[스킬명] 3갈래로 분산 (3타겟 동시 공격)" → multi-target
+- "[스킬명] 시전 시 HP 5% 회복" or "8% 회복" → heal on cast
+- "[스킬명] 적중 시 50% 확률 추가 시전" → chance extra cast
+- "[스킬명] 치명타 데미지 +50%" → crit damage boost
+- "[스킬명] 시전 시 방어력 +20%" → def buff
+- "[스킬명] 관통 효과 추가" → ignore defense
+- "[스킬명] 적중 시 출혈 부여 (지속 피해)" → DoT (출혈/화상/중독)
+
+Be creative but ALWAYS follow one of the above patterns so the game engine can parse and apply the effect.
+Generate exactly the number requested in context.count.
+
+Respond with ONLY valid JSON:
+{"mods":[{"skillName":"exact skill name","mod":"[스킬명] effect description"}]}`
 };
 
-const MAX_TOKENS = { item: 300, skill: 300, story: 500, npc: 300, levelup: 300, combat: 2000 };
+const MAX_TOKENS = { item: 300, skill: 300, story: 500, npc: 300, levelup: 300, combat: 2000, skillcustom: 300 };
 
 function corsHeaders(origin) {
   const allowed = origin && (origin === 'https://symmetry.salmonholic.com' || origin.startsWith('http://localhost'));

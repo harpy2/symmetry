@@ -25,7 +25,7 @@ async function generateItemAI() {
     floor: G.floor,
     skills: G.equippedSkills.map(s => s.name)
   };
-  const fallbackItem = generateItem();
+  const fallbackItem = await generateItem();
 
   const result = await aiGenerate('item', ctx, fallbackItem);
 
@@ -385,6 +385,27 @@ async function generateSkillAI(isPassive) {
   if (result && result.name && result.icon && result.desc) {
     if (!isPassive && result.dmg === undefined) result.dmg = 20;
     return result;
+  }
+  return null;
+}
+
+// ===== AI SKILL CUSTOM OPTIONS =====
+async function generateSkillCustomAI(count) {
+  const skills = G.equippedSkills || [];
+  if (skills.length === 0) return null;
+  const ctx = {
+    class: G.className,
+    level: G.level,
+    floor: G.floor,
+    skills: skills.map(s => ({ name: s.name, icon: s.icon, desc: s.desc, dmg: s.dmg || 0, aoe: s.aoe || false })),
+    count: count
+  };
+  const result = await aiGenerate('skillcustom', ctx, null);
+  if (result && result.mods && Array.isArray(result.mods) && result.mods.length >= count) {
+    return result.mods.slice(0, count).map(m => ({
+      mod: m.mod || m.text || '',
+      skillName: m.skillName || ''
+    }));
   }
   return null;
 }
