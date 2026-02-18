@@ -206,7 +206,10 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       modTexts.push(m);
     });
 
-    let baseDmg = Math.floor((skill.dmg || 10) * (1 + effectiveAtk / 30) * skillDmgMult);
+    // 단일타겟은 데미지 1.5배, 광역은 0.8배 (밸런스)
+    const isSkillAoe = skill.aoe || false;
+    const targetMult = isSkillAoe ? 0.8 : 1.5;
+    let baseDmg = Math.floor((skill.dmg || 10) * (1 + effectiveAtk / 30) * skillDmgMult * targetMult);
     baseDmg = Math.floor(baseDmg * (1 + fx.dmgBonus / 100));
     const roll = Math.random() * 100;
     const critChance = (isBoss ? 15 : 10) + (G.critBonus || 0) + equipCrit;
@@ -225,6 +228,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
     const isMiss = tag.includes('빗나감');
     const totalHits = fx.hits;
+    // 광역 판정: 스킬 자체가 aoe이거나, 커스텀옵션으로 aoe가 된 경우만
     const isAoe = fx.aoe;
     const multiTarget = fx.multiTarget;
 
@@ -233,42 +237,47 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const curAlive = enemies.filter(e => e.alive);
       if (curAlive.length === 0) break;
       const dmgRaw = Math.floor(baseDmg * dmgMult);
-      const dmg = dmgRaw + (fx.penetrate ? 0 : 0) + equipPenetrate; // 관통 스탯은 추가 고정 데미지
+      const dmg = dmgRaw + equipPenetrate; // 관통 스탯은 추가 고정 데미지
 
       if (isMiss && hit === 0) {
         lines.push({ text: `${skill.icon} ${skill.name} 시전! — ${tag.trim()}`, type: 'miss' });
         break;
       }
 
-      if (isAoe || multiTarget >= curAlive.length) {
-        // 전체/멀티타겟 공격
+      if (isAoe) {
+        // 광역 공격 — 모든 적에게 피해
         let killed = 0;
         curAlive.forEach(e => { e.hp -= dmg; if(e.hp<=0){e.alive=false;killed++} });
         totalDmg += dmg * curAlive.length;
         const remaining = enemies.filter(e => e.alive).length;
         const hitLabel = totalHits > 1 ? ` [${hit+1}/${totalHits}타]` : '';
-        lines.push({ text: `${skill.icon} ${skill.name}${hitLabel} — ${tag}${multiTarget>1?multiTarget+'갈래 ':''}전체 공격!`, type: isCrit ? 'critical' : 'action' });
+        lines.push({ text: `${skill.icon} ${skill.name}${hitLabel} — ${tag}전체 공격!`, type: isCrit ? 'critical' : 'action' });
         lines.push({ text: `${enemy} ${curAlive.length}마리에게 각 ${dmg} 피해!${killed>0?` ${killed}마리 처치!`:''}${remaining>0?` 남은 적: ${remaining}`:''}`, type: 'damage' });
       } else if (multiTarget > 1) {
-        // 멀티타겟 (적보다 타겟 수가 많을 경우 위에서 처리)
-        const targets = curAlive.slice(0, multiTarget);
+        // 멀티타겟 (3갈래 등 커스텀옵션) — 타겟 수만큼만
+        const targetCount = Math.min(multiTarget, curAlive.length);
+        const targets = curAlive.slice(0, targetCount);
         let killed = 0;
         targets.forEach(e => { e.hp -= dmg; if(e.hp<=0){e.alive=false;killed++} });
         totalDmg += dmg * targets.length;
         const remaining = enemies.filter(e => e.alive).length;
         const hitLabel = totalHits > 1 ? ` [${hit+1}/${totalHits}타]` : '';
-        lines.push({ text: `${skill.icon} ${skill.name}${hitLabel} — ${tag}${multiTarget}갈래 공격!`, type: isCrit ? 'critical' : 'action' });
-        lines.push({ text: `${enemy} ${targets.length}마리에게 각 ${dmg} 피해!${killed>0?` ${killed}마리 처치!`:''}${remaining>0?` 남은 적: ${remaining}`:''}`, type: 'damage' });
+        if (targets.length === 1) {
+          lines.push({ text: `${skill.icon} ${skill.name}${hitLabel} 시전!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action' });
+          lines.push({ text: `${enemy}에게 ${dmg} 피해!${targets[0].alive?'':' 처치!'}${remaining>0&&enemyCount>1?' 남은 적: '+remaining:''}`, type: 'damage' });
+        } else {
+          lines.push({ text: `${skill.icon} ${skill.name}${hitLabel} — ${tag}${multiTarget}갈래 공격!`, type: isCrit ? 'critical' : 'action' });
+          lines.push({ text: `${enemy} ${targets.length}마리에게 각 ${dmg} 피해!${killed>0?` ${killed}마리 처치!`:''}${remaining>0?` 남은 적: ${remaining}`:''}`, type: 'damage' });
+        }
       } else {
-        // 단일 공격
+        // 단일 공격 — 1마리에게만 집중 피해
         const target = curAlive[0];
         target.hp -= dmg;
         totalDmg += dmg;
         const hitLabel = totalHits > 1 ? ` [${hit+1}/${totalHits}타]` : '';
         lines.push({ text: `${skill.icon} ${skill.name}${hitLabel} 시전!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action' });
-        const killText = target.hp <= 0 ? ' 처치!' : '';
         if(target.hp<=0){target.alive=false;const remaining=enemies.filter(e=>e.alive).length;
-        lines.push({ text: `${enemy}에게 ${dmg} 피해!${killText}${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });}
+        lines.push({ text: `${enemy}에게 ${dmg} 피해! 처치!${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });}
         else{lines.push({ text: `${enemy}에게 ${dmg} 피해!`, type: 'damage' });}
       }
 
