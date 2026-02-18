@@ -130,14 +130,12 @@ moodText.textContent=Math.floor(G.mood)+'% '+getMoodStatus();
 }
 
 function renderCharacter(){const area=document.getElementById('char-area');const cls=CLASSES[G.className];if(!cls)return;
-let mouthClass='';if(G.mood>=70)mouthClass='happy';else if(G.mood>=40)mouthClass='';else if(G.mood>=20)mouthClass='sad';else mouthClass='angry';
-let weaponEmoji=cls.weapon;if(G.equipment.weapon)weaponEmoji=G.equipment.weapon.emoji||cls.weapon;
-let armorStyle=cls.bodyColor;if(G.equipment.chest){const ac=GRADE_COLORS[G.equipment.chest.grade];armorStyle=`linear-gradient(180deg,${ac},#111)`}
+const svg=CHAR_SVG[G.className]||'';
 // Build sparkles
 let sparklesHTML='<div class="char-sparkles">';
 for(let i=0;i<6;i++){const x=20+Math.random()*160;const y=20+Math.random()*160;const delay=Math.random()*3;const dur=1.5+Math.random()*2;sparklesHTML+=`<span style="left:${x}px;top:${y}px;animation-delay:${delay}s;animation-duration:${dur}s"></span>`}
 sparklesHTML+='</div>';
-area.innerHTML=`<div class="character">${sparklesHTML}<div class="char-glow" style="background:${cls.glow}"></div><div class="char-body" style="background:${armorStyle}"><div class="char-face"><div class="char-eyes"><div class="char-eye"></div><div class="char-eye"></div></div><div class="char-mouth ${mouthClass}"></div></div></div><div class="char-weapon">${weaponEmoji}</div></div>`}
+area.innerHTML=`<div class="character">${sparklesHTML}<div class="char-glow" style="background:${cls.glow}"></div><div class="char-svg-wrap">${svg}</div></div>`}
 
 // 장비 스탯 합산 헬퍼 (% 문자열도 숫자로 파싱)
 function getEquipStat(stat){
