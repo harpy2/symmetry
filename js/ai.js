@@ -179,7 +179,9 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     const stillAliveAfterDot = enemies.filter(e => e.alive);
     if (stillAliveAfterDot.length === 0) break;
 
-    const skill = hasSkills ? G.equippedSkills[r % G.equippedSkills.length] : { name: '평타', icon: '👊', dmg: 10, aoe: false };
+    const basicAtk = { name: '평타', icon: '👊', dmg: 10, aoe: false };
+    const skillPool = hasSkills ? [basicAtk, ...G.equippedSkills] : [basicAtk];
+    const skill = skillPool[Math.floor(Math.random() * skillPool.length)];
     const mods = getSkillMods(skill.name);
     // 커스텀 효과 합산
     const fx = { hits:1, dmgBonus:0, aoe:skill.aoe||false, multiTarget:1, healPct:0, extraCast:0, critDmgBonus:0, defBuff:0, penetrate:false, atkSpdBuff:0, dot:0 };
@@ -305,9 +307,29 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       }
     }
 
-    // 적 반격 (살아있는 적 — 항상 반격, 턴제 느낌)
+    // 스킬 특수 효과 (스턴/버프)
+    let enemyStunned = false;
+    const desc = skill.desc || '';
+    if (!isMiss) {
+      if (desc.includes('스턴') || desc.includes('행동 불가')) {
+        enemyStunned = true;
+        lines.push({ text: `💫 ${enemy} 스턴! 행동 불가!`, type: 'buff' });
+      }
+      if (desc.includes('무적') || desc.includes('방어 스킬')) {
+        lines.push({ text: `🧊 ${skill.name} — 무적 상태! 이번 턴 피해 무효!`, type: 'buff' });
+        enemyStunned = true; // 무적=적 공격 무효화
+      }
+      if (skill.buff && desc.includes('ATK')) {
+        lines.push({ text: `🔥 ${skill.name} — 공격력 강화!`, type: 'buff' });
+      }
+      if (skill.buff && desc.includes('공속')) {
+        lines.push({ text: `⚡ ${skill.name} — 공격 속도 강화!`, type: 'buff' });
+      }
+    }
+
+    // 적 반격 (스턴 시 스킵)
     const stillAlive = enemies.filter(e => e.alive);
-    if (stillAlive.length > 0) {
+    if (stillAlive.length > 0 && !enemyStunned) {
       const attackers = isBoss ? stillAlive : stillAlive.filter(() => Math.random() < 0.7);
       const actualAttackers = attackers.length > 0 ? attackers : [stillAlive[0]];
       const curDef = effectiveDef + tempDefBuff;
