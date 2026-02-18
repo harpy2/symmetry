@@ -227,39 +227,35 @@ const GRADE_COLORS={일반:'#ccc',매직:'#4a9eff',레어:'#ffd700',유니크:'#
 const FLAVOR_TEXTS=['이 장비에서 알 수 없는 힘이 느껴진다.','오래된 전장의 기억이 서려있다.','제작자의 혼이 담긴 명품이다.','어둠 속에서 희미하게 빛난다.','손에 쥐면 전율이 느껴진다.','수많은 전투를 겪은 흔적이 있다.','신비로운 문양이 새겨져 있다.','전설 속 장인이 만들었다고 전해진다.'];
 
 const LEVELUP_BUFFS=[
-// 힘 (공격)
-{name:'힘 +3',desc:'공격력 3 증가',apply:p=>{p.atk+=3}},
-{name:'힘 +5',desc:'공격력 5 증가',apply:p=>{p.atk+=5}},
-{name:'맹공',desc:'공격력 8 증가',apply:p=>{p.atk+=8}},
+// 공격력
+{name:'⚔️ 힘 +3',desc:'공격력 3 증가',apply:p=>{p.atk+=3}},
+{name:'⚔️ 힘 +5',desc:'공격력 5 증가',apply:p=>{p.atk+=5}},
+{name:'⚔️ 맹공',desc:'공격력 8 증가',apply:p=>{p.atk+=8}},
 // 체력
-{name:'체력 +15',desc:'최대 HP 15 증가',apply:p=>{p.maxHP+=15;p.hp=Math.min(p.hp+15,p.maxHP)}},
-{name:'체력 +30',desc:'최대 HP 30 증가',apply:p=>{p.maxHP+=30;p.hp=Math.min(p.hp+30,p.maxHP)}},
-{name:'강인함',desc:'최대 HP 50 증가',apply:p=>{p.maxHP+=50;p.hp=Math.min(p.hp+50,p.maxHP)}},
-// 방어
-{name:'방어 +2',desc:'방어력 2 증가',apply:p=>{p.def+=2}},
-{name:'방어 +4',desc:'방어력 4 증가',apply:p=>{p.def+=4}},
-{name:'철벽',desc:'방어력 7 증가',apply:p=>{p.def+=7}},
-// 민첩 (치명타/회피)
-{name:'민첩 +3%',desc:'치명타 확률 3% 증가',apply:p=>{p.critBonus=(p.critBonus||0)+3}},
-{name:'민첩 +5%',desc:'치명타 확률 5% 증가',apply:p=>{p.critBonus=(p.critBonus||0)+5}},
-{name:'날렵함',desc:'치명타 확률 8% 증가',apply:p=>{p.critBonus=(p.critBonus||0)+8}},
+{name:'❤️ 체력 +15',desc:'최대 HP 15 증가',apply:p=>{p.maxHP+=15;p.hp=Math.min(p.hp+15,p.maxHP)}},
+{name:'❤️ 체력 +30',desc:'최대 HP 30 증가',apply:p=>{p.maxHP+=30;p.hp=Math.min(p.hp+30,p.maxHP)}},
+{name:'❤️ 강인함',desc:'최대 HP 50 증가',apply:p=>{p.maxHP+=50;p.hp=Math.min(p.hp+50,p.maxHP)}},
+// 방어력
+{name:'🛡️ 방어 +2',desc:'방어력 2 증가',apply:p=>{p.def+=2}},
+{name:'🛡️ 방어 +4',desc:'방어력 4 증가',apply:p=>{p.def+=4}},
+{name:'🛡️ 철벽',desc:'방어력 7 증가',apply:p=>{p.def+=7}},
+// 치명타
+{name:'🎯 민첩 +3%',desc:'치명타 확률 3% 증가',apply:p=>{p.critBonus=(p.critBonus||0)+3}},
+{name:'🎯 민첩 +5%',desc:'치명타 확률 5% 증가',apply:p=>{p.critBonus=(p.critBonus||0)+5}},
+{name:'🎯 날렵함',desc:'치명타 확률 8% 증가',apply:p=>{p.critBonus=(p.critBonus||0)+8}},
 // 공격속도
-{name:'공격속도 +1',desc:'공격속도 1단계 증가 (연속공격↑)',apply:p=>{p.atkSpeed=(p.atkSpeed||0)+1}},
-{name:'공격속도 +2',desc:'공격속도 2단계 증가 (연속공격↑)',apply:p=>{p.atkSpeed=(p.atkSpeed||0)+2}},
-// 마력 (스킬 데미지)
-{name:'마력 +5%',desc:'스킬 데미지 5% 증가',apply:p=>{p.skillDmgBonus=(p.skillDmgBonus||0)+5}},
-{name:'마력 +10%',desc:'스킬 데미지 10% 증가',apply:p=>{p.skillDmgBonus=(p.skillDmgBonus||0)+10}},
-// 행운 (드롭/골드)
-{name:'행운 +5%',desc:'아이템 드롭률 5% 증가',apply:p=>{p.luckBonus=(p.luckBonus||0)+5}},
-{name:'골드 수집',desc:'골드 획득량 10% 증가',apply:p=>{p.goldBonus=(p.goldBonus||0)+10}},
-// 회복
-{name:'HP 회복',desc:'HP 완전 회복',apply:p=>{p.hp=p.maxHP}},
-{name:'배고픔 회복',desc:'배고픔 50 회복',apply:p=>{p.hunger=Math.min(100,p.hunger+50)}},
-{name:'기분 UP',desc:'기분 30 증가',apply:p=>{p.mood=Math.min(100,p.mood+30)}},
+{name:'⚡ 공격속도 +1',desc:'공격속도 1 증가',apply:p=>{p.atkSpeed=(p.atkSpeed||0)+1}},
+{name:'⚡ 공격속도 +2',desc:'공격속도 2 증가',apply:p=>{p.atkSpeed=(p.atkSpeed||0)+2}},
+// 스킬 데미지
+{name:'💜 마력 +5%',desc:'스킬 데미지 5% 증가',apply:p=>{p.skillDmgBonus=(p.skillDmgBonus||0)+5}},
+{name:'💜 마력 +10%',desc:'스킬 데미지 10% 증가',apply:p=>{p.skillDmgBonus=(p.skillDmgBonus||0)+10}},
+// 행운/골드
+{name:'🍀 행운 +5%',desc:'아이템 드롭률 5% 증가',apply:p=>{p.luckBonus=(p.luckBonus||0)+5}},
+{name:'💰 골드 수집 +10%',desc:'골드 획득량 10% 증가',apply:p=>{p.goldBonus=(p.goldBonus||0)+10}},
 // 복합
-{name:'전투 본능',desc:'ATK+3, 치명타+2%',apply:p=>{p.atk+=3;p.critBonus=(p.critBonus||0)+2}},
-{name:'생존 본능',desc:'HP+20, DEF+2',apply:p=>{p.maxHP+=20;p.hp=Math.min(p.hp+20,p.maxHP);p.def+=2}},
-{name:'만능',desc:'ATK+2, DEF+2, HP+10',apply:p=>{p.atk+=2;p.def+=2;p.maxHP+=10;p.hp=Math.min(p.hp+10,p.maxHP)}},
+{name:'🔥 전투 본능',desc:'ATK+3, 치명타+2%',apply:p=>{p.atk+=3;p.critBonus=(p.critBonus||0)+2}},
+{name:'💪 생존 본능',desc:'HP+20, DEF+2',apply:p=>{p.maxHP+=20;p.hp=Math.min(p.hp+20,p.maxHP);p.def+=2}},
+{name:'✨ 만능',desc:'ATK+2, DEF+2, HP+10',apply:p=>{p.atk+=2;p.def+=2;p.maxHP+=10;p.hp=Math.min(p.hp+10,p.maxHP)}},
 ];
 
 const MISSIONS=[

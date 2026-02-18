@@ -136,7 +136,7 @@ await addHuntLine(`✨ ${lvlMsg}`,'loading',log);
 const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
 if(SKILL_LEVELS.includes(G.level)){await showSkillLearn('active');}
 else if(PASSIVE_LEVELS.includes(G.level)){await showSkillLearn('passive');}
-else{const lvlChoices=await generateLevelUpAI();await showLevelUp(lvlChoices);}}
+else{await showLevelUp(null);}}
 }else{
 G.mood=Math.max(0,G.mood-10)}
 
