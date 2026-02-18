@@ -156,6 +156,7 @@ function closeEquipPopup(){const el=document.getElementById('equip-detail-popup'
 function unequipFromPopup(slot){if(!G.equipment[slot])return;G.inventory.push(G.equipment[slot]);G.equipment[slot]=null;closeEquipPopup();toast('장비 해제');renderEquipRow();renderCharacter();updateBars();saveGame()}
 
 function renderSkillRow(){const row=document.getElementById('skill-equip-row');
+if(!row)return;
 row.innerHTML=G.equippedSkills.map(s=>`<div class="skill-slot" title="${s.name}">${s.icon}</div>`).join('')}
 
 // ===== TICKING (hunger, mood, passive mood recovery) =====
