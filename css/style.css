@@ -398,15 +398,17 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 
 /* 전투 텍스트 애니메이션 */
 @keyframes slideRight{
-0%{transform:translateX(-60px);opacity:0}
-30%{opacity:1}
-70%{transform:translateX(8px);opacity:1}
+0%{transform:translateX(-100%);opacity:0}
+10%{opacity:1}
+80%{transform:translateX(calc(100vw - 100% - 20px));opacity:1}
+85%{transform:translateX(calc(100vw - 100% - 30px));opacity:1}
 100%{transform:translateX(0);opacity:1}
 }
 @keyframes slideLeft{
-0%{transform:translateX(60px);opacity:0}
-30%{opacity:1}
-70%{transform:translateX(-8px);opacity:1}
+0%{transform:translateX(100vw);opacity:0}
+10%{opacity:1}
+80%{transform:translateX(0);opacity:1}
+85%{transform:translateX(10px);opacity:1}
 100%{transform:translateX(0);opacity:1}
 }
 @keyframes hitShake{
@@ -417,7 +419,7 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 80%{transform:translateX(-1px);opacity:1}
 100%{transform:translateX(0);opacity:1}
 }
-.hunt-line.hunt-slide-right{opacity:1!important;animation:slideRight .35s ease-out both!important}
-.hunt-line.hunt-slide-left{opacity:1!important;animation:slideLeft .35s ease-out both!important}
+.hunt-line.hunt-slide-right{opacity:1!important;animation:slideRight .45s cubic-bezier(.2,.8,.3,1) both!important}
+.hunt-line.hunt-slide-left{opacity:1!important;animation:slideLeft .45s cubic-bezier(.2,.8,.3,1) both!important}
 .hunt-line.hunt-hit-shake{opacity:1!important;animation:hitShake .3s ease-out both!important}
 .hunt-line.critical.hunt-slide-right{opacity:1!important;animation:slideRight .3s ease-out both!important;text-shadow:0 0 8px rgba(255,200,0,.6)}
