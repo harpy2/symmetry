@@ -10,6 +10,15 @@ c.appendChild(d)})}
 function confirmClass(){if(!G.className)return;
 // 스킬 없이 시작 — 게임 내에서 획득
 G.equippedSkills=[];G.equippedPassives=[];G.allSkills=[];G.allPassives=[];
+// 추가 슬롯에 캐릭터 생성
+if(G._pendingSlot!==undefined&&G._pendingSlot>0){
+const slot=G._pendingSlot;delete G._pendingSlot;
+G.party[slot]={className:G.className,classData:G.classData,level:G.level,hp:G.hp,maxHP:G.maxHP,atk:G.atk,def:G.def,hunger:G.hunger,mood:G.mood,
+equippedSkills:[],equippedPassives:[],allSkills:[...G.classData.skills],allPassives:[...G.classData.passives],
+equipment:{helmet:null,chest:null,gloves:null,pants:null,boots:null,weapon:null,necklace:null,ring1:null,ring2:null,offhand:null},
+inventory:[],exp:0,critBonus:0,_appliedBuffs:[]};
+saveGame();loadSlotToG(slot);
+}
 saveGame();showScreen('main-screen')}
 
 // ===== SKILL SELECT =====

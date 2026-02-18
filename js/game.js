@@ -46,10 +46,39 @@ G.activeSlot=slot;
 }
 
 function switchCharacter(slot){
-if(!G.slotUnlocked[slot]||!G.party[slot]){toast('잠긴 슬롯입니다');return}
+if(!G.slotUnlocked[slot]){toast('잠긴 슬롯입니다');return}
+if(!G.party[slot]){toast('캐릭터를 생성하세요!');showScreen('class-screen');G._pendingSlot=slot;return}
 saveCharToSlot();
 loadSlotToG(slot);
 renderMainScreen();
+updateSlotUI();
+}
+
+const SLOT_COST=[0,2000,5000];
+function unlockSlot(slot){
+const cost=SLOT_COST[slot];
+if(G.gold<cost){toast(`골드가 부족합니다! (${G.gold}/${cost})`);return}
+if(confirm(`💰 ${cost.toLocaleString()} 골드로 캐릭터 슬롯 ${slot+1}을 해제할까요?`)){
+G.gold-=cost;
+G.slotUnlocked[slot]=true;
+updateBars();saveGame();
+updateSlotUI();
+toast(`캐릭터 슬롯 ${slot+1} 해제 완료! 🎉`);
+}
+}
+
+function updateSlotUI(){
+// 잠금 오버레이 업데이트
+for(let i=1;i<=2;i++){
+const overlay=document.getElementById('lock-overlay-'+i);
+if(overlay){overlay.style.display=G.slotUnlocked[i]?'none':'flex'}
+}
+// 탭 버튼 업데이트
+const tabs=document.querySelectorAll('.char-tab');
+if(tabs.length>=3){
+tabs[0].textContent=G.slotUnlocked[1]?(G.party[1]?'캐릭2':'캐릭2 (빈)'):'캐릭2🔒';
+tabs[2].textContent=G.slotUnlocked[2]?(G.party[2]?'캐릭3':'캐릭3 (빈)'):'캐릭3🔒';
+}
 }
 
 function syncActiveChar(){saveCharToSlot()}
@@ -58,7 +87,7 @@ function syncActiveChar(){saveCharToSlot()}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='class-screen')renderClassSelect();if(id==='main-screen'){renderMainScreen();startTicking()}}
 
 // ===== MAIN SCREEN =====
-function renderMainScreen(){updateBars();renderCharacter();renderEquipRow();renderSkillRow()}
+function renderMainScreen(){updateBars();renderCharacter();renderEquipRow();renderSkillRow();updateSlotUI()}
 
 function getMoodStatus(){
 if(G.mood>=80)return'😊 좋음';

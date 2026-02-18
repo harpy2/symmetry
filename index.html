@@ -55,11 +55,11 @@
 <button class="char-tab" onclick="switchCharacter(2)">캐릭3🔒</button>
 </div>
 <div class="party-container">
-<div class="char-panel" data-slot="1">
-<div class="locked-overlay">
+<div class="char-panel" data-slot="1" id="char-panel-1">
+<div class="locked-overlay" id="lock-overlay-1">
 <div class="lock-icon">🔒</div>
-<div class="lock-text">슬롯 구매</div>
-<button class="btn btn-sm" onclick="toast('💎 포인트로 슬롯을 구매하세요')">구매하기</button>
+<div class="lock-text">캐릭터 슬롯 2</div>
+<button class="btn btn-sm" onclick="unlockSlot(1)">💰 2,000 골드로 해제</button>
 </div>
 </div>
 <div class="char-panel active" data-slot="0">
@@ -78,11 +78,11 @@
 </div>
 <!-- skill row removed -->
 </div>
-<div class="char-panel" data-slot="2">
-<div class="locked-overlay">
+<div class="char-panel" data-slot="2" id="char-panel-2">
+<div class="locked-overlay" id="lock-overlay-2">
 <div class="lock-icon">🔒</div>
-<div class="lock-text">슬롯 구매</div>
-<button class="btn btn-sm" onclick="toast('💎 포인트로 슬롯을 구매하세요')">구매하기</button>
+<div class="lock-text">캐릭터 슬롯 3</div>
+<button class="btn btn-sm" onclick="unlockSlot(2)">💰 5,000 골드로 해제</button>
 </div>
 </div>
 </div>
@@ -195,9 +195,9 @@
 
 <script src="js/data.js?v=6"></script>
 <script src="js/ai.js?v=13"></script>
-<script src="js/ui.js?v=9"></script>
+<script src="js/ui.js?v=10"></script>
 <script src="js/inventory.js?v=12"></script>
 <script src="js/hunt.js?v=105"></script>
-<script src="js/game.js?v=8"></script>
+<script src="js/game.js?v=9"></script>
 </body>
 </html>
