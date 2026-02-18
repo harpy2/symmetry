@@ -1,4 +1,47 @@
 // ===== ITEM GENERATION =====
+// 부위별 스탯 옵션 풀
+const STAT_POOL={
+weapon:['ATK','치명타','관통','출혈 데미지'],
+offhand:['DEF','ATK','막기 확률','반사 데미지'],
+helmet:['DEF','HP','저항력','기분 유지'],
+chest:['DEF','HP','HP 회복','피해감소'],
+gloves:['ATK','치명타','공격속도','연속공격'],
+pants:['DEF','HP','회피율','이동속도'],
+boots:['DEF','공격속도','선제공격','연속턴'],
+necklace:['ATK','DEF','스킬 데미지','쿨다운 감소'],
+ring1:['ATK','치명타','골드 획득','경험치 보너스'],
+ring2:['ATK','치명타','드롭률','행운']
+};
+function rollStatValue(stat,gMult,floorMult){
+const base={ATK:[3,8],DEF:[2,6],HP:[8,20],'치명타':[1,4],'공격속도':[1,3],'관통':[2,6],'출혈 데미지':[3,8],
+'막기 확률':[2,5],'반사 데미지':[2,6],'저항력':[2,5],'기분 유지':[3,8],'HP 회복':[1,4],'피해감소':[2,5],
+'연속공격':[2,5],'회피율':[1,4],'이동속도':[2,5],'선제공격':[3,8],'연속턴':[2,5],'스킬 데미지':[3,8],
+'쿨다운 감소':[2,6],'골드 획득':[5,15],'경험치 보너스':[3,10],'드롭률':[2,8],'행운':[3,10]}[stat]||[2,6];
+const v=Math.floor((base[0]+Math.random()*(base[1]-base[0]))*gMult*floorMult);
+const pctStats=['치명타','공격속도','막기 확률','반사 데미지','저항력','기분 유지','HP 회복','피해감소','연속공격','회피율','이동속도','선제공격','연속턴','스킬 데미지','쿨다운 감소','골드 획득','경험치 보너스','드롭률','행운','출혈 데미지','관통'];
+return pctStats.includes(stat)?v+'%':v;
+}
+
+// 스킬 강화 커스텀 옵션 생성 (장착 스킬 기반)
+function generateSkillCustom(){
+const skills=G.equippedSkills||[];
+if(skills.length===0)return{mod:'전체 스킬 데미지 +15%'};
+const sk=skills[Math.floor(Math.random()*skills.length)];
+const templates=[
+`${sk.name} 2연속 발사`,
+`${sk.name} 데미지 +30%`,
+`${sk.name} 범위 2배 확대`,
+`${sk.name} 3갈래로 분산 (3타겟 동시 공격)`,
+`${sk.name} 시전 시 HP 5% 회복`,
+`${sk.name} 적중 시 50% 확률 추가 시전`,
+`${sk.name} 치명타 데미지 +50%`,
+`${sk.name} 시전 시 방어력 +20% (3초)`,
+`${sk.name} 관통 효과 추가`,
+`${sk.name} 적중 시 공격속도 +15% (5초)`
+];
+return{mod:templates[Math.floor(Math.random()*templates.length)],skillName:sk.name};
+}
+
 function generateItem(){
 const allTypes=['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'];
 const type=allTypes[Math.floor(Math.random()*allTypes.length)];
@@ -11,30 +54,29 @@ const roll=Math.random()*100;let grade='일반';
 if(roll<2)grade='에픽';else if(roll<10)grade='유니크';else if(roll<25)grade='레어';else if(roll<55)grade='매직';
 const gMult={일반:1,매직:1.3,레어:1.5,유니크:2.2,에픽:3.5}[grade];
 const floorMult=1+G.floor*0.1;
+
+// 등급별 스탯 옵션 개수: 일반=0, 매직=2, 레어=3, 유니크=3, 에픽=3
+const statCount={일반:0,매직:2,레어:3,유니크:3,에픽:3}[grade];
 const stats={};
-if(type==='weapon'){stats.ATK=Math.floor((5+Math.random()*10)*gMult*floorMult);if(Math.random()>.5)stats['치명타']=Math.floor(Math.random()*5*gMult)+'%'}
-else if(type==='offhand'){stats.DEF=Math.floor((2+Math.random()*6)*gMult*floorMult);if(Math.random()>.5)stats.ATK=Math.floor((1+Math.random()*3)*gMult*floorMult)}
-else if(type==='helmet'){stats.DEF=Math.floor((2+Math.random()*5)*gMult*floorMult);if(Math.random()>.5)stats.HP=Math.floor(Math.random()*15*gMult)}
-else if(type==='chest'){stats.DEF=Math.floor((3+Math.random()*8)*gMult*floorMult);if(Math.random()>.5)stats.HP=Math.floor(Math.random()*20*gMult)}
-else if(type==='gloves'){stats.ATK=Math.floor((2+Math.random()*4)*gMult*floorMult);if(Math.random()>.5)stats['치명타']=Math.floor(Math.random()*3*gMult)+'%'}
-else if(type==='pants'){stats.DEF=Math.floor((2+Math.random()*6)*gMult*floorMult);if(Math.random()>.5)stats.HP=Math.floor(Math.random()*10*gMult)}
-else if(type==='boots'){stats.DEF=Math.floor((1+Math.random()*4)*gMult*floorMult);if(Math.random()>.4)stats['공격속도']=Math.floor(Math.random()*3*gMult)+'%'}
-else if(type==='necklace'){stats.ATK=Math.floor((2+Math.random()*5)*gMult*floorMult);stats.DEF=Math.floor((1+Math.random()*3)*gMult*floorMult)}
-else if(type==='ring1'||type==='ring2'){stats.ATK=Math.floor((1+Math.random()*4)*gMult*floorMult);if(Math.random()>.5)stats['치명타']=Math.floor(Math.random()*4*gMult)+'%'}
-const durability=Math.floor({일반:50,매직:65,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
-// 부위별 커스텀 옵션 (유니크/에픽만)
+const pool=[...STAT_POOL[type]];
+for(let i=0;i<statCount&&pool.length>0;i++){
+const idx=Math.floor(Math.random()*pool.length);
+const stat=pool.splice(idx,1)[0];
+stats[stat]=rollStatValue(stat,gMult,floorMult);
+}
+
+// 스킬 강화 커스텀 옵션: 유니크=1, 에픽=2
 let skillMods=[];
 const modCount=grade==='에픽'?2:grade==='유니크'?1:0;
-if(modCount>0){
-const DEF_MODS=['피해감소 5%','방어력 +10','HP 자동회복 2/턴','데미지 반사 8%','실드 15'];
-const ATK_MODS=['공격력 +8','치명타 확률 +5%','연속공격 확률 +10%','관통 데미지 +12','출혈 부여'];
-const UTIL_MODS=['골드 획득 +15%','경험치 +10%','아이템 드롭률 +8%','회피율 +5%','행운 +10'];
-const SKILL_MODS=(G.equippedSkills||[]).length?G.equippedSkills.map(s=>s.name+' 데미지 +20%').concat(['스킬 쿨다운 -15%','스킬 범위 확대']):['스킬 데미지 +15%','스킬 쿨다운 -10%','스킬 범위 확대'];
-const SPD_MODS=['공격속도 +10%','선제공격 확률 +15%','연속턴 확률 +8%'];
-const pool={helmet:DEF_MODS,chest:DEF_MODS,pants:DEF_MODS,gloves:ATK_MODS,weapon:ATK_MODS,offhand:ATK_MODS,ring1:UTIL_MODS,ring2:UTIL_MODS,necklace:SKILL_MODS,boots:SPD_MODS}[type]||ATK_MODS;
-const used=new Set();
-for(let m=0;m<modCount;m++){let pick;do{pick=pool[Math.floor(Math.random()*pool.length)]}while(used.has(pick)&&used.size<pool.length);used.add(pick);skillMods.push({mod:pick})}
+const usedMods=new Set();
+for(let m=0;m<modCount;m++){
+let custom;let tries=0;
+do{custom=generateSkillCustom();tries++}while(usedMods.has(custom.mod)&&tries<10);
+usedMods.add(custom.mod);
+skillMods.push(custom);
 }
+
+const durability=Math.floor({일반:50,매직:65,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
 return{id:Date.now()+Math.random(),name,type,grade,emoji:emojis[si],stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
 
 // ===== INVENTORY =====

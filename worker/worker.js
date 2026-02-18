@@ -2,13 +2,10 @@ const SYSTEM_PROMPTS = {
   item: `You are an RPG item generator for a Korean dungeon crawler game. Generate a unique item based on the player's class, level, floor, and available skills. Be creative with names and descriptions in Korean. Stats should scale with level and floor.
 Respond with ONLY valid JSON, no markdown, no explanation:
 {"name":"string","type":"helmet|chest|gloves|pants|boots|weapon|necklace|ring1|ring2|offhand","grade":"일반|매직|레어|유니크|에픽","emoji":"single emoji","stats":{"ATK":number,"DEF":number,"HP":number,"치명타":number},"durability":number,"desc":"string","skillMods":[{"skillName":"string","mod":"string","effect":{"type":"multiHit|aoe|dmgBoost|dot|lifesteal|chain","value":number}}]}
-Only include relevant stats (omit zero values). Grade probability: 일반 45%, 매직 30%, 레어 15%, 유니크 8%, 에픽 2%. Higher floors increase chance of better grades. skillMods should ONLY be included for 유니크 and 에픽 grades (exactly 1 mod for 유니크, exactly 2 mods for 에픽). For 일반/매직/레어, do NOT include skillMods.
-skillMods MUST match the item type category:
-- helmet/chest/pants: DEFENSIVE mods (e.g. 피해감소, 방어력 증가, HP 회복, 데미지 반사, 실드, 받는 피해 감소%)
-- gloves/weapon/offhand: OFFENSIVE mods (e.g. 공격력 증가, 치명타 확률/데미지 증가, 연속공격, 관통, 출혈, 스플래시 데미지)
-- ring1/ring2: UTILITY mods (e.g. 골드 획득량 증가, 경험치 보너스, 아이템 드롭률 증가, 회피율, 이동속도, 행운)
-- necklace: SKILL mods (e.g. 스킬 쿨다운 감소, 스킬 데미지 증가, 스킬 범위 확대, 스킬 추가 시전, 마나 효율) — must reference player's equipped skills by name
-- boots: SPEED mods (e.g. 공격속도 증가, 선제공격 확률, 연속턴 확률)`,
+Grade probability: 일반 45%, 매직 30%, 레어 15%, 유니크 8%, 에픽 2%.
+Stat options by grade: 일반=0 stats, 매직=2 stats, 레어=3 stats, 유니크=3 stats, 에픽=3 stats.
+skillMods = SKILL UPGRADE customs. ONLY for 유니크(1) and 에픽(2). These MUST enhance the player's equipped skills specifically, e.g. "파이어볼 2연속 발사", "검기 3갈래로 분산(3타겟 동시 공격)", "샷건 관통 효과 추가". Must reference actual skill names from context.
+For 일반/매직/레어: do NOT include skillMods.`,
 
   skill: `You are an RPG skill generator for a Korean dungeon crawler game. Generate a new unique skill for the player based on their class, level, and existing skills. Make it thematic and creative. Avoid duplicating existing skills.
 Respond with ONLY valid JSON, no markdown, no explanation:
