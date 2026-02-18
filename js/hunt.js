@@ -202,7 +202,7 @@ else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d
 else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px'}
 else if(cls==='loading'){d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
 else{d.style.textAlign='center';d.style.margin='0 auto'}
-log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();setTimeout(r,500)})}
+log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();const spd=['buff','miss'].includes(cls)?250:500;setTimeout(r,spd)})}
 
 // ===== BOSS SKILL CHECK POPUP =====
 function bossSkillCheckPopup(totalRounds){
