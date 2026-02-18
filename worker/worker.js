@@ -72,7 +72,7 @@ function corsHeaders(origin) {
   const allowed = origin && (origin === 'https://symmetry.salmonholic.com' || origin.startsWith('http://localhost'));
   return {
     'Access-Control-Allow-Origin': allowed ? origin : 'https://symmetry.salmonholic.com',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 }
@@ -87,6 +87,36 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // GET /api/items/random?type=weapon
+    if (url.pathname === '/api/items/random' && request.method === 'GET') {
+      try {
+        const type = url.searchParams.get('type') || 'weapon';
+        const indexKey = `index:type:${type}`;
+        const indexData = await env.ITEMS_KV.get(indexKey);
+        if (!indexData) return new Response(JSON.stringify({ error: 'No items for type' }), { status: 404, headers: { ...headers, 'Content-Type': 'application/json' } });
+        const ids = JSON.parse(indexData);
+        const randomId = ids[Math.floor(Math.random() * ids.length)];
+        const itemData = await env.ITEMS_KV.get(randomId);
+        if (!itemData) return new Response(JSON.stringify({ error: 'Item not found' }), { status: 404, headers: { ...headers, 'Content-Type': 'application/json' } });
+        return new Response(itemData, { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // GET /api/items/:id
+    const itemMatch = url.pathname.match(/^\/api\/items\/([aw]\d{3})$/);
+    if (itemMatch && request.method === 'GET') {
+      try {
+        const itemData = await env.ITEMS_KV.get(itemMatch[1]);
+        if (!itemData) return new Response(JSON.stringify({ error: 'Item not found' }), { status: 404, headers: { ...headers, 'Content-Type': 'application/json' } });
+        return new Response(itemData, { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
     if (url.pathname !== '/api/generate' || request.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { ...headers, 'Content-Type': 'application/json' } });
     }

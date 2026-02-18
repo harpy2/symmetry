@@ -127,8 +127,9 @@ function renderEquipRow(){
 const left=document.getElementById('equip-col-left');
 const right=document.getElementById('equip-col-right');
 if(!left||!right)return;
-left.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
-right.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
+function equipSlotIcon(item,fallback){return item?(item.svgData?`<div class="item-svg">${item.svgData}</div>`:item.emoji):fallback}
+left.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${equipSlotIcon(item,s.icon)}</div>`}).join('');
+right.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${equipSlotIcon(item,s.icon)}</div>`}).join('');
 }
 
 // 장비 상세 팝업
@@ -141,7 +142,7 @@ const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${k}: +${v}</div>`
 const modsHTML=(item.skillMods&&item.skillMods.length)?item.skillMods.map(m=>`<div style="color:var(--cyan)">✦ ${m.mod}</div>`).join(''):'';
 const el=document.createElement('div');el.id='equip-detail-popup';
 el.innerHTML=`<div class="edp-overlay" onclick="closeEquipPopup()"><div class="edp-card" onclick="event.stopPropagation()">
-<div class="edp-name" style="color:${GRADE_COLORS[item.grade]}">${item.emoji} ${item.name}</div>
+<div class="edp-name" style="color:${GRADE_COLORS[item.grade]}">${item.svgData?'<span class="item-svg" style="display:inline-block;vertical-align:middle;margin-right:4px">'+item.svgData+'</span>':item.emoji+' '}${item.name}</div>
 <div class="edp-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${slotNames[slot]||slot}</div>
 <div class="edp-stats">${statsHTML}</div>
 ${modsHTML?'<div class="edp-mods">'+modsHTML+'</div>':''}
@@ -194,7 +195,8 @@ const modsText=(item.skillMods&&item.skillMods.length)?item.skillMods.map(m=>`<d
 const el=document.createElement('div');
 el.className='item-drop-popup';
 const isAuto=G.autoHunt;
-el.innerHTML=`<div class="idp-shine"></div><div class="idp-emoji">${item.emoji}</div><div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons"><button class="btn btn-sm idp-equip-btn" onclick="equipFromPopup(this)">⚔️ 바로 착용</button></div>`;
+const dropIcon=item.svgData?`<div class="item-svg item-svg-drop">${item.svgData}</div>`:`<div class="idp-emoji">${item.emoji}</div>`;
+el.innerHTML=`<div class="idp-shine"></div>${dropIcon}<div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons"><button class="btn btn-sm idp-equip-btn" onclick="equipFromPopup(this)">⚔️ 바로 착용</button></div>`;
 document.body.appendChild(el);
 el._item=item;
 

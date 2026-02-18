@@ -4,3 +4,7 @@ compatibility_date = "2024-01-01"
 
 [vars]
 ALLOWED_ORIGIN = "https://symmetry.salmonholic.com"
+
+[[kv_namespaces]]
+binding = "ITEMS_KV"
+id = "4d5915ca086341d982a00ed137633f80"

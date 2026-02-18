@@ -47,14 +47,34 @@ const templates=[
 return{mod:templates[Math.floor(Math.random()*templates.length)],skillName:sk.name};
 }
 
+async function fetchRandomItemFromAPI(type){
+try{
+const res=await fetch(`https://symmetry-api.harpy922.workers.dev/api/items/random?type=${type}`);
+if(!res.ok)return null;
+return await res.json();
+}catch(e){return null}}
+
 async function generateItem(){
 const allTypes=['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'];
 const type=allTypes[Math.floor(Math.random()*allTypes.length)];
+
+// Try fetching from API
+const apiItem=await fetchRandomItemFromAPI(type);
+
+let name,emoji,svgData;
+if(apiItem){
+name=apiItem.name;
+emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';
+svgData=apiItem.svg||null;
+}else{
 const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];
 const si=Math.floor(Math.random()*suffixes.length);
 const prefix=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];
 const material=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];
-const name=`${prefix} ${material}의 ${suffixes[si]}`;
+name=`${prefix} ${material}의 ${suffixes[si]}`;
+emoji=emojis[si];svgData=null;
+}
+
 const roll=Math.random()*100;let grade='일반';
 // ⚠️ TEST MODE: 유니크/에픽 확률 대폭 상향 (테스트 후 원복 필요!)
 if(roll<30)grade='에픽';else if(roll<65)grade='유니크';else if(roll<80)grade='레어';else if(roll<95)grade='매직';
@@ -86,7 +106,7 @@ usedMods.add(custom.mod);skillMods.push(custom);
 }}}
 
 const durability=Math.floor({일반:50,매직:65,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
-return{id:Date.now()+Math.random(),name,type,grade,emoji:emojis[si],stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
+return{id:Date.now()+Math.random(),name,type,grade,emoji:emoji||'📦',svgData,stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
 
 // ===== INVENTORY =====
 let invFilter=null;
@@ -94,7 +114,7 @@ function renderInventory(filter){invFilter=filter||null;
 const detail=document.getElementById('item-detail-area');detail.innerHTML='';
 const grid=document.getElementById('inv-grid');grid.innerHTML='';
 for(let i=0;i<30;i++){const item=G.inventory[i];const d=document.createElement('div');d.className='inv-slot'+(item?' grade-'+item.grade:'');
-if(item){d.innerHTML=`<span>${item.emoji}</span><div class="dur-bar"><div class="dur-fill" style="width:${item.durability/item.maxDurability*100}%"></div></div>`;d.onclick=()=>showItemDetail(i)}
+if(item){const icon=item.svgData?`<div class="item-svg">${item.svgData}</div>`:`<span>${item.emoji}</span>`;d.innerHTML=`${icon}<div class="dur-bar"><div class="dur-fill" style="width:${item.durability/item.maxDurability*100}%"></div></div>`;d.onclick=()=>showItemDetail(i)}
 grid.appendChild(d)}}
 
 function showItemDetail(idx){const item=G.inventory[idx];if(!item)return;
@@ -103,7 +123,8 @@ const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${k}: +${v}</div>`
 const modsHTML=(item.skillMods&&item.skillMods.length)?'<div class="item-mods"><div style="color:var(--gold);font-size:11px;margin-top:6px">✦ 스킬 옵션</div>'+item.skillMods.map(m=>`<div style="color:var(--cyan);font-size:12px">• ${m.mod}</div>`).join('')+'</div>':'';
 const isEquipped=Object.values(G.equipment).some(e=>e&&e.id===item.id);
 const sellPrice=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));
-d.innerHTML=`<div class="item-detail"><div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${{weapon:'주무기',offhand:'보조무기',helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',necklace:'목걸이',ring1:'반지',ring2:'반지'}[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">내구도: ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${isEquipped?`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">해제</button>`:`<button class="btn btn-sm" onclick="equipItem(${idx})">장착</button>`}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">수리 (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">판매 (💰${sellPrice})</button></div></div>`}
+const detailIcon=item.svgData?`<div class="item-svg item-svg-lg">${item.svgData}</div>`:`<div style="font-size:36px">${item.emoji}</div>`;
+d.innerHTML=`<div class="item-detail">${detailIcon}<div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${{weapon:'주무기',offhand:'보조무기',helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',necklace:'목걸이',ring1:'반지',ring2:'반지'}[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">내구도: ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${isEquipped?`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">해제</button>`:`<button class="btn btn-sm" onclick="equipItem(${idx})">장착</button>`}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">수리 (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">판매 (💰${sellPrice})</button></div></div>`}
 
 function equipItem(idx){const item=G.inventory[idx];if(!item)return;
 if(G.equipment[item.type])G.inventory.push(G.equipment[item.type]);

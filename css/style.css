@@ -384,3 +384,14 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+/* ============ ITEM SVG ============ */
+.item-svg{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.item-svg svg{width:100%;height:100%}
+.item-svg-lg{width:64px;height:64px;margin:0 auto 8px}
+.item-svg-lg svg{width:100%;height:100%}
+.item-svg-drop{width:72px;height:72px;margin:0 auto 8px}
+.item-svg-drop svg{width:100%;height:100%;filter:drop-shadow(0 0 8px rgba(255,255,255,.4))}
+.item-svg-sm{width:20px;height:20px;display:inline-flex;vertical-align:middle}
+.item-svg-sm svg{width:100%;height:100%}
+.equip-slot .item-svg{width:28px;height:28px}
+.inv-slot .item-svg{width:32px;height:32px}
