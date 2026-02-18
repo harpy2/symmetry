@@ -157,14 +157,43 @@ const d=document.getElementById('item-detail-area');
 const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${k}: +${v}</div>`).join('');
 const modsHTML=(item.skillMods&&item.skillMods.length)?'<div class="item-mods"><div style="color:var(--gold);font-size:11px;margin-top:6px">✦ 스킬 옵션</div>'+item.skillMods.map(m=>`<div style="color:var(--cyan);font-size:12px">• ${m.mod}</div>`).join('')+'</div>':'';
 const isEquipped=Object.values(G.equipment).some(e=>e&&e.id===item.id);
+// 다른 캐릭에 장착되어있는지도 체크
+let equippedBy=-1;
+if(G.party){G.party.forEach((p,si)=>{if(p&&p.equipment){Object.values(p.equipment).forEach(e=>{if(e&&e.id===item.id)equippedBy=si})}})}
 const sellPrice=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));
 const detailIcon=item.svgData?`<div class="item-svg item-svg-lg">${item.svgData}</div>`:`<div style="font-size:36px">${item.emoji}</div>`;
-d.innerHTML=`<div class="item-detail">${detailIcon}<div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${{weapon:'주무기',offhand:'보조무기',helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',necklace:'목걸이',ring1:'반지',ring2:'반지'}[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">내구도: ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${isEquipped?`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">해제</button>`:`<button class="btn btn-sm" onclick="equipItem(${idx})">장착</button>`}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">수리 (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">판매 (💰${sellPrice})</button></div></div>`}
+// 캐릭별 장착 버튼
+let equipBtns='';
+if(!isEquipped&&equippedBy<0){
+for(let s=0;s<3;s++){
+if(G.slotUnlocked&&G.slotUnlocked[s]&&G.party&&G.party[s]){
+const cn=G.party[s].className||('캐릭'+(s+1));
+equipBtns+=`<button class="btn btn-sm" onclick="equipItemToChar(${idx},${s})">${cn}${s===G.activeSlot?' (현재)':''}</button> `;
+}}
+}else if(isEquipped){
+equipBtns=`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">해제</button>`;
+}
+d.innerHTML=`<div class="item-detail">${detailIcon}<div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${{weapon:'주무기',offhand:'보조무기',helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',necklace:'목걸이',ring1:'반지',ring2:'반지'}[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">내구도: ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${equipBtns}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">수리 (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">판매 (💰${sellPrice})</button></div></div>`}
 
-function equipItem(idx){const item=G.inventory[idx];if(!item)return;
-if(G.equipment[item.type])G.inventory.push(G.equipment[item.type]);
-G.equipment[item.type]=item;G.inventory.splice(idx,1);
-toast(`${item.name} 장착!`);renderInventory();renderEquipRow();renderCharacter();saveGame()}
+function equipItem(idx){equipItemToChar(idx,G.activeSlot)}
+function equipItemToChar(idx,slot){
+const item=G.inventory[idx];if(!item)return;
+saveCharToSlot(); // 현재 상태 저장
+const targetChar=G.party[slot];if(!targetChar)return;
+// 대상 캐릭 기존 장비 → 공용 인벤토리
+if(targetChar.equipment&&targetChar.equipment[item.type]){
+G.inventory.push(targetChar.equipment[item.type]);
+}
+// 인벤토리에서 제거 후 장착
+G.inventory.splice(idx,1);
+if(!targetChar.equipment)targetChar.equipment={};
+targetChar.equipment[item.type]=item;
+G.party[slot]=targetChar;
+if(slot===G.activeSlot)loadSlotToG(slot);
+const charName=targetChar.className||('캐릭'+(slot+1));
+toast(`${item.name} → ${charName} 장착!`);
+renderInventory();renderEquipRow();renderCharacter();saveGame();
+}
 function unequipItem(type){if(!G.equipment[type])return;G.inventory.push(G.equipment[type]);G.equipment[type]=null;
 toast('장비 해제');renderInventory();renderEquipRow();renderCharacter();saveGame()}
 function repairItem(idx){const item=G.inventory[idx];if(!item)return;const cost=Math.floor((item.maxDurability-item.durability)*0.5);if(G.gold<cost){toast('골드가 부족합니다!');return}G.gold-=cost;item.durability=item.maxDurability;toast('수리 완료!');renderInventory();showItemDetail(idx);updateBars();saveGame()}

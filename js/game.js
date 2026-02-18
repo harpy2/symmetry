@@ -29,10 +29,12 @@ function getActiveChar(){return G.party?G.party[G.activeSlot]:null}
 
 function saveCharToSlot(){
 if(!G.party)return;
+// inventory는 공용이므로 캐릭별로 저장하지 않음
 const charProps=['className','classData','level','exp','hp','maxHP','atk','def','gold','points',
 'hunger','mood','floor','equippedSkills','equippedPassives','allSkills','allPassives',
-'equipment','inventory','critBonus','hpBonus','atkBonus','defBonus','expBonus',
-'autoHunt','autoLevelUp','missionCooldowns','lastTick'];
+'equipment','critBonus','hpBonus','atkBonus','defBonus','expBonus',
+'autoHunt','autoLevelUp','missionCooldowns','lastTick','_appliedBuffs',
+'skillDmgBonus','atkSpeed','luckBonus','goldBonus'];
 const obj={};
 charProps.forEach(k=>{if(G[k]!==undefined)obj[k]=G[k]});
 G.party[G.activeSlot]=obj;
@@ -226,7 +228,17 @@ const el=document.createElement('div');
 el.className='item-drop-popup';
 const isAuto=G.autoHunt;
 const dropIcon=item.svgData?`<div class="item-svg item-svg-drop">${item.svgData}</div>`:`<div class="idp-emoji">${item.emoji}</div>`;
-el.innerHTML=`<div class="idp-shine"></div>${dropIcon}<div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons"><button class="btn btn-sm idp-equip-btn" onclick="equipFromPopup(this)">⚔️ 바로 착용</button></div>`;
+// 캐릭별 장착 버튼 생성
+let equipBtns='';
+const slotNames=['캐릭1','캐릭2','캐릭3'];
+for(let s=0;s<3;s++){
+if(G.slotUnlocked[s]&&G.party[s]){
+const charName=G.party[s].className||slotNames[s];
+equipBtns+=`<button class="btn btn-sm idp-equip-btn" onclick="equipFromPopupToChar(this,${s})">⚔️ ${charName}${s===G.activeSlot?' (현재)':''}</button>`;
+}
+}
+equipBtns+=`<button class="btn btn-sm btn-secondary idp-equip-btn" onclick="closeDropPopup(this)" style="margin-top:4px">📦 인벤토리에 보관</button>`;
+el.innerHTML=`<div class="idp-shine"></div>${dropIcon}<div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons">${equipBtns}</div>`;
 document.body.appendChild(el);
 el._item=item;
 
@@ -244,19 +256,33 @@ el.classList.add('closing');setTimeout(()=>el.remove(),300);
 };
 }
 
-function equipFromPopup(btn){
+function closeDropPopup(btn){
+const el=btn.closest('.item-drop-popup');
+if(el){el.classList.add('closing');setTimeout(()=>el.remove(),300)}
+toast('인벤토리에 보관!');
+}
+
+function equipFromPopupToChar(btn,slot){
 const el=btn.closest('.item-drop-popup');
 const item=el._item;
 if(!item)return;
-// 기존 장비 → 인벤토리
-if(G.equipment[item.type]){
-G.inventory.push(G.equipment[item.type]);
+saveCharToSlot(); // 현재 캐릭 저장
+const targetChar=G.party[slot];
+if(!targetChar)return;
+// 대상 캐릭의 기존 장비 → 공용 인벤토리
+if(targetChar.equipment&&targetChar.equipment[item.type]){
+G.inventory.push(targetChar.equipment[item.type]);
 }
-// 인벤토리에서 이 아이템 제거 후 장착
+// 인벤토리에서 이 아이템 제거 후 대상 캐릭에 장착
 const idx=G.inventory.findIndex(i=>i.id===item.id);
 if(idx>=0)G.inventory.splice(idx,1);
-G.equipment[item.type]=item;
-toast(`${item.name} 장착!`);
+if(!targetChar.equipment)targetChar.equipment={};
+targetChar.equipment[item.type]=item;
+G.party[slot]=targetChar;
+// 현재 캐릭이면 G에도 반영
+if(slot===G.activeSlot)loadSlotToG(slot);
+const charName=targetChar.className||('캐릭'+(slot+1));
+toast(`${item.name} → ${charName} 장착!`);
 renderEquipRow();renderCharacter();updateBars();saveGame();
 el.classList.add('closing');setTimeout(()=>el.remove(),300);
 }
