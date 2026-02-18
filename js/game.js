@@ -99,10 +99,13 @@ for(let i=0;i<6;i++){const x=20+Math.random()*160;const y=20+Math.random()*160;c
 sparklesHTML+='</div>';
 area.innerHTML=`<div class="character">${sparklesHTML}<div class="char-glow" style="background:${cls.glow}"></div><div class="char-body" style="background:${armorStyle}"><div class="char-face"><div class="char-eyes"><div class="char-eye"></div><div class="char-eye"></div></div><div class="char-mouth ${mouthClass}"></div></div></div><div class="char-weapon">${weaponEmoji}</div></div>`}
 
-// 장비 스탯 합산 헬퍼
+// 장비 스탯 합산 헬퍼 (% 문자열도 숫자로 파싱)
 function getEquipStat(stat){
 var total=0;
-for(var k in G.equipment){if(G.equipment[k]&&G.equipment[k].stats){total+=(G.equipment[k].stats[stat]||0)}}
+for(var k in G.equipment){if(G.equipment[k]&&G.equipment[k].stats){
+var v=G.equipment[k].stats[stat];
+if(v!==undefined&&v!==null)total+=typeof v==='string'?parseInt(v)||0:v;
+}}
 return total;
 }
 

@@ -114,7 +114,8 @@ await addHuntLine(`획득: 💰 +${goldReward}, 경험치 +${expReward}`,'loot',
 
 // 아이템 드롭
 const baseDropRate=isBoss?0.9:0.4;
-const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop));
+const luckBonus=((G.luckBonus||0)+getEquipStat('드롭률')+getEquipStat('행운'))/100;
+const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop+luckBonus));
 if(Math.random()<adjustedDropRate){
 await addHuntLine('✨ 뭔가 반짝이는 것이 보인다...','loot',log);
 const item=await generateItemAI();

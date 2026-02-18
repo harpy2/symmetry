@@ -159,6 +159,10 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
   const effectiveAtk = G.atk + getEquipStat('ATK');
   let effectiveDef = G.def + getEquipStat('DEF');
   let tempDefBuff = 0;
+  const equipCrit = getEquipStat('치명타');
+  const equipAspd = getEquipStat('공격속도');
+  const equipEvade = getEquipStat('회피율');
+  const equipPenetrate = getEquipStat('관통');
   const hasSkills = G.equippedSkills.length > 0;
   const maxRounds = isBoss ? 8 : 3 + enemyCount + Math.floor(Math.random() * 2);
   const skillDmgMult = 1 + (G.skillDmgBonus || 0) / 100;
@@ -205,7 +209,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     let baseDmg = Math.floor((skill.dmg || 10) * (1 + effectiveAtk / 30) * skillDmgMult);
     baseDmg = Math.floor(baseDmg * (1 + fx.dmgBonus / 100));
     const roll = Math.random() * 100;
-    const critChance = isBoss ? 15 : 10 + (G.critBonus || 0);
+    const critChance = (isBoss ? 15 : 10) + (G.critBonus || 0) + equipCrit;
     let dmgMult = 1, tag = '', isCrit = false;
 
     if (roll < critChance) {
@@ -228,8 +232,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     for (let hit = 0; hit < totalHits; hit++) {
       const curAlive = enemies.filter(e => e.alive);
       if (curAlive.length === 0) break;
-      const dmg = fx.penetrate ? Math.floor(baseDmg * dmgMult) : Math.floor(baseDmg * dmgMult);
-      const defReduction = fx.penetrate ? 0 : effectiveDef / 3;
+      const dmgRaw = Math.floor(baseDmg * dmgMult);
+      const dmg = dmgRaw + (fx.penetrate ? 0 : 0) + equipPenetrate; // 관통 스탯은 추가 고정 데미지
 
       if (isMiss && hit === 0) {
         lines.push({ text: `${skill.icon} ${skill.name} 시전! — ${tag.trim()}`, type: 'miss' });
@@ -335,8 +339,9 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const curDef = effectiveDef + tempDefBuff;
       for (const attacker of actualAttackers) {
         const eRoll = Math.random();
-        if (eRoll < 0.15) {
-          lines.push({ text: `${enemy}의 공격이 빗나갔다!`, type: 'damage', dmg: 0 });
+        const evadeChance = 0.15 + equipEvade / 100;
+        if (eRoll < evadeChance) {
+          lines.push({ text: `${enemy}의 공격이 빗나갔다!${equipEvade>0?' (회피!)':''}`, type: 'damage', dmg: 0 });
         } else {
           const eCrit = eRoll > 0.9;
           const rawDmg = (isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (eCrit ? 1.8 : (0.6 + Math.random() * 0.4));
@@ -350,8 +355,10 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
   }
 
   const won = enemies.every(e => !e.alive);
-  const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * enemyCount * (0.8 + Math.random() * 0.4)) : 0;
-  const expReward = won ? Math.floor((15 + G.floor * 3) * (isBoss ? 2.5 : 1) * enemyCount) : 0;
+  const goldMult = 1 + (G.goldBonus || 0) / 100 + getEquipStat('골드 획득') / 100;
+  const expMult = 1 + (G.expBonus || 0) / 100 + getEquipStat('경험치 보너스') / 100;
+  const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * enemyCount * (0.8 + Math.random() * 0.4) * goldMult) : 0;
+  const expReward = won ? Math.floor((15 + G.floor * 3) * (isBoss ? 2.5 : 1) * enemyCount * expMult) : 0;
 
   if (won) {
     lines.push({ text: '전투 승리! 🎉', type: 'victory' });
