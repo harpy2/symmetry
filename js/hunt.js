@@ -118,7 +118,7 @@ const luckBonus=((G.luckBonus||0)+getEquipStat('드롭률')+getEquipStat('행운
 const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop+luckBonus));
 if(Math.random()<adjustedDropRate){
 await addHuntLine('✨ 뭔가 반짝이는 것이 보인다...','loot',log);
-const item=await generateItemAI();
+const item=await generateItem();
 G.inventory.push(item);
 await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log);
 showItemDropPopup(item);
