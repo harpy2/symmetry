@@ -123,9 +123,9 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 /* 캐릭터+장비 좌우 레이아웃 */
 .char-equip-layout{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-height:0}
 .equip-col{display:flex;flex-direction:column;gap:6px;align-items:center}
-.equip-slot{width:46px;height:46px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:10px;border:2px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1)}
+.equip-slot{width:46px;height:46px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:10px;border:2px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1);filter:grayscale(1);opacity:.4}
 .equip-slot:active{transform:scale(.92)}
-.equip-slot.has-item{border-color:var(--gold);box-shadow:0 0 15px var(--gold-glow)}
+.equip-slot.has-item{border-color:var(--gold);box-shadow:0 0 15px var(--gold-glow);filter:none;opacity:1}
 
 /* Skill Row */
 .skill-equip-row{display:flex;justify-content:center;gap:8px;padding:4px 16px 8px}
