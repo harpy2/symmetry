@@ -45,7 +45,7 @@ if(huntInProgress)return;if(G.hp<=0){toast('HP가 부족합니다!');return}
 if(G.mood<20){toast('기분이 너무 안 좋아서 사냥할 수 없습니다...');G.autoHunt=false;updateAutoHuntUI();return}
 huntInProgress=true;document.getElementById('hunt-btn').disabled=true;
 const log=document.getElementById('hunt-log');log.innerHTML='';
-const isBoss=G.floor%5===0;
+const isBoss=Math.random()<0.1;
 const moodMult=getMoodMultiplier();
 
 const tmpl=HUNT_TEMPLATES[Math.floor(Math.random()*HUNT_TEMPLATES.length)];

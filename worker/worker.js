@@ -66,7 +66,7 @@ Respond with ONLY valid JSON:
 {"mods":[{"skillName":"exact skill name","mod":"[스킬명] effect description"}]}`
 };
 
-const MAX_TOKENS = { item: 300, skill: 300, story: 500, npc: 300, levelup: 300, combat: 2000, skillcustom: 300 };
+const MAX_TOKENS = { item: 500, skill: 500, story: 500, npc: 300, levelup: 600, combat: 2000, skillcustom: 500 };
 
 function corsHeaders(origin) {
   const allowed = origin && (origin === 'https://symmetry.salmonholic.com' || origin.startsWith('http://localhost'));
