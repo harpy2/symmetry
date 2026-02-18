@@ -70,25 +70,26 @@ toast(`캐릭터 슬롯 ${slot+1} 해제 완료! 🎉`);
 }
 
 function updateSlotUI(){
-// 잠금 오버레이 업데이트
+// 잠금 오버레이 — 다른 슬롯 패널은 숨기고 메인 패널만 사용
 for(let i=1;i<=2;i++){
 const overlay=document.getElementById('lock-overlay-'+i);
 if(overlay){overlay.style.display=G.slotUnlocked[i]?'none':'flex'}
 }
+// 항상 slot0 패널을 메인 UI로 사용, 다른 패널은 잠금용만
+document.querySelectorAll('.char-panel').forEach(p=>{
+const s=parseInt(p.dataset.slot);
+if(s===0){p.classList.add('active')}
+else{p.classList.toggle('active',!G.slotUnlocked[s]||!G.party[s])}
+});
 // 탭 버튼 업데이트 + active 표시
 const tabs=document.querySelectorAll('.char-tab');
 const slotOrder=[1,0,2]; // HTML 탭 순서: 캐릭2, 캐릭1, 캐릭3
 if(tabs.length>=3){
-tabs[0].textContent=G.slotUnlocked[1]?(G.party[1]?'캐릭2':'캐릭2 (빈)'):'캐릭2🔒';
-tabs[1].textContent='캐릭1';
-tabs[2].textContent=G.slotUnlocked[2]?(G.party[2]?'캐릭3':'캐릭3 (빈)'):'캐릭3🔒';
+tabs[0].textContent=G.slotUnlocked[1]?(G.party[1]?G.party[1].className||'캐릭2':'캐릭2 (빈)'):'캐릭2🔒';
+tabs[1].textContent=G.party&&G.party[0]?G.party[0].className||'캐릭1':'캐릭1';
+tabs[2].textContent=G.slotUnlocked[2]?(G.party[2]?G.party[2].className||'캐릭3':'캐릭3 (빈)'):'캐릭3🔒';
 tabs.forEach((t,i)=>{t.classList.toggle('active',slotOrder[i]===G.activeSlot)});
 }
-// 캐릭 패널 active 전환
-document.querySelectorAll('.char-panel').forEach(p=>{
-const s=parseInt(p.dataset.slot);
-p.classList.toggle('active',s===G.activeSlot);
-});
 }
 
 function syncActiveChar(){saveCharToSlot()}
