@@ -48,8 +48,8 @@ G.activeSlot=slot;
 }
 
 function switchCharacter(slot){
-if(!G.slotUnlocked[slot]){toast('잠긴 슬롯입니다');return}
-if(!G.party[slot]){toast('캐릭터를 생성하세요!');showScreen('class-screen');G._pendingSlot=slot;return}
+if(!G.slotUnlocked[slot]){unlockSlot(slot);return}
+if(!G.party[slot]){showScreen('class-screen');G._pendingSlot=slot;return}
 saveCharToSlot();
 loadSlotToG(slot);
 renderMainScreen();
