@@ -109,9 +109,9 @@ p.style.opacity='0';
 document.body.appendChild(p);
 return{el:p,spd:0.4+Math.random()*0.8,wobble:(Math.random()-0.5)*3,delay:delay,y:_vh+10,age:0,life:5000+Math.random()*5000,x:Math.random()*100};
 }
-for(let i=0;i<25;i++)_pts.push(_mkP(Math.random()*1500));
-for(let i=0;i<15;i++)_pts.push(_mkP(600+Math.random()*1500));
-for(let i=0;i<10;i++)_pts.push(_mkP(1500+Math.random()*2000));
+for(let i=0;i<5;i++)_pts.push(_mkP(Math.random()*1000));
+for(let i=0;i<3;i++)_pts.push(_mkP(400+Math.random()*1000));
+for(let i=0;i<2;i++)_pts.push(_mkP(800+Math.random()*1000));
 let _t0=performance.now(),_lastT=_t0;
 function _tick(now){
 const dt=Math.min(now-_lastT,50);_lastT=now;

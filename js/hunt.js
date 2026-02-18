@@ -23,6 +23,7 @@ var expText=document.getElementById('hunt-exp-text');if(expText){expText.textCon
 // HP 색상
 hp.style.color=G.hp/G.maxHP>0.5?'var(--success)':G.hp/G.maxHP>0.25?'var(--hunger)':'var(--danger)';
 // 모바일 미니 상태
+var mlv=document.getElementById('hm-level');if(mlv)mlv.textContent=G.level;
 var mhp=document.getElementById('hm-hp');if(mhp){mhp.textContent=Math.floor(G.hp)+'/'+G.maxHP;mhp.style.color=hp.style.color}
 var mhu=document.getElementById('hm-hunger');if(mhu)mhu.textContent=Math.floor(G.hunger)+'%';
 var mmo=document.getElementById('hm-mood');if(mmo)mmo.textContent=Math.floor(G.mood)+'%';
