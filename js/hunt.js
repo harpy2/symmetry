@@ -205,9 +205,9 @@ overlay.classList.add('active');
 function closeMobilePopup(){document.getElementById('mobile-popup-overlay').classList.remove('active')}
 
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';
-if(cls==='action'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px'}
-else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b'}
-else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px'}
+if(cls==='action'||cls==='critical'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right')}
+else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left')}
+else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake')}
 else if(cls==='loading'){d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
 else{d.style.textAlign='center';d.style.margin='0 auto'}
 log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();const spd=['buff','miss'].includes(cls)?250:500;setTimeout(r,spd)})}
