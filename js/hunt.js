@@ -167,14 +167,21 @@ if(statsArr.length)html+='<div class="hm-item-stat">'+statsArr.join(', ')+'</div
 modsArr.forEach(function(m){html+='<div class="hm-item-mod">✦ '+m+'</div>'});
 html+='</div>';
 });
-// 레벨업 버프
+// 레벨업 버프 (같은 이름 합산)
 if(G._appliedBuffs&&G._appliedBuffs.length){
 html+='<div class="hm-divider"></div>';
 html+='<div class="hm-section-title">⭐ 레벨업 버프</div>';
+var buffMap={};var buffOrder=[];
 G._appliedBuffs.forEach(function(b){
 var name=typeof b==='string'?b:b.name;
 var desc=typeof b==='object'&&b.desc?b.desc:'';
-html+='<div class="hm-item"><div class="hm-item-mod">⭐ '+name+(desc?' - '+desc:'')+'</div></div>';
+if(buffMap[name]){buffMap[name].count++}
+else{buffMap[name]={desc:desc,count:1};buffOrder.push(name)}
+});
+buffOrder.forEach(function(name){
+var b=buffMap[name];
+var countText=b.count>1?' x'+b.count:'';
+html+='<div class="hm-item"><div class="hm-item-mod">⭐ '+name+countText+(b.desc?' - '+b.desc:'')+'</div></div>';
 });
 }
 if(!html){list.innerHTML='<div class="hm-empty">장착된 장비 없음</div>';return}
