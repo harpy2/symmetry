@@ -75,11 +75,11 @@ for(let i=1;i<=2;i++){
 const overlay=document.getElementById('lock-overlay-'+i);
 if(overlay){overlay.style.display=G.slotUnlocked[i]?'none':'flex'}
 }
-// 항상 slot0 패널을 메인 UI로 사용, 다른 패널은 잠금용만
+// slot0 패널만 메인 UI — 항상 active, 나머지는 데스크탑에서만 표시
 document.querySelectorAll('.char-panel').forEach(p=>{
 const s=parseInt(p.dataset.slot);
 if(s===0){p.classList.add('active')}
-else{p.classList.toggle('active',!G.slotUnlocked[s]||!G.party[s])}
+else{p.classList.remove('active')}
 });
 // 탭 버튼 업데이트 + active 표시
 const tabs=document.querySelectorAll('.char-tab');
