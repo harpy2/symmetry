@@ -161,7 +161,8 @@ Object.entries(item.stats).forEach(function(e){if(e[1])statsArr.push(e[0]+' +'+e
 var modsArr=[];
 if(item.skillMods&&item.skillMods.length){item.skillMods.forEach(function(m){modsArr.push(m.mod||m)})}
 var itemIcon=item.svgData?'<span class="item-svg item-svg-sm">'+item.svgData+'</span>':(item.emoji||'');
-html+='<div class="hm-item"><div class="hm-item-name">'+itemIcon+' '+(slotNames[slot]||slot)+'</div>';
+var gradeColor=GRADE_COLORS&&GRADE_COLORS[item.grade]||'#ccc';
+html+='<div class="hm-item"><div class="hm-item-name">'+itemIcon+' <span style="color:'+gradeColor+'">'+item.name+'</span> <span style="opacity:.5;font-size:10px">'+(slotNames[slot]||slot)+'</span></div>';
 if(statsArr.length)html+='<div class="hm-item-stat">'+statsArr.join(', ')+'</div>';
 modsArr.forEach(function(m){html+='<div class="hm-item-mod">✦ '+m+'</div>'});
 html+='</div>';
