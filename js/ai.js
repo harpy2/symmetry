@@ -341,13 +341,13 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         const eRoll = Math.random();
         const evadeChance = 0.15 + equipEvade / 100;
         if (eRoll < evadeChance) {
-          lines.push({ text: `${enemy}의 공격이 빗나갔다!${equipEvade>0?' (회피!)':''}`, type: 'damage', dmg: 0 });
+          lines.push({ text: `${enemy}의 공격이 빗나갔다!${equipEvade>0?' (회피!)':''}`, type: 'enemy-atk', dmg: 0 });
         } else {
           const eCrit = eRoll > 0.9;
           const rawDmg = (isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (eCrit ? 1.8 : (0.6 + Math.random() * 0.4));
           const eDmg = Math.max(1, Math.floor(rawDmg - curDef / 3));
           totalTaken += eDmg;
-          lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격! → -${eDmg} HP`, type: 'damage', dmg: eDmg });
+          lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격! → -${eDmg} HP`, type: 'enemy-atk', dmg: eDmg });
         }
       }
       tempDefBuff = 0; // 방어 버프 1턴만

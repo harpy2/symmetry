@@ -146,7 +146,7 @@ if(G.autoHunt&&G.hp>G.maxHP*0.2){setTimeout(()=>{if(G.autoHunt)startHunt()},1500
 
 // Map AI line types to CSS classes
 function mapLineType(type){
-const map={action:'action',damage:'damage',critical:'action',miss:'action',buff:'story',story:'story',victory:'victory',defeat:'damage',loot:'loot'};
+const map={action:'action',damage:'damage','enemy-atk':'enemy-atk',critical:'action',miss:'action',buff:'story',story:'story',victory:'victory',defeat:'damage',loot:'loot'};
 return map[type]||'story';
 }
 
@@ -197,6 +197,7 @@ function closeMobilePopup(){document.getElementById('mobile-popup-overlay').clas
 
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';
 if(cls==='action'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px'}
+else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b'}
 else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px'}
 else if(cls==='loading'){d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
 else{d.style.textAlign='center';d.style.margin='0 auto'}

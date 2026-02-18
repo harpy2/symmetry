@@ -127,9 +127,32 @@ function renderEquipRow(){
 const left=document.getElementById('equip-col-left');
 const right=document.getElementById('equip-col-right');
 if(!left||!right)return;
-left.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="openOverlay('inventory','${s.key}')" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
-right.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="openOverlay('inventory','${s.key}')" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
+left.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
+right.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${item?item.emoji:s.icon}</div>`}).join('');
 }
+
+// 장비 상세 팝업
+function showEquipPopup(slot){
+const item=G.equipment[slot];if(!item)return;
+const existing=document.getElementById('equip-detail-popup');
+if(existing){existing.remove();return}
+const slotNames={helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',weapon:'주무기',necklace:'목걸이',ring1:'반지1',ring2:'반지2',offhand:'보조무기'};
+const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${k}: +${v}</div>`).join('');
+const modsHTML=(item.skillMods&&item.skillMods.length)?item.skillMods.map(m=>`<div style="color:var(--cyan)">✦ ${m.mod}</div>`).join(''):'';
+const el=document.createElement('div');el.id='equip-detail-popup';
+el.innerHTML=`<div class="edp-overlay" onclick="closeEquipPopup()"><div class="edp-card" onclick="event.stopPropagation()">
+<div class="edp-name" style="color:${GRADE_COLORS[item.grade]}">${item.emoji} ${item.name}</div>
+<div class="edp-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${slotNames[slot]||slot}</div>
+<div class="edp-stats">${statsHTML}</div>
+${modsHTML?'<div class="edp-mods">'+modsHTML+'</div>':''}
+<div class="edp-dur">내구도: ${item.durability}/${item.maxDurability}</div>
+<div class="edp-desc">${item.desc||''}</div>
+<button class="btn btn-sm btn-secondary" onclick="unequipFromPopup('${slot}')">해제</button>
+</div></div>`;
+document.body.appendChild(el);
+}
+function closeEquipPopup(){const el=document.getElementById('equip-detail-popup');if(el)el.remove()}
+function unequipFromPopup(slot){if(!G.equipment[slot])return;G.inventory.push(G.equipment[slot]);G.equipment[slot]=null;closeEquipPopup();toast('장비 해제');renderEquipRow();renderCharacter();updateBars();saveGame()}
 
 function renderSkillRow(){const row=document.getElementById('skill-equip-row');
 row.innerHTML=G.equippedSkills.map(s=>`<div class="skill-slot" title="${s.name}">${s.icon}</div>`).join('')}
