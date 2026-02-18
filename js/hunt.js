@@ -22,6 +22,10 @@ var expBar=document.getElementById('hunt-exp-bar');if(expBar){expBar.style.width
 var expText=document.getElementById('hunt-exp-text');if(expText){expText.textContent=G.exp+'%'}
 // HP 색상
 hp.style.color=G.hp/G.maxHP>0.5?'var(--success)':G.hp/G.maxHP>0.25?'var(--hunger)':'var(--danger)';
+// 모바일 미니 상태
+var mhp=document.getElementById('hm-hp');if(mhp){mhp.textContent=Math.floor(G.hp)+'/'+G.maxHP;mhp.style.color=hp.style.color}
+var mhu=document.getElementById('hm-hunger');if(mhu)mhu.textContent=Math.floor(G.hunger)+'%';
+var mmo=document.getElementById('hm-mood');if(mmo)mmo.textContent=Math.floor(G.mood)+'%';
 // 오른쪽 장비효과 패널
 renderHuntMods();
 }

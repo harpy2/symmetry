@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=25">
+<link rel="stylesheet" href="css/style.css?v=26">
 </head>
 <body>
 
@@ -122,10 +122,17 @@
 <button class="btn" onclick="startHunt()" id="hunt-btn">🗡️ 사냥 시작</button>
 <button class="btn btn-secondary" onclick="toggleAutoHunt()" id="auto-hunt-btn">🔄 자동사냥</button>
 </div>
-<div class="hunt-mobile-btns">
-<button class="btn btn-sm" onclick="showMobilePopup('stat')">📊 상태</button>
-<button class="btn btn-sm" onclick="showMobilePopup('mods')">✦ 장비효과</button>
 </div>
+<!-- 모바일 우상단 버튼 -->
+<div class="hunt-mobile-float">
+<button class="hunt-float-btn" onclick="showMobilePopup('stat')">📊</button>
+<button class="hunt-float-btn" onclick="showMobilePopup('mods')">✦</button>
+</div>
+<!-- 모바일 하단 미니 상태 -->
+<div class="hunt-mobile-status" id="hunt-mobile-status">
+<span>❤️ <span id="hm-hp">100/100</span></span>
+<span>🍖 <span id="hm-hunger">100%</span></span>
+<span>⚡ <span id="hm-mood">100%</span></span>
 </div>
 <!-- 오른쪽: 커스텀 옵션 현황 -->
 <div class="hunt-panel hunt-panel-right">
@@ -189,7 +196,7 @@
 <script src="js/game.js?v=3"></script>
 <script src="js/ai.js?v=6"></script>
 <script src="js/ui.js?v=7"></script>
-<script src="js/hunt.js?v=15"></script>
+<script src="js/hunt.js?v=16"></script>
 <script src="js/inventory.js?v=4"></script>
 </body>
 </html>
