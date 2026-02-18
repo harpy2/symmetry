@@ -204,10 +204,26 @@ overlay.classList.add('active');
 }
 function closeMobilePopup(){document.getElementById('mobile-popup-overlay').classList.remove('active')}
 
-function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';
-if(cls==='action'||cls==='critical'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right')}
-else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left')}
-else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake')}
+function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
+if(cls==='action'||cls==='critical'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right');
+// 슬라이드 끝에 데미지 팝업 — 다음 damage 라인의 숫자를 미리 표시
+d._isAttack=true;d._isCrit=cls==='critical';
+}
+else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left');
+// 적 공격 데미지 팝업
+const dmgMatch=text.match(/-(\d+)\s*HP/);
+if(dmgMatch){const pop=document.createElement('span');pop.className='hunt-dmg-pop player-dmg';pop.textContent='-'+dmgMatch[1];d.appendChild(pop);setTimeout(()=>pop.remove(),900)}
+}
+else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake');
+// 데미지 숫자 팝업
+const dmgMatch=text.match(/(\d+)\s*피해/);
+if(dmgMatch){
+const prevAtk=log.querySelector('.hunt-line.hunt-slide-right:last-of-type');
+const pop=document.createElement('span');pop.className='hunt-dmg-pop enemy-dmg';pop.textContent=dmgMatch[1];
+if(text.includes('처치'))pop.textContent+=' 💀';
+d.appendChild(pop);setTimeout(()=>pop.remove(),900);
+}
+}
 else if(cls==='loading'){d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
 else{d.style.textAlign='center';d.style.margin='0 auto'}
 log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();const spd=['buff','miss'].includes(cls)?250:500;setTimeout(r,spd)})}
