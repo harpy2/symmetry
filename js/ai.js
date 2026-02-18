@@ -133,20 +133,41 @@ function getSkillMods(skillName){
 
 // 커스텀 옵션 파싱
 function parseCustomMod(mod,skillName){
-  const r={hits:1,dmgBonus:0,aoe:false,multiTarget:1,healPct:0,extraCast:0,critDmgBonus:0,defBuff:0,penetrate:false,atkSpdBuff:0,dot:0};
+  const r={hits:1,dmgBonus:0,aoe:false,multiTarget:1,healPct:0,extraCast:0,critDmgBonus:0,defBuff:0,penetrate:false,atkSpdBuff:0,dot:0,
+    stun:0,silence:false,freeze:false,fear:0,execute:false,reflect:0,defIgnore:false,killHeal:0,lowHpDmg:0,goldDrop:false,coolReset:0,burstEvery:0,killCrit:false,atkSteal:0};
   const s=mod.replace(skillName+' ','');
+  // 연속/멀티
   if(s.includes('2연속'))r.hits=2;
   if(s.includes('3연속'))r.hits=3;
-  if(s.match(/데미지 \+(\d+)%/)){r.dmgBonus=parseInt(RegExp.$1)}
-  if(s.includes('범위')&&s.includes('확대'))r.aoe=true;
   if(s.includes('3갈래')||s.includes('3타겟'))r.multiTarget=3;
-  if(s.match(/HP (\d+)% 회복/))r.healPct=parseInt(RegExp.$1);
-  if(s.match(/(\d+)% 확률 추가 시전/))r.extraCast=parseInt(RegExp.$1);
+  if(s.includes('범위')&&s.includes('확대'))r.aoe=true;
+  // 딜 강화
+  if(s.match(/데미지 \+(\d+)%/)){r.dmgBonus=parseInt(RegExp.$1)}
   if(s.match(/치명타 데미지 \+(\d+)%/))r.critDmgBonus=parseInt(RegExp.$1);
-  if(s.match(/방어력 \+(\d+)%/))r.defBuff=parseInt(RegExp.$1);
-  if(s.includes('관통'))r.penetrate=true;
-  if(s.match(/공격속도 \+(\d+)%/))r.atkSpdBuff=parseInt(RegExp.$1);
+  if(s.includes('관통')&&!s.includes('방어력'))r.penetrate=true;
+  if(s.includes('방어력 무시'))r.defIgnore=true;
+  // 상태이상
   if(s.includes('출혈')||s.includes('화상')||s.includes('중독'))r.dot=Math.floor(5+G.floor*0.5);
+  if(s.includes('스턴'))r.stun=s.match(/(\d+)%/)?parseInt(RegExp.$1):30;
+  if(s.includes('침묵'))r.silence=true;
+  if(s.includes('빙결'))r.freeze=true;
+  if(s.includes('공포'))r.fear=30;
+  // 처형/저HP
+  if(s.includes('처형')||s.includes('HP 30% 이하 적'))r.execute=true;
+  if(s.match(/HP (\d+)% 이하에서 데미지 (\d+)배/))r.lowHpDmg=parseInt(RegExp.$2);
+  if(s.match(/HP (\d+)% 이하 시 공격력 (\d+)배/))r.lowHpDmg=parseInt(RegExp.$2);
+  // 회복/방어
+  if(s.match(/HP (\d+)% 회복/))r.healPct=parseInt(RegExp.$1);
+  if(s.match(/처치 시 HP (\d+)%/))r.killHeal=parseInt(RegExp.$1);
+  if(s.match(/방어력 \+(\d+)%/))r.defBuff=parseInt(RegExp.$1);
+  if(s.match(/(\d+)% 반사/))r.reflect=parseInt(RegExp.$1);
+  // 특수
+  if(s.match(/(\d+)% 확률 추가 시전/))r.extraCast=parseInt(RegExp.$1);
+  if(s.match(/(\d+)% 확률 쿨타임/))r.coolReset=parseInt(RegExp.$1);
+  if(s.includes('골드 2배'))r.goldDrop=true;
+  if(s.match(/(\d+)회 시전마다/))r.burstEvery=parseInt(RegExp.$1);
+  if(s.includes('반드시 크리티컬'))r.killCrit=true;
+  if(s.match(/공격력 흡수 \(\+(\d+)\)/))r.atkSteal=parseInt(RegExp.$1);
   return r;
 }
 
@@ -188,7 +209,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     const skill = skillPool[Math.floor(Math.random() * skillPool.length)];
     const mods = getSkillMods(skill.name);
     // 커스텀 효과 합산
-    const fx = { hits:1, dmgBonus:0, aoe:skill.aoe||false, multiTarget:1, healPct:0, extraCast:0, critDmgBonus:0, defBuff:0, penetrate:false, atkSpdBuff:0, dot:0 };
+    const fx = { hits:1, dmgBonus:0, aoe:skill.aoe||false, multiTarget:1, healPct:0, extraCast:0, critDmgBonus:0, defBuff:0, penetrate:false, atkSpdBuff:0, dot:0,
+      stun:0, silence:false, freeze:false, fear:0, execute:false, reflect:0, defIgnore:false, killHeal:0, lowHpDmg:0, goldDrop:false, coolReset:0, burstEvery:0, killCrit:false, atkSteal:0 };
     const modTexts = [];
     mods.forEach(m => {
       const p = parseCustomMod(m, skill.name);
@@ -203,6 +225,18 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       if(p.penetrate) fx.penetrate = true;
       fx.atkSpdBuff += p.atkSpdBuff;
       fx.dot += p.dot;
+      fx.stun = Math.max(fx.stun, p.stun);
+      if(p.silence) fx.silence = true;
+      if(p.freeze) fx.freeze = true;
+      fx.fear = Math.max(fx.fear, p.fear);
+      if(p.execute) fx.execute = true;
+      fx.reflect += p.reflect;
+      if(p.defIgnore) fx.defIgnore = true;
+      fx.killHeal = Math.max(fx.killHeal, p.killHeal);
+      fx.lowHpDmg = Math.max(fx.lowHpDmg, p.lowHpDmg);
+      if(p.goldDrop) fx.goldDrop = true;
+      if(p.killCrit) fx.killCrit = true;
+      fx.atkSteal += p.atkSteal;
       modTexts.push(m);
     });
 
@@ -236,7 +270,9 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     for (let hit = 0; hit < totalHits; hit++) {
       const curAlive = enemies.filter(e => e.alive);
       if (curAlive.length === 0) break;
-      const dmgRaw = Math.floor(baseDmg * dmgMult);
+      let dmgRaw = Math.floor(baseDmg * dmgMult);
+      // 저HP 보너스 (HP 30% 이하 시 공격력 N배)
+      if (fx.lowHpDmg > 0 && G.hp <= G.maxHP * 0.3) dmgRaw = Math.floor(dmgRaw * fx.lowHpDmg);
       const dmg = dmgRaw + equipPenetrate; // 관통 스탯은 추가 고정 데미지
 
       if (isMiss && hit === 0) {
@@ -272,13 +308,21 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       } else {
         // 단일 공격 — 1마리에게만 집중 피해
         const target = curAlive[0];
-        target.hp -= dmg;
-        totalDmg += dmg;
+        // 처형: 적 HP 30% 이하면 3배 데미지
+        let finalDmg = dmg;
+        if (fx.execute && target.hp <= singleHP * 0.3) {
+          finalDmg = dmg * 3;
+          if (hit === 0) lines.push({ text: `⚰️ 처형 발동! 데미지 3배!`, type: 'buff' });
+        }
+        // 빙결 대상 1.5배
+        if (target.frozen) { finalDmg = Math.floor(finalDmg * 1.5); target.frozen = false; }
+        target.hp -= finalDmg;
+        totalDmg += finalDmg;
         const hitLabel = totalHits > 1 ? ` [${hit+1}/${totalHits}타]` : '';
         lines.push({ text: `${skill.icon} ${skill.name}${hitLabel} 시전!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action' });
         if(target.hp<=0){target.alive=false;const remaining=enemies.filter(e=>e.alive).length;
-        lines.push({ text: `${enemy}에게 ${dmg} 피해! 처치!${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });}
-        else{lines.push({ text: `${enemy}에게 ${dmg} 피해!`, type: 'damage' });}
+        lines.push({ text: `${enemy}에게 ${finalDmg} 피해! 처치!${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });}
+        else{lines.push({ text: `${enemy}에게 ${finalDmg} 피해!`, type: 'damage' });}
       }
 
       // DoT 부여
@@ -320,23 +364,61 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       }
     }
 
-    // 스킬 특수 효과 (스턴/버프)
+    // 스킬 특수 효과 (스턴/버프/상태이상)
     let enemyStunned = false;
+    let enemySilenced = false;
+    let enemyFeared = false;
     const desc = skill.desc || '';
+    const killedThisTurn = enemies.filter(e => !e.alive).length;
     if (!isMiss) {
+      // 스킬 자체 효과
       if (desc.includes('스턴') || desc.includes('행동 불가')) {
         enemyStunned = true;
         lines.push({ text: `💫 ${enemy} 스턴! 행동 불가!`, type: 'buff' });
       }
       if (desc.includes('무적') || desc.includes('방어 스킬')) {
         lines.push({ text: `🧊 ${skill.name} — 무적 상태! 이번 턴 피해 무효!`, type: 'buff' });
-        enemyStunned = true; // 무적=적 공격 무효화
+        enemyStunned = true;
       }
       if (skill.buff && desc.includes('ATK')) {
         lines.push({ text: `🔥 ${skill.name} — 공격력 강화!`, type: 'buff' });
       }
       if (skill.buff && desc.includes('공속')) {
         lines.push({ text: `⚡ ${skill.name} — 공격 속도 강화!`, type: 'buff' });
+      }
+      // 커스텀 옵션 상태이상
+      if (fx.stun > 0 && Math.random()*100 < fx.stun) {
+        enemyStunned = true;
+        lines.push({ text: `💫 ${skill.name} — ${enemy} 스턴! 행동 불가!`, type: 'buff' });
+      }
+      if (fx.silence) {
+        enemySilenced = true;
+        lines.push({ text: `🔇 ${skill.name} — ${enemy} 침묵! 스킬 사용 불가!`, type: 'buff' });
+      }
+      if (fx.freeze) {
+        enemies.filter(e=>e.alive).forEach(e=>{e.frozen=true});
+        lines.push({ text: `🧊 ${skill.name} — ${enemy} 빙결! 다음 피해 1.5배!`, type: 'buff' });
+      }
+      if (fx.fear > 0 && Math.random()*100 < fx.fear) {
+        enemyFeared = true;
+        lines.push({ text: `😱 ${skill.name} — ${enemy} 공포! 공격력 -30%!`, type: 'buff' });
+      }
+      // 처치 시 효과
+      if (fx.killHeal > 0 && killedThisTurn > 0) {
+        const heal = Math.floor(G.maxHP * fx.killHeal / 100);
+        totalTaken -= heal;
+        lines.push({ text: `💚 적 처치! HP +${heal} 회복!`, type: 'buff' });
+      }
+      if (fx.killCrit && killedThisTurn > 0) {
+        lines.push({ text: `⚡ 적 처치! 다음 공격 반드시 크리티컬!`, type: 'buff' });
+      }
+      // 공격력 흡수
+      if (fx.atkSteal > 0) {
+        lines.push({ text: `💀 ${enemy}의 힘을 흡수! ATK +${fx.atkSteal}`, type: 'buff' });
+      }
+      // 반사
+      if (fx.reflect > 0) {
+        lines.push({ text: `🪞 데미지 ${fx.reflect}% 반사 활성화!`, type: 'buff' });
       }
     }
 
@@ -346,6 +428,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const attackers = isBoss ? stillAlive : stillAlive.filter(() => Math.random() < 0.7);
       const actualAttackers = attackers.length > 0 ? attackers : [stillAlive[0]];
       const curDef = effectiveDef + tempDefBuff;
+      const fearMult = enemyFeared ? 0.7 : 1;
       for (const attacker of actualAttackers) {
         const eRoll = Math.random();
         const evadeChance = 0.15 + equipEvade / 100;
@@ -353,13 +436,20 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           lines.push({ text: `${enemy}의 공격이 빗나갔다!${equipEvade>0?' (회피!)':''}`, type: 'enemy-atk', dmg: 0 });
         } else {
           const eCrit = eRoll > 0.9;
-          const rawDmg = (isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (eCrit ? 1.8 : (0.6 + Math.random() * 0.4));
-          const eDmg = Math.max(1, Math.floor(rawDmg - curDef / 3));
+          const rawDmg = (isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (eCrit ? 1.8 : (0.6 + Math.random() * 0.4)) * fearMult;
+          let eDmg = Math.max(1, Math.floor(rawDmg - curDef / 3));
           totalTaken += eDmg;
-          lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격! → -${eDmg} HP`, type: 'enemy-atk', dmg: eDmg });
+          lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격!${enemyFeared?' (공포!)':''} → -${eDmg} HP`, type: 'enemy-atk', dmg: eDmg });
+          // 반사 데미지
+          if (fx.reflect > 0) {
+            const reflDmg = Math.floor(eDmg * fx.reflect / 100);
+            attacker.hp -= reflDmg; totalDmg += reflDmg;
+            lines.push({ text: `🪞 반사 데미지! ${enemy}에게 ${reflDmg} 피해!${attacker.hp<=0?' 처치!':''}`, type: 'buff' });
+            if(attacker.hp<=0)attacker.alive=false;
+          }
         }
       }
-      tempDefBuff = 0; // 방어 버프 1턴만
+      tempDefBuff = 0;
     }
   }
 

@@ -25,24 +25,56 @@ return pctStats.includes(stat)?v+'%':v;
 // 스킬 강화 커스텀 옵션 생성 (장착 스킬 기반)
 function generateSkillCustom(){
 const skills=G.equippedSkills||[];
-if(skills.length===0)return{mod:'전체 스킬 데미지 +15%'};
+if(skills.length===0){
+// 스킬 없을 때 범용 옵션
+const generic=[
+{mod:'HP 30% 이하 시 공격력 2배'},
+{mod:'처치 시 HP 10% 회복'},
+{mod:'받는 데미지 15% 반사'},
+{mod:'전체 스킬 데미지 +20%'},
+{mod:'5타마다 추가 공격 발동'},
+{mod:'치명타 시 적 1초 스턴'},
+{mod:'피격 시 20% 확률 무적 1턴'},
+];
+return generic[Math.floor(Math.random()*generic.length)];
+}
 const sk=skills[Math.floor(Math.random()*skills.length)];
 const templates=[
-`${sk.name} 2연속 발사`,
-`${sk.name} 3연속 발사`,
+// 🔥 딜 강화
 `${sk.name} 데미지 +30%`,
 `${sk.name} 데미지 +50%`,
-`${sk.name} 범위 2배 확대`,
-`${sk.name} 3갈래로 분산 (3타겟 동시 공격)`,
-`${sk.name} 시전 시 HP 5% 회복`,
-`${sk.name} 시전 시 HP 8% 회복`,
-`${sk.name} 적중 시 50% 확률 추가 시전`,
 `${sk.name} 치명타 데미지 +50%`,
-`${sk.name} 시전 시 방어력 +20% (3초)`,
 `${sk.name} 관통 효과 추가`,
-`${sk.name} 적중 시 출혈 부여 (지속 피해)`,
-`${sk.name} 적중 시 화상 부여 (지속 피해)`,
-`${sk.name} 적중 시 중독 부여 (지속 피해)`
+`${sk.name} HP 30% 이하 적에게 데미지 3배 (처형)`,
+// 🎯 연속/멀티
+`${sk.name} 2연속 발사`,
+`${sk.name} 3연속 발사`,
+`${sk.name} 3갈래로 분산 (3타겟 동시 공격)`,
+`${sk.name} 적중 시 50% 확률 추가 시전`,
+`${sk.name} 범위 2배 확대`,
+// 🩸 상태이상
+`${sk.name} 적중 시 출혈 부여 (매턴 피해)`,
+`${sk.name} 적중 시 화상 부여 (매턴 피해)`,
+`${sk.name} 적중 시 중독 부여 (매턴 피해)`,
+`${sk.name} 적중 시 30% 확률 스턴 (1턴 행동불가)`,
+`${sk.name} 적중 시 침묵 부여 (적 스킬 사용 불가)`,
+`${sk.name} 적중 시 빙결 (다음 피해 1.5배)`,
+`${sk.name} 적중 시 공포 부여 (적 공격력 -30%)`,
+// 💚 생존/회복
+`${sk.name} 시전 시 HP 5% 회복`,
+`${sk.name} 시전 시 HP 10% 회복`,
+`${sk.name} 시전 시 방어력 +30% (1턴)`,
+`${sk.name} 처치 시 HP 15% 회복`,
+`${sk.name} HP 30% 이하에서 데미지 2배`,
+// ⚡ 특수 효과
+`${sk.name} 데미지의 20% 반사`,
+`${sk.name} 적중 시 골드 2배 드롭`,
+`${sk.name} 적중 시 적 방어력 무시`,
+`${sk.name} 시전 시 20% 확률 쿨타임 초기화`,
+`${sk.name} 5회 시전마다 데미지 3배 폭발`,
+`${sk.name} 적 처치 시 다음 공격 반드시 크리티컬`,
+`${sk.name} 적중 시 적 공격력 흡수 (+5)`,
+`${sk.name} 시전 시 아군 전체 치명타 +10%`,
 ];
 return{mod:templates[Math.floor(Math.random()*templates.length)],skillName:sk.name};
 }
