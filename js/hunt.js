@@ -212,7 +212,7 @@ d._isAttack=true;d._isCrit=cls==='critical';
 else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left');
 // 적 공격 데미지 팝업
 const dmgMatch=text.match(/-(\d+)\s*HP/);
-if(dmgMatch){const pop=document.createElement('span');pop.className='hunt-dmg-pop player-dmg';pop.textContent='-'+dmgMatch[1];d.appendChild(pop);setTimeout(()=>pop.remove(),900)}
+if(dmgMatch){const pop=document.createElement('span');pop.className='hunt-dmg-pop player-dmg';pop.textContent='-'+dmgMatch[1];d.appendChild(pop);setTimeout(()=>pop.remove(),1500)}
 }
 else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake');
 // 데미지 숫자 팝업
@@ -221,7 +221,7 @@ if(dmgMatch){
 const prevAtk=log.querySelector('.hunt-line.hunt-slide-right:last-of-type');
 const pop=document.createElement('span');pop.className='hunt-dmg-pop enemy-dmg';pop.textContent=dmgMatch[1];
 if(text.includes('처치'))pop.textContent+=' 💀';
-d.appendChild(pop);setTimeout(()=>pop.remove(),900);
+d.appendChild(pop);setTimeout(()=>pop.remove(),1500);
 }
 }
 else if(cls==='loading'){d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
