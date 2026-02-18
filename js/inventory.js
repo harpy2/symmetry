@@ -56,7 +56,8 @@ const prefix=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];
 const material=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];
 const name=`${prefix} ${material}의 ${suffixes[si]}`;
 const roll=Math.random()*100;let grade='일반';
-if(roll<2)grade='에픽';else if(roll<10)grade='유니크';else if(roll<25)grade='레어';else if(roll<55)grade='매직';
+// ⚠️ TEST MODE: 유니크/에픽 확률 대폭 상향 (테스트 후 원복 필요!)
+if(roll<30)grade='에픽';else if(roll<65)grade='유니크';else if(roll<80)grade='레어';else if(roll<95)grade='매직';
 const gMult={일반:1,매직:1.3,레어:1.5,유니크:2.2,에픽:3.5}[grade];
 const floorMult=1+G.floor*0.1;
 
