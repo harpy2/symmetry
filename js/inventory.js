@@ -29,15 +29,20 @@ if(skills.length===0)return{mod:'전체 스킬 데미지 +15%'};
 const sk=skills[Math.floor(Math.random()*skills.length)];
 const templates=[
 `${sk.name} 2연속 발사`,
+`${sk.name} 3연속 발사`,
 `${sk.name} 데미지 +30%`,
+`${sk.name} 데미지 +50%`,
 `${sk.name} 범위 2배 확대`,
 `${sk.name} 3갈래로 분산 (3타겟 동시 공격)`,
 `${sk.name} 시전 시 HP 5% 회복`,
+`${sk.name} 시전 시 HP 8% 회복`,
 `${sk.name} 적중 시 50% 확률 추가 시전`,
 `${sk.name} 치명타 데미지 +50%`,
 `${sk.name} 시전 시 방어력 +20% (3초)`,
 `${sk.name} 관통 효과 추가`,
-`${sk.name} 적중 시 공격속도 +15% (5초)`
+`${sk.name} 적중 시 출혈 부여 (지속 피해)`,
+`${sk.name} 적중 시 화상 부여 (지속 피해)`,
+`${sk.name} 적중 시 중독 부여 (지속 피해)`
 ];
 return{mod:templates[Math.floor(Math.random()*templates.length)],skillName:sk.name};
 }
