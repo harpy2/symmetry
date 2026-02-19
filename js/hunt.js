@@ -238,7 +238,7 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
-// 고정 컨테이너 200x200 — 액션 전환해도 크기 불변
+// 고정 200x200 외부 컨테이너 + 내부 스프라이트는 프레임 정확한 크기
 const BOX=200;
 const scale=BOX/anim.h;
 const frameW=Math.round(anim.w*scale);
@@ -252,9 +252,22 @@ if(!document.getElementById('style-'+animName)){
 const loopCount=loops||1;
 const isIdle=actionType==='idle'||actionType==='walk';
 const oneCycleDur=8*0.1;
+// 외부 래퍼는 200x200 고정, 내부 스프라이트는 정확한 프레임 크기
+let wrapper=el.parentElement;
+if(!wrapper.classList.contains('sprite-box')){
+  // 최초 1회: 래퍼 생성
+  wrapper=document.createElement('div');
+  wrapper.className='sprite-box';
+  wrapper.style.cssText='width:'+BOX+'px;height:'+BOX+'px;position:absolute;bottom:60px;left:50%;transform:translateX(-50%);overflow:hidden;pointer-events:none;z-index:0';
+  el.parentElement.insertBefore(wrapper,el);
+  wrapper.appendChild(el);
+}
 el.style.animation='none';
+el.style.position='absolute';
+el.style.bottom='0';
+el.style.left=Math.round((BOX-frameW)/2)+'px';
 el.style.backgroundImage="url('"+anim.src+SPRITE_VER+"')";
-el.style.width=BOX+'px';
+el.style.width=frameW+'px';
 el.style.height=BOX+'px';
 el.style.backgroundSize=stw+'px '+BOX+'px';
 el.style.backgroundPosition='0 0';
