@@ -1,6 +1,7 @@
 // ===== HUNTING =====
 let huntInProgress=false;
-function renderHunt(){document.getElementById('hunt-floor').textContent=G.floor;updateAutoHuntUI();updateHuntStatus()}
+function renderHunt(){document.getElementById('hunt-floor').textContent=G.floor;updateAutoHuntUI();updateHuntStatus();
+if(G.autoHunt&&!huntInProgress){setTimeout(()=>{if(G.autoHunt&&!huntInProgress)startHunt()},500)}}
 function updateHuntStatus(){
 // 왼쪽 상태 패널
 var hp=document.getElementById('hs-hp');if(!hp)return;
