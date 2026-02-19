@@ -117,6 +117,50 @@ export default {
       }
     }
 
+    // GET /api/cpq/missions — CPQ 캠페인을 NPC 미션으로 변환
+    if (url.pathname === '/api/cpq/missions' && request.method === 'GET') {
+      try {
+        const raw = await env.CPQ_KV.get('cpq_campaigns');
+        if (!raw) return new Response(JSON.stringify({ missions: [] }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        const camps = JSON.parse(raw);
+        const count = parseInt(url.searchParams.get('count') || '4');
+        // 랜덤 셔플 후 count개 선택
+        const shuffled = camps.sort(() => Math.random() - 0.5).slice(0, count);
+        const missions = shuffled.map(c => ({
+          id: c.id,
+          type: c.type, // cpc_detail_place | cpc_detail_place_quiz
+          name: c.name,
+          icon: c.icon,
+          images: c.images || [],
+          search_keyword: c.search_keyword,
+          answer: c.answer,
+          join_desc: c.join_desc,
+          reward_desc: c.reward_desc,
+          url: c.url,
+        }));
+        return new Response(JSON.stringify({ missions }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message, missions: [] }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // POST /api/cpq/verify — 정답 검증
+    if (url.pathname === '/api/cpq/verify' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const { campaign_id, user_answer } = body;
+        if (!campaign_id || !user_answer) return new Response(JSON.stringify({ error: 'campaign_id and user_answer required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+        const raw = await env.CPQ_KV.get('cpq_campaigns');
+        if (!raw) return new Response(JSON.stringify({ correct: false }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        const camp = JSON.parse(raw).find(c => c.id === campaign_id);
+        if (!camp) return new Response(JSON.stringify({ correct: false, error: 'Campaign not found' }), { status: 404, headers: { ...headers, 'Content-Type': 'application/json' } });
+        const correct = String(user_answer).trim() === String(camp.answer).trim();
+        return new Response(JSON.stringify({ correct, campaign_id }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
     if (url.pathname !== '/api/generate' || request.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { ...headers, 'Content-Type': 'application/json' } });
     }

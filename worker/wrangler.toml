@@ -8,3 +8,7 @@ ALLOWED_ORIGIN = "https://symmetry.salmonholic.com"
 [[kv_namespaces]]
 binding = "ITEMS_KV"
 id = "4d5915ca086341d982a00ed137633f80"
+
+[[kv_namespaces]]
+binding = "CPQ_KV"
+id = "96edcd46f8ed471693b63783e4de9936"
