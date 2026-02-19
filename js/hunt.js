@@ -204,17 +204,33 @@ overlay.classList.add('active');
 }
 function closeMobilePopup(){document.getElementById('mobile-popup-overlay').classList.remove('active')}
 
-function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.textContent=text;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
-if(cls==='action'||cls==='critical'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right');
-// 슬라이드 끝에 데미지 팝업 — 다음 damage 라인의 숫자를 미리 표시
+function getActionSprite(actionName){
+const charData=CHAR_SVG[G.className];
+if(!charData||charData.type!=='sprite')return null;
+// 스킬명으로 적절한 액션 매핑
+let action='slash';
+const n=actionName||'';
+if(n.includes('사격')||n.includes('저격')||n.includes('샷건')||n.includes('기관총')||n.includes('관통탄')||n.includes('화살'))action='shot';
+else if(n.includes('마법')||n.includes('파이어')||n.includes('아이스')||n.includes('메테오')||n.includes('라이트닝')||n.includes('치유')||n.includes('소환')||n.includes('저주')||n.includes('힐')||n.includes('빛')||n.includes('정화')||n.includes('축복')||n.includes('보호막')||n.includes('노바')||n.includes('볼'))action='cast';
+else if(n.includes('방패')||n.includes('방어'))action='block';
+const anim=charData[action]||charData.slash||charData.idle;
+if(!anim)return null;
+const animName='hl-'+G.className+'-'+action;
+return `<span class="hunt-line-sprite" style="background-image:url('${anim.src}');width:${Math.round(anim.w*32/anim.h)}px;background-size:${Math.round(anim.tw*32/anim.h)}px 32px;animation:${animName} ${8*0.08}s steps(8) infinite"></span><style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${Math.round(anim.tw*32/anim.h)}px 0}}</style>`;
+}
+function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
+if(cls==='action'||cls==='critical'){
+const sprite=getActionSprite(text);
+d.innerHTML=(sprite||'')+text;
+d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right');
 d._isAttack=true;d._isCrit=cls==='critical';
 }
-else if(cls==='enemy-atk'){d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left');
+else if(cls==='enemy-atk'){d.textContent=text;d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left');
 // 적 공격 데미지 팝업
 const dmgMatch=text.match(/-(\d+)\s*HP/);
 if(dmgMatch){const pop=document.createElement('span');pop.className='hunt-dmg-pop player-dmg';pop.textContent='-'+dmgMatch[1];d.appendChild(pop);setTimeout(()=>pop.remove(),1500)}
 }
-else if(cls==='damage'){d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake');
+else if(cls==='damage'){d.textContent=text;d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake');
 // 데미지 숫자 팝업
 const dmgMatch=text.match(/(\d+)\s*피해/);
 if(dmgMatch){
@@ -224,8 +240,8 @@ if(text.includes('처치'))pop.textContent+=' 💀';
 d.appendChild(pop);setTimeout(()=>pop.remove(),1500);
 }
 }
-else if(cls==='loading'){d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
-else{d.style.textAlign='center';d.style.margin='0 auto'}
+else if(cls==='loading'){d.textContent=text;d.style.textAlign='center';d.style.margin='0 auto';d.style.opacity='.6';d.style.fontStyle='italic'}
+else{d.textContent=text;d.style.textAlign='center';d.style.margin='0 auto'}
 log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();const spd=['buff','miss'].includes(cls)?250:500;setTimeout(r,spd)})}
 
 // ===== BOSS SKILL CHECK POPUP =====
