@@ -51,7 +51,8 @@ const moodMult=getMoodMultiplier();
 
 const tmpl=HUNT_TEMPLATES[Math.floor(Math.random()*HUNT_TEMPLATES.length)];
 const enemy=isBoss?tmpl.boss:tmpl.enemies[Math.floor(Math.random()*tmpl.enemies.length)];
-const enemyCount=isBoss?1:Math.floor(Math.random()*3)+1;
+const maxByFloor=Math.min(20,Math.max(1,Math.floor(G.floor/10)));
+const enemyCount=isBoss?1:Math.floor(Math.random()*maxByFloor)+1;
 
 // === Phase 1: 이동 로딩 (1~8초) ===
 const loadingText=LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
