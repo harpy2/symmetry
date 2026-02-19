@@ -133,11 +133,11 @@ function renderCharacter(){const area=document.getElementById('char-area');const
 const charData=CHAR_SVG[G.className];
 let charHTML='';
 if(charData&&charData.type==='sprite'){
-charHTML=`<div class="char-sprite" style="background-image:url('${charData.src}');width:${charData.w}px;height:${charData.h}px;animation:spriteWalk ${charData.frames*0.12}s steps(${charData.frames}) infinite"></div>`;
-}else if(charData&&typeof charData==='string'){
+const anim=charData.idle;
+charHTML=`<div class="char-sprite" style="background-image:url('${anim.src}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:sprite-${G.className} ${charData.frames*0.12}s steps(${charData.frames}) infinite"></div>
+<style>@keyframes sprite-${G.className}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style>`;
+}else if(typeof charData==='string'){
 charHTML=`<div class="char-svg-wrap">${charData}</div>`;
-}else{
-charHTML=`<div class="char-svg-wrap">${charData||''}</div>`;
 }
 // Build sparkles
 let sparklesHTML='<div class="char-sparkles">';

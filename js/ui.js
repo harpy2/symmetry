@@ -10,7 +10,16 @@ const savedParty=G.party;const savedUnlocked=G.slotUnlocked;const savedGold=G.go
 G=newGame();G.className=name;G.classData=cls;G.maxHP=cls.baseHP;G.hp=cls.baseHP;G.atk=cls.baseATK;G.def=cls.baseDEF;G.allSkills=[...cls.skills];G.allPassives=[...cls.passives];
 if(savedParty){G.party=savedParty;G.slotUnlocked=savedUnlocked;G.gold=savedGold;G.points=savedPoints;G.inventory=savedInv;G.activeSlot=savedSlot;G._pendingSlot=savedPending}
 document.getElementById('class-confirm-btn').disabled=false};
-d.innerHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span style="font-size:36px">${cls.weapon}</span></div><div class="class-info"><h3>${name}</h3><p>${cls.desc}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
+const sprData=CHAR_SVG[name];
+let avatarHTML='';
+if(sprData&&sprData.type==='sprite'){
+const anim=sprData.idle;
+const animName='csel-'+name;
+avatarHTML=`<div class="class-avatar"><div class="char-sprite" style="background-image:url('${anim.src}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div><style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style></div>`;
+}else{
+avatarHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span style="font-size:36px">${cls.weapon}</span></div>`;
+}
+d.innerHTML=`${avatarHTML}<div class="class-info"><h3>${cls.weapon} ${name}</h3><p>${cls.desc}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
 c.appendChild(d)})}
 function confirmClass(){if(!G.className)return;
 // 스킬 없이 시작 — 게임 내에서 획득
