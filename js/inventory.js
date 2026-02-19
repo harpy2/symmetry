@@ -368,7 +368,7 @@ _cpqMissions=data.missions||[];
 }catch(e){_cpqMissions=[];}
 
 if(_cpqMissions.length===0){
-body.innerHTML='<div style="text-align:center;color:var(--text2);padding:40px">현재 진행 가능한 미션이 없습니다.</div>';
+body.innerHTML='<div class="mission-empty">📋<br>현재 진행 가능한 미션이 없습니다.<br><span style="font-size:12px;opacity:.6">잠시 후 다시 확인해 주세요</span></div>';
 return;
 }
 
@@ -382,20 +382,19 @@ const pointReward=15;
 
 let actionHTML='';
 if(joined){
-actionHTML=`<div class="cooldown">✅ 참여 완료</div>`;
+actionHTML=`<div class="mc-action"><div class="cooldown">✅ 참여 완료</div></div>`;
 }else{
-actionHTML=`<button class="btn btn-sm cpq-link-btn" onclick="joinCPQ(${i})" style="margin-top:8px">⚔️ 의뢰 수행</button>`;
+actionHTML=`<div class="mc-action"><button class="btn cpq-link-btn" onclick="joinCPQ(${i})">⚔️ 의뢰 수행</button></div>`;
 }
 
-cards.push(`<div class="mission-card${joined?' mission-done':''}"
-<div class="npc-row"><div class="npc-avatar" style="background:${npc.color}">${npc.avatar}</div>
-<div class="npc-info"><div class="npc-name">${npc.npc}</div></div></div>
-<div class="mission-title">${m.name||'의뢰'}</div>
-<div class="mission-reward">💰 ${goldReward} + 💎 ${pointReward}</div>
+cards.push(`<div class="mission-card${joined?' mission-done':''}">
+<div class="mc-header"><div class="npc-avatar" style="background:${npc.color}">${npc.avatar}</div>
+<div class="mc-header-info"><div class="npc-name">${npc.npc}</div><div class="mission-title">${m.name||'의뢰'}</div></div></div>
+<div class="mc-body"><div class="mission-reward"><span class="reward-tag gold">💰 ${goldReward}</span><span class="reward-tag dia">💎 ${pointReward}</span></div></div>
 ${actionHTML}
 </div>`);
 }
-body.innerHTML=cards.join('');
+body.innerHTML=`<div class="mission-list">${cards.join('')}</div>`;
 }
 
 async function joinCPQ(idx){
