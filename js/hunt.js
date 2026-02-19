@@ -236,7 +236,9 @@ const el=document.getElementById('hunt-bg-sprite');
 if(!el)return;
 const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
-const anim=charData[actionType]||charData.slash||charData.idle;
+// 배경 스프라이트는 idle/walk만 사용 (액션 스프라이트는 2행 레이어형에서 깨짐)
+const safeAction=(actionType==='idle'||actionType==='walk')?actionType:'idle';
+const anim=charData[safeAction]||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
 // 높이 200px 기준 스케일 (프레임 비율 유지)
 let scale=200/anim.h;
