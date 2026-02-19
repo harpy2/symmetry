@@ -221,14 +221,14 @@ function closeMobilePopup(){document.getElementById('mobile-popup-overlay').clas
 // 클래스별 기본 공격 액션
 const CLASS_DEFAULT_ACTION={거너:'shot',궁수:'shot',마법사:'cast',드루이드:'cast',소환사:'cast',흑마법사:'cast',힐러:'cast'};
 
-function getActionType(text){
+function getActionType(text,charClass){
 const n=text||'';
 if(n.includes('사격')||n.includes('저격')||n.includes('샷건')||n.includes('기관총')||n.includes('관통탄')||n.includes('화살')||n.includes('관통'))return 'shot';
 if(n.includes('마법')||n.includes('파이어')||n.includes('아이스')||n.includes('메테오')||n.includes('라이트닝')||n.includes('치유')||n.includes('소환')||n.includes('저주')||n.includes('힐')||n.includes('빛')||n.includes('정화')||n.includes('축복')||n.includes('보호막')||n.includes('노바')||n.includes('볼')||n.includes('정령')||n.includes('덩굴')||n.includes('벌떼')||n.includes('흡수')||n.includes('역병')||n.includes('공포')||n.includes('재생'))return 'cast';
 if(n.includes('방패')||n.includes('방어')||n.includes('보호'))return 'block';
 // 평타는 모든 클래스 slash (스킬과 구별)
 if(n.includes('평타'))return 'slash';
-return CLASS_DEFAULT_ACTION[G.className]||'slash';
+return CLASS_DEFAULT_ACTION[charClass||G.className]||'slash';
 }
 
 function showBgSprite(className,actionType,loops){
@@ -238,10 +238,12 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
+// 고정 높이 200px, 비율 유지하되 최소 너비 130px 보장
 const scale=200/anim.h;
-const sw=Math.round(anim.w*scale);
-const stw=Math.round(anim.tw*scale);
-const animName='bg-'+className+'-'+actionType;
+let sw=Math.round(anim.w*scale);
+let stw=Math.round(anim.tw*scale);
+if(sw<130){const s2=130/anim.w;sw=130;stw=Math.round(anim.tw*s2);}
+const animName='bg-'+className+'-'+actionType+'-'+sw;
 if(!document.getElementById('style-'+animName)){
   const s=document.createElement('style');s.id='style-'+animName;
   s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{background-position:-'+stw+'px 0}}';
@@ -250,14 +252,13 @@ if(!document.getElementById('style-'+animName)){
 const loopCount=loops||1;
 const isIdle=actionType==='idle'||actionType==='walk';
 const oneCycleDur=8*0.1;
-// 완전 리셋: 모든 스타일을 한번에 설정
 el.style.animation='none';
 el.style.backgroundImage="url('"+anim.src+"')";
 el.style.width=sw+'px';
-el.style.height='200px';
-el.style.backgroundSize=stw+'px 200px';
+el.style.height=Math.round(anim.h*(sw/anim.w))+'px';
+el.style.backgroundSize=stw+'px '+Math.round(anim.h*(sw/anim.w))+'px';
 el.style.backgroundPosition='0 0';
-el.offsetHeight; // force reflow
+el.offsetHeight;
 el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loopCount);
 el.classList.add('active');
 clearTimeout(el._idleTimer);
@@ -269,7 +270,7 @@ if(!isIdle){
 function addHuntLine(text,cls,log,hits,charClass){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
 if(cls==='action'||cls==='critical'){
 const spriteClass=charClass||G.className;
-const actionType=getActionType(text);
+const actionType=getActionType(text,spriteClass);
 const loops=hits||1;
 showBgSprite(spriteClass,actionType,loops);
 d.textContent=text;
