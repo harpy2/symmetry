@@ -133,7 +133,7 @@ function renderCharacter(){const area=document.getElementById('char-area');const
 const charData=CHAR_SVG[G.className];
 let charHTML='';
 if(charData&&charData.type==='sprite'){
-charHTML=`<div class="char-sprite" style="background-image:url('${charData.src}');width:${charData.w}px;height:${charData.h}px;background-position:0 0"></div>`;
+charHTML=`<div class="char-sprite" style="background-image:url('${charData.src}');width:${charData.w}px;height:${charData.h}px;animation:spriteWalk ${charData.frames*0.12}s steps(${charData.frames}) infinite"></div>`;
 }else if(charData&&typeof charData==='string'){
 charHTML=`<div class="char-svg-wrap">${charData}</div>`;
 }else{
