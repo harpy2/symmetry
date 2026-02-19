@@ -238,8 +238,8 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
-// 256x256 고정 컨테이너 (128px 스프라이트 2배)
-const BOX=256;
+// 512x512 고정 컨테이너 (128px 스프라이트 4배)
+const BOX=512;
 const scale=BOX/anim.h;
 const stw=Math.round(anim.tw*scale);
 const animName='bg-'+className+'-'+actionType;
@@ -251,13 +251,14 @@ if(!document.getElementById('style-'+animName)){
 const loopCount=loops||1;
 const isIdle=actionType==='idle'||actionType==='walk';
 const oneCycleDur=8*0.1;
-el.style.animation='none';
+// 깜빡임 방지: animation만 교체, opacity 유지
 el.style.backgroundImage="url('"+anim.src+SPRITE_VER+"')";
 el.style.width=BOX+'px';
 el.style.height=BOX+'px';
 el.style.backgroundSize=stw+'px '+BOX+'px';
 el.style.backgroundPosition='0 0';
-el.offsetHeight;
+el.style.animation='none';
+void el.offsetHeight;
 el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loopCount);
 el.classList.add('active');
 clearTimeout(el._idleTimer);
