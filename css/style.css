@@ -481,6 +481,6 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 /* 전투 로그 인라인 스프라이트 */
 /* 전투 로그 배경 스프라이트 */
 .hunt-log{position:relative;overflow-y:auto}
-.hunt-bg-sprite{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background-repeat:no-repeat;image-rendering:pixelated;opacity:0.15;pointer-events:none;z-index:0;transition:opacity .3s}
+.hunt-bg-sprite{position:absolute;bottom:60px;left:0;right:0;margin:0 auto;background-repeat:no-repeat;image-rendering:pixelated;opacity:0.15;pointer-events:none;z-index:0;transition:opacity .3s}
 .hunt-bg-sprite.active{opacity:0.25}
 .hunt-log .hunt-line{position:relative;z-index:1}
