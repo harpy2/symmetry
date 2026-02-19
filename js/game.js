@@ -66,6 +66,8 @@ G.slotUnlocked[slot]=true;
 updateBars();saveGame();
 updateSlotUI();
 toast(`캐릭터 슬롯 ${slot+1} 해제 완료! 🎉`);
+// 해제 후 바로 캐릭터 선택으로
+if(!G.party[slot]){showScreen('class-screen');G._pendingSlot=slot}
 }
 }
 
