@@ -45,7 +45,7 @@ if(huntInProgress)return;if(G.hp<=0){toast('HP가 부족합니다!');return}
 if(G.mood<20){toast('기분이 너무 안 좋아서 사냥할 수 없습니다...');G.autoHunt=false;updateAutoHuntUI();return}
 huntInProgress=true;document.getElementById('hunt-btn').disabled=true;
 const log=document.getElementById('hunt-log');log.innerHTML='<div class="hunt-bg-sprite" id="hunt-bg-sprite"></div>';
-showBgSprite(G.className,'idle');
+showBgSprite(G.className,'walk');
 const isBoss=Math.random()<0.1;
 const moodMult=getMoodMultiplier();
 
@@ -236,7 +236,7 @@ s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{backgroun
 document.head.appendChild(s);
 }
 clearTimeout(el._idleTimer);
-el._idleTimer=setTimeout(function(){showBgSprite(className,'idle');el.classList.remove('active')},800);
+el._idleTimer=setTimeout(function(){showBgSprite(className,'walk');el.classList.remove('active')},800);
 }
 
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
