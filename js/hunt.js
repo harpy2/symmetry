@@ -225,6 +225,22 @@ const body=document.getElementById('mobile-popup-body');
 if(type==='stat'){
 title.textContent='📊 상태';
 body.innerHTML=document.getElementById('hunt-stat-list').innerHTML;
+}else if(type==='skills'){
+title.textContent='🗡️ 스킬';
+let html='';
+for(let s=0;s<3;s++){
+let char,cls;
+if(s===G.activeSlot||s===0){char={className:G.className,level:G.level,equippedSkills:G.equippedSkills,equippedPassives:G.equippedPassives};cls=CLASSES[G.className]}
+else{if(!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;char=G.party[s];cls=CLASSES[char.className]}
+if(!cls)continue;
+const actives=char.equippedSkills||[];const passives=char.equippedPassives||[];
+html+=`<div style="margin-bottom:10px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${char.className} (Lv.${char.level})</div>`;
+if(actives.length>0){actives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0">${sk.icon} <b>${sk.name}</b> <span style="color:var(--text2)">${sk.desc||''}</span></div>`})}
+if(passives.length>0){passives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0;color:var(--cyan)">${sk.icon} <b>${sk.name}</b> <span style="opacity:.7">${sk.desc||''}</span></div>`})}
+if(actives.length===0&&passives.length===0)html+='<div style="font-size:12px;color:var(--text2)">스킬 없음</div>';
+html+='</div>';
+}
+body.innerHTML=html||'<div style="color:var(--text2)">스킬 없음</div>';
 }else{
 title.textContent='✦ 장비 효과';
 body.innerHTML=document.getElementById('hunt-mods-list').innerHTML;
