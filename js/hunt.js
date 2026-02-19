@@ -238,9 +238,12 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
-// 높이 200px 기준 스케일
-const scale=200/anim.h;
-const sw=Math.round(anim.w*scale);
+// idle 기준 크기 고정 — 액션 전환 시 크기 변동 방지
+const idleAnim=charData.idle||anim;
+const baseScale=200/idleAnim.h;
+const baseSW=Math.round(idleAnim.w*baseScale);
+const scale=baseSW/anim.w; // idle 폭에 맞추는 스케일
+const sw=baseSW;
 const sh=Math.round(anim.h*scale);
 const stw=Math.round(anim.tw*scale);
 const animName='bg-'+className+'-'+actionType+'-'+sw;
