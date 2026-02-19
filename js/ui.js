@@ -284,10 +284,13 @@ panel.innerHTML=html;
 
 function showSkillPopup(){
 const body=document.getElementById('skill-popup-body');
+if(!body)return;
 let html='';
+// 슬롯0은 G 자체에서, 슬롯1/2는 party에서
 for(let s=0;s<3;s++){
-if(!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;
-const char=G.party[s];const cls=CLASSES[char.className];
+let char,cls;
+if(s===G.activeSlot||s===0){char={className:G.className,level:G.level,equippedSkills:G.equippedSkills,equippedPassives:G.equippedPassives};cls=CLASSES[G.className]}
+else{if(!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;char=G.party[s];cls=CLASSES[char.className]}
 if(!cls)continue;
 const actives=char.equippedSkills||[];
 const passives=char.equippedPassives||[];
@@ -297,6 +300,7 @@ if(passives.length>0){passives.forEach(sk=>{html+=`<div class="sp-row"><span cla
 if(actives.length===0&&passives.length===0)html+='<div class="sp-row"><span class="sp-desc">스킬 없음</span></div>';
 html+='</div>';
 }
+if(!html)html='<div class="sp-row"><span class="sp-desc">스킬 없음</span></div>';
 body.innerHTML=html;
 document.getElementById('skill-popup').classList.add('active');
 }
