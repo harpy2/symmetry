@@ -213,8 +213,8 @@ const n=text||'';
 if(n.includes('사격')||n.includes('저격')||n.includes('샷건')||n.includes('기관총')||n.includes('관통탄')||n.includes('화살')||n.includes('관통'))return 'shot';
 if(n.includes('마법')||n.includes('파이어')||n.includes('아이스')||n.includes('메테오')||n.includes('라이트닝')||n.includes('치유')||n.includes('소환')||n.includes('저주')||n.includes('힐')||n.includes('빛')||n.includes('정화')||n.includes('축복')||n.includes('보호막')||n.includes('노바')||n.includes('볼')||n.includes('정령')||n.includes('덩굴')||n.includes('벌떼')||n.includes('흡수')||n.includes('역병')||n.includes('공포')||n.includes('재생'))return 'cast';
 if(n.includes('방패')||n.includes('방어')||n.includes('보호'))return 'block';
-// 평타 등 매칭 안 되면 클래스별 기본 액션
-if(n.includes('평타')||n.includes('공격'))return CLASS_DEFAULT_ACTION[G.className]||'slash';
+// 평타는 모든 클래스 slash (스킬과 구별)
+if(n.includes('평타'))return 'slash';
 return CLASS_DEFAULT_ACTION[G.className]||'slash';
 }
 
