@@ -116,8 +116,8 @@ if(roll<2)grade='에픽';else if(roll<10)grade='유니크';else if(roll<25)grade
 const gMult={일반:1,매직:1.3,레어:1.5,유니크:2.2,에픽:3.5}[grade];
 const floorMult=1+G.floor*0.1;
 
-// 등급별 스탯 옵션 개수: 일반=0, 매직=2, 레어=3, 유니크=3, 에픽=3
-const statCount={일반:0,매직:2,레어:3,유니크:3,에픽:3}[grade];
+// 등급별 스탯 옵션 개수: 일반=1, 매직=2, 레어=3, 유니크=3, 에픽=3
+const statCount={일반:1,매직:2,레어:3,유니크:3,에픽:3}[grade];
 const stats={};
 const pool=[...STAT_POOL[type]];
 for(let i=0;i<statCount&&pool.length>0;i++){
