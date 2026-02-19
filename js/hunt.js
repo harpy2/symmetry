@@ -235,33 +235,30 @@ function showBgSprite(className,actionType,loops){
 const el=document.getElementById('hunt-bg-sprite');
 if(!el)return;
 const charData=CHAR_SVG[className];
-if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';return}
+if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
-if(!anim){el.style.backgroundImage='';return}
+if(!anim){el.style.backgroundImage='';el.style.width='0';return}
 const scale=200/anim.h;
 const sw=Math.round(anim.w*scale);
 const stw=Math.round(anim.tw*scale);
 const animName='bg-'+className+'-'+actionType;
-el.style.backgroundImage="url('"+anim.src+"')";
-el.style.width=sw+'px';
-el.style.height='200px';
-el.style.backgroundSize=stw+'px 200px';
-const loopCount=loops||1;
-const isIdle=actionType==='idle'||actionType==='walk';
-const oneCycleDur=8*0.1; // 0.8초
 if(!document.getElementById('style-'+animName)){
   const s=document.createElement('style');s.id='style-'+animName;
   s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{background-position:-'+stw+'px 0}}';
   document.head.appendChild(s);
 }
-// 리셋 트릭: animation을 비우고 리플로우 후 재설정
+const loopCount=loops||1;
+const isIdle=actionType==='idle'||actionType==='walk';
+const oneCycleDur=8*0.1;
+// 완전 리셋: 모든 스타일을 한번에 설정
 el.style.animation='none';
+el.style.backgroundImage="url('"+anim.src+"')";
+el.style.width=sw+'px';
+el.style.height='200px';
+el.style.backgroundSize=stw+'px 200px';
+el.style.backgroundPosition='0 0';
 el.offsetHeight; // force reflow
-if(isIdle){
-  el.style.animation=animName+' '+oneCycleDur+'s steps(8) infinite';
-}else{
-  el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+loopCount;
-}
+el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loopCount);
 el.classList.add('active');
 clearTimeout(el._idleTimer);
 if(!isIdle){

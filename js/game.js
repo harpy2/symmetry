@@ -247,17 +247,24 @@ const el=document.createElement('div');
 el.className='item-drop-popup';
 const isAuto=G.autoHunt;
 const dropIcon=item.svgData?`<div class="item-svg item-svg-drop">${item.svgData}</div>`:`<div class="idp-emoji">${item.emoji}</div>`;
-// 캐릭별 장착 버튼 생성
-let equipBtns='';
-const slotNames=['캐릭1','캐릭2','캐릭3'];
-for(let s=0;s<3;s++){
+// 캐릭별 장착 버튼 (캐릭2, 캐릭1, 캐릭3 순서)
+const slotOrder=[1,0,2];
+let charBtns='<div class="idp-char-row">';
+for(const s of slotOrder){
 if(G.slotUnlocked[s]&&G.party[s]){
-const charName=G.party[s].className||slotNames[s];
-equipBtns+=`<button class="btn btn-sm idp-equip-btn" onclick="equipFromPopupToChar(this,${s})">⚔️ ${charName}${s===G.activeSlot?' (현재)':''}</button>`;
+const cls=CLASSES[G.party[s].className];
+const icon=cls?cls.weapon:'⚔️';
+const charName=G.party[s].className||('캐릭'+(s+1));
+charBtns+=`<button class="idp-char-btn" onclick="equipFromPopupToChar(this,${s})" title="${charName}">${icon}<span>${charName}</span></button>`;
+}else if(G.slotUnlocked[s]){
+charBtns+=`<button class="idp-char-btn disabled" disabled>🔓<span>빈 슬롯</span></button>`;
+}else{
+charBtns+=`<button class="idp-char-btn disabled" disabled>🔒<span>잠김</span></button>`;
 }
 }
-equipBtns+=`<button class="btn btn-sm btn-secondary idp-equip-btn" onclick="closeDropPopup(this)" style="margin-top:4px">📦 인벤토리에 보관</button>`;
-el.innerHTML=`<div class="idp-shine"></div>${dropIcon}<div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons">${equipBtns}</div>`;
+charBtns+='</div>';
+const actionBtns=`<div class="idp-action-row"><button class="idp-action-btn" onclick="closeDropPopup(this)">📦 인벤토리</button><button class="idp-action-btn idp-discard" onclick="discardFromPopup(this)">🗑️ 버리기</button></div>`;
+el.innerHTML=`<div class="idp-shine"></div>${dropIcon}<div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons">${charBtns}${actionBtns}</div>`;
 document.body.appendChild(el);
 el._item=item;
 
@@ -269,7 +276,7 @@ autoTimer=setTimeout(()=>{if(el.parentNode){el.classList.add('closing');setTimeo
 
 // 팝업 배경 클릭으로 닫기 (버튼 영역 제외)
 el.onclick=(e)=>{
-if(e.target.closest('.idp-equip-btn'))return;
+if(e.target.closest('.idp-char-btn')||e.target.closest('.idp-action-btn'))return;
 if(autoTimer)clearTimeout(autoTimer);
 el.classList.add('closing');setTimeout(()=>el.remove(),300);
 };
@@ -279,6 +286,17 @@ function closeDropPopup(btn){
 const el=btn.closest('.item-drop-popup');
 if(el){el.classList.add('closing');setTimeout(()=>el.remove(),300)}
 toast('인벤토리에 보관!');
+}
+
+function discardFromPopup(btn){
+const el=btn.closest('.item-drop-popup');
+const item=el._item;
+if(item){
+  const idx=G.inventory.findIndex(i=>i.id===item.id);
+  if(idx>=0)G.inventory.splice(idx,1);
+}
+if(el){el.classList.add('closing');setTimeout(()=>el.remove(),300)}
+toast('아이템을 버렸습니다');saveGame();
 }
 
 function equipFromPopupToChar(btn,slot){
