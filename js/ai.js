@@ -224,6 +224,25 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     lines.push({ text: `🔮 소환수 ${summons.length}마리 전투 참여! (${[...new Set(summons.map(s=>s.icon+s.name))].join(', ')})`, type: 'buff' });
   }
 
+  // === 전투 시작 전 버프 시전 ===
+  for (const member of partyMembers) {
+    const memberLabel = partyMembers.length > 1 ? `[${member.weapon}${member.name}] ` : '';
+    const buffSkills = member.skills.filter(s => s.buff && !s.summon);
+    for (const bs of buffSkills) {
+      // 버프 효과 적용
+      if (/ATK|공격|공속|딜러/.test(bs.desc)) { member.atk = Math.floor(member.atk * 1.3); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! ATK 강화!`, type: 'buff' }); }
+      else if (/DEF|방어|보호|방패/.test(bs.desc)) { member.def = Math.floor(member.def * 1.5); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! DEF 강화!`, type: 'buff' }); }
+      else if (/무적|회피/.test(bs.desc)) { member._invincible = true; lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! 무적 상태!`, type: 'buff' }); }
+      else if (/치명타|집중/.test(bs.desc)) { member.critBonus += 50; lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! 치명타 대폭 강화!`, type: 'buff' }); }
+      else if (/힐|회복|정화/.test(bs.desc)) { member.hp = Math.min(member.maxHP, member.hp + Math.floor(member.maxHP * 0.3)); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! HP 회복!`, type: 'buff' }); }
+      else if (/변신/.test(bs.desc)) {
+        if (/ATK|딜러|늑대/.test(bs.desc)) { member.atk = Math.floor(member.atk * 2); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name}! ATK 2배!`, type: 'buff' }); }
+        else { member.def = Math.floor(member.def * 2); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name}! DEF 2배!`, type: 'buff' }); }
+      }
+      else { lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전!`, type: 'buff' }); }
+    }
+  }
+
   const maxRounds = isBoss ? 8 : 3 + enemyCount + Math.floor(Math.random() * 2);
 
   for (let r = 0; r < maxRounds; r++) {
@@ -249,7 +268,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const isMain = member.slot === G.activeSlot;
       const memberLabel = partyMembers.length > 1 ? `[${member.weapon}${member.name}] ` : '';
       const basicAtk = { name: '평타', icon: '👊', dmg: 10, aoe: false };
-      const nonSummonSkills = member.skills.filter(s => !s.summon);
+      const nonSummonSkills = member.skills.filter(s => !s.summon && !s.buff);
       const hasSkills = nonSummonSkills.length > 0;
       const skillPool = hasSkills ? [basicAtk, ...nonSummonSkills] : [basicAtk];
       const skill = skillPool[Math.floor(Math.random() * skillPool.length)];
@@ -335,7 +354,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
       // 적 반격 → 이 멤버에게 피해
       const stillAlive = enemies.filter(e => e.alive);
-      if (stillAlive.length > 0 && !enemyStunned) {
+      if (stillAlive.length > 0 && !enemyStunned && !member._invincible) {
         const attackers = isBoss ? stillAlive : stillAlive.filter(() => Math.random() < 0.7);
         const actualAttackers = attackers.length > 0 ? attackers : [stillAlive[0]];
         const fearMult = enemyFeared ? 0.7 : 1;
