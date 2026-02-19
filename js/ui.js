@@ -27,12 +27,14 @@ G.equippedSkills=[];G.equippedPassives=[];G.allSkills=[];G.allPassives=[];
 // 추가 슬롯에 캐릭터 생성
 if(G._pendingSlot!==undefined&&G._pendingSlot>0){
 const slot=G._pendingSlot;delete G._pendingSlot;
-G.party[slot]={className:G.className,classData:G.classData,level:1,exp:0,hp:G.maxHP,maxHP:G.maxHP,atk:G.atk,def:G.def,
-gold:G.gold,points:G.points,hunger:100,mood:80,floor:1,
-equippedSkills:[],equippedPassives:[],allSkills:[...G.classData.skills],allPassives:[...G.classData.passives],
+const cls2=CLASSES[G.className];
+G.party[slot]={className:G.className,classData:cls2,level:1,exp:0,hp:cls2.baseHP,maxHP:cls2.baseHP,atk:cls2.baseATK,def:cls2.baseDEF,
+hunger:100,mood:80,floor:1,
+equippedSkills:[],equippedPassives:[],allSkills:[...cls2.skills],allPassives:[...cls2.passives],
 equipment:{helmet:null,chest:null,gloves:null,pants:null,boots:null,weapon:null,necklace:null,ring1:null,ring2:null,offhand:null},
 critBonus:0,hpBonus:0,atkBonus:0,defBonus:0,expBonus:0,_appliedBuffs:[]};
-saveGame();loadSlotToG(slot);saveGame();
+// 캐릭1로 복귀
+loadSlotToG(0);saveGame();
 }
 saveGame();showScreen('main-screen')}
 
