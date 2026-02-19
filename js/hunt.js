@@ -238,19 +238,15 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
-// 고정 크기 컨테이너 — 모든 액션에서 동일한 위치 유지
-const FIXED_W=200;
-const FIXED_H=200;
-const scale=FIXED_H/anim.h;
+// 높이 200px 기준 스케일
+const scale=200/anim.h;
 const sw=Math.round(anim.w*scale);
-const sh=FIXED_H;
+const sh=Math.round(anim.h*scale);
 const stw=Math.round(anim.tw*scale);
-// 프레임을 고정 컨테이너 중앙에 배치
-const offsetX=Math.round((FIXED_W-sw)/2);
-const animName='bg-'+className+'-'+actionType;
+const animName='bg-'+className+'-'+actionType+'-'+sw;
 if(!document.getElementById('style-'+animName)){
   const s=document.createElement('style');s.id='style-'+animName;
-  s.textContent='@keyframes '+animName+'{from{background-position:'+offsetX+'px 0}to{background-position:'+(offsetX-stw)+'px 0}}';
+  s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{background-position:-'+stw+'px 0}}';
   document.head.appendChild(s);
 }
 const loopCount=loops||1;
@@ -258,10 +254,10 @@ const isIdle=actionType==='idle'||actionType==='walk';
 const oneCycleDur=8*0.1;
 el.style.animation='none';
 el.style.backgroundImage="url('"+anim.src+SPRITE_VER+"')";
-el.style.width=FIXED_W+'px';
+el.style.width=sw+'px';
 el.style.height=sh+'px';
 el.style.backgroundSize=stw+'px '+sh+'px';
-el.style.backgroundPosition=offsetX+'px 0';
+el.style.backgroundPosition='0 0';
 el.offsetHeight;
 el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loopCount);
 el.classList.add('active');

@@ -210,7 +210,7 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .hunt-exp-text{position:absolute;top:0;left:0;right:0;text-align:center;font-size:11px;font-weight:800;line-height:18px;color:#1a1a2e;text-shadow:0 0 4px rgba(255,215,0,.5);pointer-events:none}
 .hunt-panel{display:flex;flex-direction:column;overflow-y:auto;padding:12px;border-right:1px solid var(--glass-border)}
 .hunt-panel:last-child{border-right:none;border-left:1px solid var(--glass-border)}
-.hunt-panel-center{border-right:1px solid var(--glass-border);padding:12px 8px;display:flex;flex-direction:column}
+.hunt-panel-center{border-right:1px solid var(--glass-border);padding:12px 8px;display:flex;flex-direction:column;overflow:hidden}
 .hunt-panel-title{font-size:13px;font-weight:800;color:var(--gold);margin-bottom:10px;text-align:center;letter-spacing:1px}
 /* 왼쪽 상태 패널 */
 .hunt-stat-list{display:flex;flex-direction:column;gap:6px}
@@ -481,6 +481,6 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 /* 전투 로그 인라인 스프라이트 */
 /* 전투 로그 배경 스프라이트 */
 .hunt-log{position:relative;overflow-y:auto}
-.hunt-bg-sprite{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);width:200px;height:200px;background-repeat:no-repeat;image-rendering:pixelated;opacity:0.15;pointer-events:none;z-index:0;transition:opacity .3s;overflow:hidden}
+.hunt-bg-sprite{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background-repeat:no-repeat;image-rendering:pixelated;opacity:0.15;pointer-events:none;z-index:0;transition:opacity .3s}
 .hunt-bg-sprite.active{opacity:0.25}
 .hunt-log .hunt-line{position:relative;z-index:1}
