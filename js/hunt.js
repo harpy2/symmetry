@@ -238,13 +238,12 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
-// 높이 200px 고정 — 액션별 폭만 비례 변경
-const fixedH=200;
-const scale=fixedH/anim.h;
-const sw=Math.round(anim.w*scale);
-const sh=fixedH;
+// 고정 컨테이너 200x200 — 액션 전환해도 크기 불변
+const BOX=200;
+const scale=BOX/anim.h;
+const frameW=Math.round(anim.w*scale);
 const stw=Math.round(anim.tw*scale);
-const animName='bg-'+className+'-'+actionType+'-'+sw;
+const animName='bg-'+className+'-'+actionType;
 if(!document.getElementById('style-'+animName)){
   const s=document.createElement('style');s.id='style-'+animName;
   s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{background-position:-'+stw+'px 0}}';
@@ -255,9 +254,9 @@ const isIdle=actionType==='idle'||actionType==='walk';
 const oneCycleDur=8*0.1;
 el.style.animation='none';
 el.style.backgroundImage="url('"+anim.src+SPRITE_VER+"')";
-el.style.width=sw+'px';
-el.style.height=sh+'px';
-el.style.backgroundSize=stw+'px '+sh+'px';
+el.style.width=BOX+'px';
+el.style.height=BOX+'px';
+el.style.backgroundSize=stw+'px '+BOX+'px';
 el.style.backgroundPosition='0 0';
 el.offsetHeight;
 el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loopCount);
