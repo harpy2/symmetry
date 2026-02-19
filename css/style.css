@@ -446,4 +446,5 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 @media(max-width:768px){.char-svg-wrap{width:90px;height:112px}}
 
 /* 스프라이트 캐릭터 */
-.char-sprite{margin:0 auto;position:relative;z-index:2;overflow:hidden;background-repeat:no-repeat;image-rendering:pixelated;filter:drop-shadow(0 0 8px rgba(255,255,255,.15))}
+.char-sprite{margin:0 auto;position:relative;z-index:2;overflow:hidden;background-repeat:no-repeat;image-rendering:pixelated;filter:drop-shadow(0 0 8px rgba(255,255,255,.15));transform:scale(1.6);transform-origin:center bottom}
+@media(max-width:768px){.char-sprite{transform:scale(1.3)}}
