@@ -78,6 +78,19 @@ function corsHeaders(origin) {
 }
 
 export default {
+  // Cron Trigger: 1분마다 adbc 캠페인 리스트 캐싱
+  async scheduled(event, env, ctx) {
+    try {
+      const res = await fetch('https://api.adbc.io/api/v3/reward/campaigns?token=' + env.ADBC_TOKEN + '&level=2');
+      if (!res.ok) return;
+      const data = await res.json();
+      const camps = data.camp || [];
+      await env.CPQ_KV.put('cached_campaigns', JSON.stringify(camps), { expirationTtl: 300 });
+    } catch (e) {
+      console.error('Cron campaign cache error:', e.message);
+    }
+  },
+
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
     const headers = corsHeaders(origin);
@@ -121,10 +134,20 @@ export default {
     if (url.pathname === '/api/cpq/campaigns' && request.method === 'GET') {
       try {
         const count = parseInt(url.searchParams.get('count') || '4');
-        const adbcRes = await fetch('https://api.adbc.io/api/v3/reward/campaigns?token=' + env.ADBC_TOKEN + '&level=2');
-        if (!adbcRes.ok) return new Response(JSON.stringify({ error: 'adbc API error', missions: [] }), { status: 502, headers: { ...headers, 'Content-Type': 'application/json' } });
-        const adbcData = await adbcRes.json();
-        const allCampaigns = adbcData.camp || adbcData.data || [];
+        // KV 캐시에서 읽기 (Cron이 1분마다 갱신)
+        let allCampaigns = [];
+        const cached = await env.CPQ_KV.get('cached_campaigns');
+        if (cached) {
+          allCampaigns = JSON.parse(cached);
+        } else {
+          // 캐시 miss 시 직접 호출 + 캐싱
+          const adbcRes = await fetch('https://api.adbc.io/api/v3/reward/campaigns?token=' + env.ADBC_TOKEN + '&level=2');
+          if (adbcRes.ok) {
+            const adbcData = await adbcRes.json();
+            allCampaigns = adbcData.camp || [];
+            await env.CPQ_KV.put('cached_campaigns', JSON.stringify(allCampaigns), { expirationTtl: 300 });
+          }
+        }
         // 랜덤 셔플 후 count개
         const shuffled = allCampaigns.sort(() => Math.random() - 0.5).slice(0, count);
         const missions = shuffled.map(c => ({

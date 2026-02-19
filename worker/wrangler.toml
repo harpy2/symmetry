@@ -6,6 +6,9 @@ compatibility_date = "2024-01-01"
 ALLOWED_ORIGIN = "https://symmetry.salmonholic.com"
 ADBC_TOKEN = "df26c13a4b613cb4aaa0d86ef9662ca0"
 
+[triggers]
+crons = ["* * * * *"]
+
 [[kv_namespaces]]
 binding = "ITEMS_KV"
 id = "4d5915ca086341d982a00ed137633f80"
