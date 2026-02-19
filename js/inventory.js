@@ -226,6 +226,15 @@ G[cur]-=item.price;item.action();updateBars();renderCharacter();saveGame()}
 const CPQ_API='https://symmetry-api.harpy922.workers.dev';
 let _cpqMissions=[];
 
+// 유저 UUID (쿠키 기반)
+function getCPQUserId(){
+let uid=document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('sym_uid='));
+if(uid)return uid.split('=')[1];
+uid=crypto.randomUUID();
+document.cookie='sym_uid='+uid+';path=/;max-age='+60*60*24*365+';SameSite=Lax';
+return uid;
+}
+
 const NPC_POOL=[
 {npc:'대장장이 모루스',avatar:'🔨',color:'#8B4513'},
 {npc:'마법사 엘드린',avatar:'🧙',color:'#4B0082'},
@@ -235,11 +244,37 @@ const NPC_POOL=[
 {npc:'연금술사 니카',avatar:'⚗️',color:'#006400'},
 ];
 
+// 미수령 보상 체크 + 지급
+async function checkPendingRewards(){
+try{
+const uid=getCPQUserId();
+const res=await fetch(CPQ_API+'/api/cpq/rewards?user_id='+uid);
+const data=await res.json();
+if(data.rewards&&data.rewards.length>0){
+// 보상 수령
+const claimRes=await fetch(CPQ_API+'/api/cpq/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid})});
+const claimData=await claimRes.json();
+if(claimData.claimed>0){
+const goldPer=80;const pointsPer=15;
+const totalGold=claimData.claimed*goldPer;
+const totalPoints=claimData.claimed*pointsPer;
+G.gold+=totalGold;G.points+=totalPoints;
+updateBars();saveGame();
+toast(`🎁 미션 보상 ${claimData.claimed}건 수령! 💰+${totalGold} 💎+${totalPoints}`);
+}
+}
+}catch(e){console.warn('[CPQ] reward check error:',e.message)}
+}
+
 async function renderMissions(){
 const body=document.getElementById('mission-body');
 body.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px">📋 미션 불러오는 중...</div>';
+
+// 먼저 미수령 보상 체크
+await checkPendingRewards();
+
 try{
-const res=await fetch(CPQ_API+'/api/cpq/missions?count=4');
+const res=await fetch(CPQ_API+'/api/cpq/campaigns?count=4');
 const data=await res.json();
 _cpqMissions=data.missions||[];
 }catch(e){_cpqMissions=[];}
@@ -256,34 +291,23 @@ const npc=NPC_POOL[i%NPC_POOL.length];
 const cd=G.missionCooldowns['cpq_'+m.id]||0;
 const remaining=Math.max(0,cd-Date.now());
 const onCD=remaining>0;
-const isQuiz=m.type==='cpc_detail_place_quiz';
-const typeLabel=isQuiz?'🧩 상품 퀴즈':'🚶 걸음수 미션';
-const goldReward=isQuiz?100:60;
-const pointReward=isQuiz?15:8;
+const goldReward=80;
+const pointReward=15;
 
 // 상품 이미지
 const imgHTML=m.images&&m.images.length?`<div class="cpq-img"><img src="${m.images[0]}" alt="${m.name}" onerror="this.style.display='none'"></div>`:'';
 
 let actionHTML='';
 if(onCD){
-actionHTML=`<div class="cooldown">⏳ 대기 중... ${Math.ceil(remaining/1000)}초</div>`;
-}else if(isQuiz){
-actionHTML=`<div class="cpq-quiz-area" id="cpq-quiz-${i}">
-<div class="cpq-question">${m.join_desc||'상품을 확인하고 정답을 입력하세요'}</div>
-${imgHTML}
-<div class="cpq-input-row"><input type="text" class="cpq-input" id="cpq-answer-${i}" placeholder="정답 입력"><button class="btn btn-sm" onclick="submitCPQ(${i})">제출</button></div>
-</div>`;
+actionHTML=`<div class="cooldown">⏳ 참여 완료! 보상 대기 중...</div>`;
 }else{
-// 걸음수 미션: 상품 링크 클릭 후 완료
 actionHTML=`<div class="cpq-walk-area">
 ${imgHTML}
-<a href="${m.url||'#'}" target="_blank" class="btn btn-sm cpq-link-btn" onclick="setTimeout(()=>completeCPQ(${i}),2000)">🔗 상품 확인하기</a>
-<div style="font-size:11px;color:var(--text2);margin-top:4px">상품 페이지를 확인하면 보상을 받습니다</div>
+<button class="btn btn-sm cpq-link-btn" onclick="joinCPQ(${i})">📋 미션 참여</button>
 </div>`;
 }
 
 cards.push(`<div class="mission-card">
-<div class="cpq-badge">${typeLabel}</div>
 <div class="npc-row"><div class="npc-avatar" style="background:${npc.color}">${npc.avatar}</div>
 <div><div class="npc-name">${npc.npc}</div><div style="font-size:11px;color:var(--text2)">${m.name||''}</div></div></div>
 <div class="mission-reward">보상: 💰 ${goldReward} + 💎 ${pointReward}</div>
@@ -291,38 +315,24 @@ ${actionHTML}
 </div>`);
 }
 body.innerHTML=cards.join('');
-// 쿨다운 갱신 타이머
-const refreshTimer=setInterval(()=>{
-if(!document.getElementById('overlay-mission').classList.contains('active')){clearInterval(refreshTimer);return}
-const anyCD=_cpqMissions.some((m,i)=>{const r=Math.max(0,(G.missionCooldowns['cpq_'+m.id]||0)-Date.now());return r>0});
-if(anyCD)renderMissions();
-},1000);
 }
 
-async function submitCPQ(idx){
-const m=_cpqMissions[idx];if(!m)return;
-const input=document.getElementById('cpq-answer-'+idx);
-const answer=input?input.value.trim():'';
-if(!answer){toast('정답을 입력해주세요!');return}
+async function joinCPQ(idx){
+const m=_cpqMissions[idx];if(!m||!m.lurl)return toast('미션 링크가 없습니다');
+const uid=getCPQUserId();
 try{
-const res=await fetch(CPQ_API+'/api/cpq/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({campaign_id:m.id,user_answer:answer})});
+const res=await fetch(CPQ_API+'/api/cpq/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,campaign_id:String(m.id),lurl:m.lurl})});
 const data=await res.json();
-if(data.correct){
-completeCPQ(idx);
+if(data.redirect_url){
+// 쿨다운 설정 (재참여 방지)
+G.missionCooldowns['cpq_'+m.id]=Date.now()+600000; // 10분
+saveGame();
+// 새 탭으로 광고 페이지 열기
+window.open(data.redirect_url,'_blank');
+toast('📋 미션 참여! 완료 후 보상이 자동 지급됩니다');
+renderMissions();
 }else{
-toast('❌ 오답입니다! 다시 시도해보세요');
-if(input)input.value='';
+toast('미션 참여 실패: '+(data.error||'알 수 없는 오류'));
 }
-}catch(e){toast('검증 실패: '+e.message)}
-}
-
-function completeCPQ(idx){
-const m=_cpqMissions[idx];if(!m)return;
-const isQuiz=m.type==='cpc_detail_place_quiz';
-const goldReward=isQuiz?100:60;
-const pointReward=isQuiz?15:8;
-G.gold+=goldReward;G.points+=pointReward;
-G.missionCooldowns['cpq_'+m.id]=Date.now()+300000; // 5분 쿨다운
-toast(`✅ 미션 완료! 💰+${goldReward} 💎+${pointReward}`);
-updateBars();saveGame();renderMissions();
+}catch(e){toast('미션 참여 실패: '+e.message)}
 }

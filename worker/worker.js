@@ -117,26 +117,26 @@ export default {
       }
     }
 
-    // GET /api/cpq/missions — CPQ 캠페인을 NPC 미션으로 변환
-    if (url.pathname === '/api/cpq/missions' && request.method === 'GET') {
+    // GET /api/cpq/campaigns — adbc API에서 캠페인 목록 조회 (non-incent만)
+    if (url.pathname === '/api/cpq/campaigns' && request.method === 'GET') {
       try {
-        const raw = await env.CPQ_KV.get('cpq_campaigns');
-        if (!raw) return new Response(JSON.stringify({ missions: [] }), { headers: { ...headers, 'Content-Type': 'application/json' } });
-        const camps = JSON.parse(raw);
         const count = parseInt(url.searchParams.get('count') || '4');
-        // 랜덤 셔플 후 count개 선택
-        const shuffled = camps.sort(() => Math.random() - 0.5).slice(0, count);
+        const adbcRes = await fetch('https://api.adbc.io/api/v3/reward/campaigns?token=' + env.ADBC_TOKEN + '&level=2');
+        if (!adbcRes.ok) return new Response(JSON.stringify({ error: 'adbc API error', missions: [] }), { status: 502, headers: { ...headers, 'Content-Type': 'application/json' } });
+        const adbcData = await adbcRes.json();
+        const allCampaigns = (adbcData.data || adbcData.campaigns || adbcData || []);
+        // non-incent만 필터
+        const filtered = Array.isArray(allCampaigns) ? allCampaigns.filter(c => c.incent_type !== 'incent') : [];
+        // 랜덤 셔플 후 count개
+        const shuffled = filtered.sort(() => Math.random() - 0.5).slice(0, count);
         const missions = shuffled.map(c => ({
-          id: c.id,
-          type: c.type, // cpc_detail_place | cpc_detail_place_quiz
-          name: c.name,
-          icon: c.icon,
-          images: c.images || [],
-          search_keyword: c.search_keyword,
-          answer: c.answer,
-          join_desc: c.join_desc,
-          reward_desc: c.reward_desc,
-          url: c.url,
+          id: c.id || c.ad_id,
+          type: c.type || c.ad_type || 'cpc_detail_place',
+          name: c.name || c.ad_name || '',
+          icon: c.icon || '',
+          images: c.images || (c.image ? [c.image] : []),
+          join_desc: c.join_desc || c.description || '',
+          lurl: c.lurl || c.link_url || '',
         }));
         return new Response(JSON.stringify({ missions }), { headers: { ...headers, 'Content-Type': 'application/json' } });
       } catch (e) {
@@ -144,18 +144,81 @@ export default {
       }
     }
 
-    // POST /api/cpq/verify — 정답 검증
-    if (url.pathname === '/api/cpq/verify' && request.method === 'POST') {
+    // POST /api/cpq/join — 미션 참여: cbparam(click_id) 생성 + KV 저장 + lurl 반환
+    if (url.pathname === '/api/cpq/join' && request.method === 'POST') {
       try {
         const body = await request.json();
-        const { campaign_id, user_answer } = body;
-        if (!campaign_id || !user_answer) return new Response(JSON.stringify({ error: 'campaign_id and user_answer required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
-        const raw = await env.CPQ_KV.get('cpq_campaigns');
-        if (!raw) return new Response(JSON.stringify({ correct: false }), { headers: { ...headers, 'Content-Type': 'application/json' } });
-        const camp = JSON.parse(raw).find(c => c.id === campaign_id);
-        if (!camp) return new Response(JSON.stringify({ correct: false, error: 'Campaign not found' }), { status: 404, headers: { ...headers, 'Content-Type': 'application/json' } });
-        const correct = String(user_answer).trim() === String(camp.answer).trim();
-        return new Response(JSON.stringify({ correct, campaign_id }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        const { user_id, campaign_id, lurl } = body;
+        if (!user_id || !campaign_id || !lurl) {
+          return new Response(JSON.stringify({ error: 'user_id, campaign_id, lurl required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+        }
+        // click_id 생성 (UUID)
+        const click_id = crypto.randomUUID();
+        // KV에 저장 (TTL 24시간)
+        await env.CPQ_KV.put('cb:' + click_id, JSON.stringify({ user_id, campaign_id, ts: Date.now() }), { expirationTtl: 86400 });
+        // lurl에 cbparam 추가
+        const separator = lurl.includes('?') ? '&' : '?';
+        const redirectUrl = lurl + separator + 'cbparam=' + click_id;
+        return new Response(JSON.stringify({ click_id, redirect_url: redirectUrl }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // GET /postback — adbc 포스트백 수신
+    if (url.pathname === '/postback' && request.method === 'GET') {
+      try {
+        const cbparam = url.searchParams.get('cbparam');
+        const userid = url.searchParams.get('userid');
+        if (!cbparam) return new Response('missing cbparam', { status: 400 });
+        // KV에서 click_id 조회
+        const raw = await env.CPQ_KV.get('cb:' + cbparam);
+        if (!raw) return new Response('unknown cbparam', { status: 404 });
+        const data = JSON.parse(raw);
+        // 보상 기록 저장 (유저가 다음 접속 시 수령)
+        // reward:{user_id} 키에 보상 목록 append
+        const rewardKey = 'reward:' + data.user_id;
+        const existingRewards = await env.CPQ_KV.get(rewardKey);
+        const rewards = existingRewards ? JSON.parse(existingRewards) : [];
+        rewards.push({ campaign_id: data.campaign_id, cbparam, userid, ts: Date.now(), claimed: false });
+        await env.CPQ_KV.put(rewardKey, JSON.stringify(rewards), { expirationTtl: 604800 }); // 7일 TTL
+        // cb 키 삭제 (1회성)
+        await env.CPQ_KV.delete('cb:' + cbparam);
+        return new Response('OK', { status: 200 });
+      } catch (e) {
+        return new Response('error: ' + e.message, { status: 500 });
+      }
+    }
+
+    // GET /api/cpq/rewards — 미수령 보상 조회
+    if (url.pathname === '/api/cpq/rewards' && request.method === 'GET') {
+      try {
+        const user_id = url.searchParams.get('user_id');
+        if (!user_id) return new Response(JSON.stringify({ rewards: [] }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        const raw = await env.CPQ_KV.get('reward:' + user_id);
+        const rewards = raw ? JSON.parse(raw) : [];
+        const unclaimed = rewards.filter(r => !r.claimed);
+        return new Response(JSON.stringify({ rewards: unclaimed }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message, rewards: [] }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // POST /api/cpq/claim — 보상 수령 처리
+    if (url.pathname === '/api/cpq/claim' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const { user_id } = body;
+        if (!user_id) return new Response(JSON.stringify({ error: 'user_id required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+        const rewardKey = 'reward:' + user_id;
+        const raw = await env.CPQ_KV.get(rewardKey);
+        const rewards = raw ? JSON.parse(raw) : [];
+        const unclaimed = rewards.filter(r => !r.claimed);
+        if (unclaimed.length === 0) return new Response(JSON.stringify({ claimed: 0 }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        // 모두 claimed 처리
+        rewards.forEach(r => r.claimed = true);
+        await env.CPQ_KV.put(rewardKey, JSON.stringify(rewards), { expirationTtl: 604800 });
+        return new Response(JSON.stringify({ claimed: unclaimed.length, rewards: unclaimed }), { headers: { ...headers, 'Content-Type': 'application/json' } });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
       }

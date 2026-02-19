@@ -4,6 +4,7 @@ compatibility_date = "2024-01-01"
 
 [vars]
 ALLOWED_ORIGIN = "https://symmetry.salmonholic.com"
+ADBC_TOKEN = "df26c13a4b613cb4aaa0d86ef9662ca0"
 
 [[kv_namespaces]]
 binding = "ITEMS_KV"
