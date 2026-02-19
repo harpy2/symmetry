@@ -44,7 +44,8 @@ async function startHunt(){
 if(huntInProgress)return;if(G.hp<=0){toast('HP가 부족합니다!');return}
 if(G.mood<20){toast('기분이 너무 안 좋아서 사냥할 수 없습니다...');G.autoHunt=false;updateAutoHuntUI();return}
 huntInProgress=true;document.getElementById('hunt-btn').disabled=true;
-const log=document.getElementById('hunt-log');log.innerHTML='';
+const log=document.getElementById('hunt-log');log.innerHTML='<div class="hunt-bg-sprite" id="hunt-bg-sprite"></div>';
+showBgSprite(G.className,'idle');
 const isBoss=Math.random()<0.1;
 const moodMult=getMoodMultiplier();
 
@@ -204,24 +205,44 @@ overlay.classList.add('active');
 }
 function closeMobilePopup(){document.getElementById('mobile-popup-overlay').classList.remove('active')}
 
-function getActionSprite(actionName){
-const charData=CHAR_SVG[G.className];
-if(!charData||charData.type!=='sprite')return null;
-// 스킬명으로 적절한 액션 매핑
-let action='slash';
-const n=actionName||'';
-if(n.includes('사격')||n.includes('저격')||n.includes('샷건')||n.includes('기관총')||n.includes('관통탄')||n.includes('화살'))action='shot';
-else if(n.includes('마법')||n.includes('파이어')||n.includes('아이스')||n.includes('메테오')||n.includes('라이트닝')||n.includes('치유')||n.includes('소환')||n.includes('저주')||n.includes('힐')||n.includes('빛')||n.includes('정화')||n.includes('축복')||n.includes('보호막')||n.includes('노바')||n.includes('볼'))action='cast';
-else if(n.includes('방패')||n.includes('방어'))action='block';
-const anim=charData[action]||charData.slash||charData.idle;
-if(!anim)return null;
-const animName='hl-'+G.className+'-'+action;
-return `<span class="hunt-line-sprite" style="background-image:url('${anim.src}');width:${Math.round(anim.w*50/anim.h)}px;background-size:${Math.round(anim.tw*50/anim.h)}px 40px;animation:${animName} ${8*0.08}s steps(8) infinite"></span><style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${Math.round(anim.tw*50/anim.h)}px 0}}</style>`;
+function getActionType(text){
+const n=text||'';
+if(n.includes('사격')||n.includes('저격')||n.includes('샷건')||n.includes('기관총')||n.includes('관통탄')||n.includes('화살')||n.includes('관통'))return 'shot';
+if(n.includes('마법')||n.includes('파이어')||n.includes('아이스')||n.includes('메테오')||n.includes('라이트닝')||n.includes('치유')||n.includes('소환')||n.includes('저주')||n.includes('힐')||n.includes('빛')||n.includes('정화')||n.includes('축복')||n.includes('보호막')||n.includes('노바')||n.includes('볼')||n.includes('정령')||n.includes('덩굴')||n.includes('벌떼')||n.includes('흡수')||n.includes('역병')||n.includes('공포')||n.includes('재생'))return 'cast';
+if(n.includes('방패')||n.includes('방어')||n.includes('보호'))return 'block';
+return 'slash';
 }
+
+function showBgSprite(className,actionType){
+const el=document.getElementById('hunt-bg-sprite');
+if(!el)return;
+const charData=CHAR_SVG[className];
+if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';return}
+const anim=charData[actionType]||charData.slash||charData.idle;
+if(!anim){el.style.backgroundImage='';return}
+const scale=200/anim.h;
+const sw=Math.round(anim.w*scale);
+const stw=Math.round(anim.tw*scale);
+const animName='bg-'+className+'-'+actionType;
+el.style.backgroundImage="url('"+anim.src+"')";
+el.style.width=sw+'px';
+el.style.height='200px';
+el.style.backgroundSize=stw+'px 200px';
+el.style.animation=animName+' '+8*0.1+'s steps(8) infinite';
+el.classList.add('active');
+if(!document.getElementById('style-'+animName)){
+const s=document.createElement('style');s.id='style-'+animName;
+s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{background-position:-'+stw+'px 0}}';
+document.head.appendChild(s);
+}
+clearTimeout(el._idleTimer);
+el._idleTimer=setTimeout(function(){showBgSprite(className,'idle');el.classList.remove('active')},800);
+}
+
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
 if(cls==='action'||cls==='critical'){
-const sprite=getActionSprite(text);
-d.innerHTML=(sprite||'')+text;
+showBgSprite(G.className,getActionType(text));
+d.textContent=text;
 d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right');
 d._isAttack=true;d._isCrit=cls==='critical';
 }
