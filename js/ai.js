@@ -284,7 +284,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           totalDmg += dmg * alive2.length;
           const remaining = enemies.filter(e => e.alive).length;
           const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}타]` : '';
-          lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} — ${tag}전체 공격!`, type: isCrit ? 'critical' : 'action' });
+          lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} — ${tag}전체 공격!`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           lines.push({ text: `${enemy} ${alive2.length}마리에게 각 ${dmg} 피해!${killed>0?` ${killed}마리 처치!`:''}${remaining>0?` 남은 적: ${remaining}`:''}`, type: 'damage' });
         } else {
           const target = alive2[0];
@@ -293,7 +293,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           if (target.frozen) { finalDmg = Math.floor(finalDmg * 1.5); target.frozen = false; }
           target.hp -= finalDmg; totalDmg += finalDmg;
           const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}타]` : '';
-          lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} 시전!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action' });
+          lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} 시전!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           if(target.hp<=0){target.alive=false;const remaining=enemies.filter(e=>e.alive).length;
           lines.push({ text: `${enemy}에게 ${finalDmg} 피해! 처치!${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });}
           else{lines.push({ text: `${enemy}에게 ${finalDmg} 피해!`, type: 'damage' });}

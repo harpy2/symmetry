@@ -75,6 +75,7 @@ skillCheckResults=await bossSkillCheckPopup(rounds);
 }
 
 // === Phase 4: AI 전투 생성 (한번에) ===
+showBgSprite(G.className,'idle');
 await addHuntLine('⚔️ 전투 개시!','story',log);
 
 // 전투 생성 (항상 로컬 — 스킬은 로컬이 제어)
@@ -96,7 +97,7 @@ combat.expReward=Math.floor((combat.expReward||0)*(1+scBonus));
 // === Phase 5: 한줄씩 표시 ===
 for(const line of combat.lines){
 const type=mapLineType(line.type);
-await addHuntLine(line.text,type,log);
+await addHuntLine(line.text,type,log,line.hits,line.charClass);
 await wait(500);
 }
 
@@ -230,7 +231,7 @@ if(n.includes('평타'))return 'slash';
 return CLASS_DEFAULT_ACTION[G.className]||'slash';
 }
 
-function showBgSprite(className,actionType){
+function showBgSprite(className,actionType,loops){
 const el=document.getElementById('hunt-bg-sprite');
 if(!el)return;
 const charData=CHAR_SVG[className];
@@ -245,20 +246,35 @@ el.style.backgroundImage="url('"+anim.src+"')";
 el.style.width=sw+'px';
 el.style.height='200px';
 el.style.backgroundSize=stw+'px 200px';
-el.style.animation=animName+' '+8*0.1+'s steps(8) infinite';
-el.classList.add('active');
+const loopCount=loops||1;
+const isIdle=actionType==='idle'||actionType==='walk';
+const oneCycleDur=8*0.1; // 0.8초
 if(!document.getElementById('style-'+animName)){
-const s=document.createElement('style');s.id='style-'+animName;
-s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{background-position:-'+stw+'px 0}}';
-document.head.appendChild(s);
+  const s=document.createElement('style');s.id='style-'+animName;
+  s.textContent='@keyframes '+animName+'{from{background-position:0 0}to{background-position:-'+stw+'px 0}}';
+  document.head.appendChild(s);
 }
+// 리셋 트릭: animation을 비우고 리플로우 후 재설정
+el.style.animation='none';
+el.offsetHeight; // force reflow
+if(isIdle){
+  el.style.animation=animName+' '+oneCycleDur+'s steps(8) infinite';
+}else{
+  el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+loopCount;
+}
+el.classList.add('active');
 clearTimeout(el._idleTimer);
-el._idleTimer=setTimeout(function(){showBgSprite(className,'walk');el.classList.remove('active')},800);
+if(!isIdle){
+  el._idleTimer=setTimeout(function(){showBgSprite(className,'idle')},oneCycleDur*loopCount*1000);
+}
 }
 
-function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
+function addHuntLine(text,cls,log,hits,charClass){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
 if(cls==='action'||cls==='critical'){
-showBgSprite(G.className,getActionType(text));
+const spriteClass=charClass||G.className;
+const actionType=getActionType(text);
+const loops=hits||1;
+showBgSprite(spriteClass,actionType,loops);
 d.textContent=text;
 d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right');
 d._isAttack=true;d._isCrit=cls==='critical';
