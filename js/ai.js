@@ -369,6 +369,10 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} — ${tag}전체 공격!`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           const avgHp=remaining>0?Math.floor(enemies.filter(e=>e.alive).reduce((s,e)=>s+e.hp,0)/remaining):0;
           lines.push({ text: `${enemy} ${alive2.length}마리에게 각 ${dmg} 피해!${killed>0?` ${killed}마리 처치!`:''}${remaining>0?` 남은 적: ${remaining} (평균 HP: ${avgHp}/${singleHP})`:''}`, type: 'damage' });
+          // 네크로맨서: AoE 처치 시 망령 소환
+          if(killed>0){const hasNecro=member.skills.some(s=>s.necro);
+          if(hasNecro){for(let nk=0;nk<killed;nk++){const necroHP=Math.floor(singleHP*0.5);summons.push({name:'망령 '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});}
+          lines.push({text:`${memberLabel}💀 네크로맨서! ${killed}구의 시체가 아군 망령으로 부활!`,type:'buff'});}}
         } else {
           const target = alive2[0];
           let finalDmg = dmg;
@@ -378,7 +382,11 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}타]` : '';
           lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} 시전!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           if(target.hp<=0){target.alive=false;const remaining=enemies.filter(e=>e.alive).length;
-          lines.push({ text: `${enemy}에게 ${finalDmg} 피해! 처치!${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });}
+          lines.push({ text: `${enemy}에게 ${finalDmg} 피해! 처치!${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });
+          // 네크로맨서: 처치한 적을 아군 소환수로 부활
+          const hasNecro=member.skills.some(s=>s.necro);
+          if(hasNecro){const necroHP=Math.floor(singleHP*0.5);summons.push({name:'망령 '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});
+          lines.push({text:`${memberLabel}💀 네크로맨서! ${enemy}의 시체가 아군 망령으로 부활!`,type:'buff'});}}
           else{lines.push({ text: `${enemy}에게 ${finalDmg} 피해! (HP: ${target.hp}/${singleHP})`, type: 'damage' });}
         }
         if (fx.dot > 0) { enemies.filter(e => e.alive).forEach(e => { e.dot = fx.dot; }); if (hit === 0) lines.push({ text: `${memberLabel}✦ ${skill.name} — 지속 피해 부여! (매 턴 ${fx.dot})`, type: 'buff' }); }
