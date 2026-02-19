@@ -6,7 +6,7 @@
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=53">
+<link rel="stylesheet" href="css/style.css?v=54">
 </head>
 <body>
 
@@ -116,8 +116,9 @@
 </div>
 </div>
 <!-- 가운데: 전투 로그 -->
-<div class="hunt-panel hunt-panel-center">
-<div class="hunt-log" id="hunt-log"><div class="hunt-bg-sprite" id="hunt-bg-sprite"></div></div>
+<div class="hunt-panel hunt-panel-center" style="position:relative">
+<div class="hunt-bg-sprite" id="hunt-bg-sprite"></div>
+<div class="hunt-log" id="hunt-log"></div>
 <div class="hunt-controls">
 <button class="btn" onclick="startHunt()" id="hunt-btn">🗡️ 사냥 시작</button>
 <button class="btn btn-secondary" onclick="toggleAutoHunt()" id="auto-hunt-btn">🔄 자동사냥</button>
@@ -197,7 +198,7 @@
 <script src="js/ai.js?v=16"></script>
 <script src="js/ui.js?v=17"></script>
 <script src="js/inventory.js?v=13"></script>
-<script src="js/hunt.js?v=120"></script>
+<script src="js/hunt.js?v=121"></script>
 <script src="js/game.js?v=25"></script>
 </body>
 </html>
