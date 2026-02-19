@@ -64,6 +64,8 @@ if(confirm(`💰 ${cost.toLocaleString()} 골드로 캐릭터 슬롯 ${slot+1}�
 G.gold-=cost;
 G.slotUnlocked[slot]=true;
 updateBars();saveGame();
+// 슬롯 해금은 즉시 클라우드 저장 (디바운스 무시)
+cloudSave(serializeState());
 updateSlotUI();
 toast(`캐릭터 슬롯 ${slot+1} 해제 완료! 🎉`);
 // 해제 후 바로 캐릭터 선택으로
