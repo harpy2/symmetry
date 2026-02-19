@@ -15,7 +15,7 @@ gtag('config', 'G-XY7YKM0M37');
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=76">
+<link rel="stylesheet" href="css/style.css?v=77">
 </head>
 <body>
 
@@ -70,6 +70,18 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="lock-text">캐릭터 슬롯 2</div>
 <button class="btn btn-sm" onclick="unlockSlot(1)">💰 2,000 골드로 해제</button>
 </div>
+<div class="slot-content" id="slot-content-1" style="display:none">
+<div class="status-bars">
+<div class="stat-bar bar-hp"><span class="label">❤️</span><div class="bar-bg"><div class="bar-fill" id="hp-bar-1" style="width:100%"></div><span class="bar-text" id="hp-text-1">0/0</span></div></div>
+<div class="stat-bar bar-hunger"><span class="label">🍖</span><div class="bar-bg"><div class="bar-fill" id="hunger-bar-1" style="width:100%"></div><span class="bar-text" id="hunger-text-1">100%</span></div></div>
+<div class="stat-bar bar-mood"><span class="label">⚡</span><div class="bar-bg"><div class="bar-fill" id="mood-bar-1" style="width:80%"></div><span class="bar-text" id="mood-text-1">80%</span></div></div>
+</div>
+<div class="char-equip-layout">
+<div class="equip-col equip-col-left" id="equip-col-left-1"></div>
+<div class="char-area" id="char-area-1"></div>
+<div class="equip-col equip-col-right" id="equip-col-right-1"></div>
+</div>
+</div>
 </div>
 <div class="char-panel active" data-slot="0">
 <div class="status-bars">
@@ -92,6 +104,18 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="lock-icon">🔒</div>
 <div class="lock-text">캐릭터 슬롯 3</div>
 <button class="btn btn-sm" onclick="unlockSlot(2)">💰 5,000 골드로 해제</button>
+</div>
+<div class="slot-content" id="slot-content-2" style="display:none">
+<div class="status-bars">
+<div class="stat-bar bar-hp"><span class="label">❤️</span><div class="bar-bg"><div class="bar-fill" id="hp-bar-2" style="width:100%"></div><span class="bar-text" id="hp-text-2">0/0</span></div></div>
+<div class="stat-bar bar-hunger"><span class="label">🍖</span><div class="bar-bg"><div class="bar-fill" id="hunger-bar-2" style="width:100%"></div><span class="bar-text" id="hunger-text-2">100%</span></div></div>
+<div class="stat-bar bar-mood"><span class="label">⚡</span><div class="bar-bg"><div class="bar-fill" id="mood-bar-2" style="width:80%"></div><span class="bar-text" id="mood-text-2">80%</span></div></div>
+</div>
+<div class="char-equip-layout">
+<div class="equip-col equip-col-left" id="equip-col-left-2"></div>
+<div class="char-area" id="char-area-2"></div>
+<div class="equip-col equip-col-right" id="equip-col-right-2"></div>
+</div>
 </div>
 </div>
 </div>
@@ -205,7 +229,7 @@ gtag('config', 'G-XY7YKM0M37');
 
 <script src="js/data.js?v=27"></script>
 <script src="js/ai.js?v=20"></script>
-<script src="js/ui.js?v=21"></script>
+<script src="js/ui.js?v=22"></script>
 <script src="js/inventory.js?v=21"></script>
 <script src="js/hunt.js?v=141"></script>
 <script src="js/game.js?v=27"></script>

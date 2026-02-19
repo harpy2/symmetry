@@ -204,44 +204,53 @@ if(window._levelResolve){window._levelResolve();window._levelResolve=null}}
 
 // ===== SIDE PANEL RENDERING =====
 function renderSidePanel(slot){
-const panelId='char-panel-'+slot;
-const panel=document.getElementById(panelId);
-if(!panel)return;
-const existing=panel.querySelector('.side-char-content');
-if(existing)existing.remove();
-if(!G.party||!G.party[slot]||!G.slotUnlocked[slot])return;
+const content=document.getElementById('slot-content-'+slot);
+if(!content)return;
+if(!G.party||!G.party[slot]||!G.slotUnlocked[slot]){content.style.display='none';return}
+content.style.display='';
 const char=G.party[slot];
 const cls=CLASSES[char.className];
 if(!cls)return;
+// HP bar
+const hpPct=char.maxHP>0?Math.floor(char.hp/char.maxHP*100):0;
+const hpBar=document.getElementById('hp-bar-'+slot);
+const hpText=document.getElementById('hp-text-'+slot);
+if(hpBar)hpBar.style.width=hpPct+'%';
+if(hpText)hpText.textContent=Math.floor(char.hp)+'/'+char.maxHP;
+// Hunger/Mood (use char-level values if available, else defaults)
+const hunger=char.hunger!==undefined?char.hunger:100;
+const mood=char.mood!==undefined?char.mood:80;
+const hungerBar=document.getElementById('hunger-bar-'+slot);
+const hungerText=document.getElementById('hunger-text-'+slot);
+if(hungerBar)hungerBar.style.width=Math.floor(hunger)+'%';
+if(hungerText)hungerText.textContent=Math.floor(hunger)+'%';
+const moodBar=document.getElementById('mood-bar-'+slot);
+const moodText=document.getElementById('mood-text-'+slot);
+if(moodBar)moodBar.style.width=Math.floor(mood)+'%';
+if(moodText)moodText.textContent=Math.floor(mood)+'%';
+// Character sprite
+const area=document.getElementById('char-area-'+slot);
+if(area){
 const sprData=CHAR_SVG[char.className];
-let spriteHTML='';
+let charHTML='';
 if(sprData&&sprData.type==='sprite'){
 const anim=sprData.idle;
 const animName='side-'+char.className;
-spriteHTML=`<div class="char-sprite" style="background-image:url('${anim.src}${SPRITE_VER}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div>
+charHTML=`<div class="char-sprite" style="background-image:url('${anim.src}${SPRITE_VER}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div>
 <style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style>`;
 }else{
-spriteHTML=`<div style="font-size:48px;text-align:center">${cls.weapon}</div>`;
+charHTML=`<div style="font-size:48px;text-align:center">${cls.weapon}</div>`;
 }
-// 장비 미니 슬롯
+let sparklesHTML='<div class="char-sparkles">';
+for(let i=0;i<6;i++){const x=20+Math.random()*160;const y=20+Math.random()*160;const delay=Math.random()*3;const dur=1.5+Math.random()*2;sparklesHTML+=`<span style="left:${x}px;top:${y}px;animation-delay:${delay}s;animation-duration:${dur}s"></span>`}
+sparklesHTML+='</div>';
+area.innerHTML=`<div class="character">${sparklesHTML}<div class="char-glow" style="background:${cls.glow}"></div>${charHTML}</div>`;
+}
+// Equip slots (same as renderEquipRow but for this slot)
 const eq=char.equipment||{};
-const slots=['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'];
-const slotIcons={helmet:'🪖',chest:'👕',gloves:'🧤',pants:'👖',boots:'👢',weapon:'⚔️',necklace:'📿',ring1:'💍',ring2:'💍',offhand:'🛡️'};
-const equipHTML=slots.map(s=>{
-const item=eq[s];
-const icon=item?(item.svgData?`<div class="item-svg" style="width:20px;height:20px">${item.svgData}</div>`:item.emoji):slotIcons[s];
-const border=item?`border-color:${GRADE_COLORS[item.grade]}`:'';
-return `<div class="side-equip-slot ${item?'has-item':''}" style="${border}" title="${s}">${icon}</div>`;
-}).join('');
-const div=document.createElement('div');
-div.className='side-char-content';
-div.innerHTML=`
-<div class="side-char-sprite">${spriteHTML}</div>
-<div class="side-char-info">
-<div class="side-char-name">${cls.weapon} ${char.className}</div>
-<div class="side-char-level">Lv.${char.level}</div>
-<div class="side-char-hp">❤️ ${Math.floor(char.hp)}/${char.maxHP}</div>
-</div>
-<div class="side-equip-grid">${equipHTML}</div>`;
-panel.appendChild(div);
+function eqIcon(item,fallback){return item?(item.svgData?`<div class="item-svg">${item.svgData}</div>`:item.emoji):fallback}
+const leftEl=document.getElementById('equip-col-left-'+slot);
+const rightEl=document.getElementById('equip-col-right-'+slot);
+if(leftEl)leftEl.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=eq[s.key];return`<div class="equip-slot ${item?'has-item':''}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${eqIcon(item,s.icon)}</div>`}).join('');
+if(rightEl)rightEl.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=eq[s.key];return`<div class="equip-slot ${item?'has-item':''}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${eqIcon(item,s.icon)}</div>`}).join('');
 }
