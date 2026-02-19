@@ -451,4 +451,5 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .char-area .char-sprite{transform:scale(1.8);transform-origin:center bottom}
 @media(max-width:768px){.char-area .char-sprite{transform:scale(1.5)}}
 /* 전투 로그 인라인 스프라이트 */
-.hunt-line-sprite{display:inline-block;vertical-align:middle;overflow:hidden;background-repeat:no-repeat;background-position:0 0;image-rendering:pixelated;height:50px;margin-right:4px;flex-shrink:0}
+.hunt-line-sprite{display:inline-block;vertical-align:middle;background-repeat:no-repeat;background-position:0 top;image-rendering:pixelated;height:50px;margin-right:4px;flex-shrink:0}
+.hunt-line.action,.hunt-line.critical{overflow:visible;display:flex;align-items:center;min-height:50px;line-height:50px}
