@@ -33,6 +33,12 @@ const selectedName=_pendingClassName;
 const cls=CLASSES[selectedName];
 _pendingClassName=null;
 
+// 전직 (캐릭터 변경)
+if(G._pendingClassChange){
+confirmClassChange(selectedName);
+return;
+}
+
 // 추가 슬롯에 캐릭터 생성 (G는 건드리지 않음!)
 if(G._pendingSlot!==undefined&&G._pendingSlot>0){
 const slot=G._pendingSlot;delete G._pendingSlot;

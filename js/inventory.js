@@ -280,6 +280,9 @@ let html='<div class="shop-section-title">🧪 소비 아이템</div>';
 html+=GOLD_CONSUMABLES.map((item,i)=>`<div class="shop-item" onclick="buyGoldConsumable(${i})"><div class="s-icon">${item.icon}</div><div class="s-info"><div class="s-name">${item.name}</div><div class="s-desc">${item.desc}</div></div><div class="s-price">💰 ${item.price}</div></div>`).join('');
 // 스탯 업그레이드
 html+='<div class="shop-section-title" style="margin-top:16px">💪 스탯 강화</div>';
+// 전직
+const changePrice=500+G.level*50;
+html+=`<div class="shop-item" onclick="startCharChange()"><div class="s-icon">🔄</div><div class="s-info"><div class="s-name">전직</div><div class="s-desc">캐릭터의 직업을 변경합니다 (레벨 유지)</div></div><div class="s-price">💰 ${changePrice.toLocaleString()}</div></div>`;
 html+=STAT_UPGRADES.map((u,i)=>{
 const count=getStatUpgradeCount(u.stat);
 const price=getStatUpgradePrice(u.stat);

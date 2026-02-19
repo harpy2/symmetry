@@ -325,39 +325,130 @@ el.classList.add('closing');setTimeout(()=>el.remove(),300);
 }
 
 // ===== SAVE/LOAD =====
-function saveGame(){
+let _cloudSaveTimer=null;
+function serializeState(){
 syncActiveChar();
 const s={...G};delete s.classData;s.className_=G.className;
-// Save party data (strip classData from each slot)
-if(s.party){
-s.party=s.party.map(slot=>{
-if(!slot)return null;
-const c={...slot};delete c.classData;return c;
-});
+if(s.party){s.party=s.party.map(slot=>{if(!slot)return null;const c={...slot};delete c.classData;return c})}
+return s;
 }
-localStorage.setItem('symmetry_save',JSON.stringify(s))
+function saveGame(){
+const s=serializeState();
+localStorage.setItem('symmetry_save',JSON.stringify(s));
+// 클라우드 세이브 (디바운스 5초)
+if(_cloudSaveTimer)clearTimeout(_cloudSaveTimer);
+_cloudSaveTimer=setTimeout(()=>{cloudSave(s)},5000);
 }
-function loadGame(){const raw=localStorage.getItem('symmetry_save');if(!raw){toast('저장된 데이터가 없습니다');return}
-try{const s=JSON.parse(raw);G=s;G.className=s.className_;G.classData=CLASSES[G.className];if(!G.classData){toast('잘못된 세이브 데이터');return}
+async function cloudSave(s){
+try{
+const uid=getCPQUserId();
+await fetch(CPQ_API+'/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,data:s})});
+}catch(e){console.warn('[CloudSave] error:',e.message)}
+}
+
+function restoreState(s){
+G=s;G.className=s.className_;G.classData=CLASSES[G.className];
+if(!G.classData)return false;
 G.allSkills=G.classData.skills;G.allPassives=G.classData.passives;
-G.equippedSkills=G.equippedSkills.map(es=>G.allSkills.find(s=>s.name===es.name)||es);
-G.equippedPassives=G.equippedPassives.map(ep=>G.allPassives.find(p=>p.name===ep.name)||ep);
+G.equippedSkills=(G.equippedSkills||[]).map(es=>G.allSkills.find(s=>s.name===es.name)||es);
+G.equippedPassives=(G.equippedPassives||[]).map(ep=>G.allPassives.find(p=>p.name===ep.name)||ep);
 if(!G.missionCooldowns)G.missionCooldowns={};if(!G.critBonus)G.critBonus=0;
-// Restore party system defaults if missing
+if(!G._statUpgrades)G._statUpgrades={};
 if(!G.party)G.party=[null,null,null];
 if(G.activeSlot===undefined)G.activeSlot=0;
 if(!G.slotUnlocked)G.slotUnlocked=[true,false,false];
-// Restore classData in party slots
 if(G.party){G.party.forEach(slot=>{if(slot&&slot.className)slot.classData=CLASSES[slot.className]})}
-// Sync current G into party[0] if party[0] is null (migration)
 if(!G.party[0])saveCharToSlot();
-// Bonus stat defaults
 if(!G.hpBonus)G.hpBonus=0;if(!G.atkBonus)G.atkBonus=0;if(!G.defBonus)G.defBonus=0;if(!G.expBonus)G.expBonus=0;
-// 장비 슬롯 마이그레이션 (3슬롯→10슬롯)
+if(G.equipment){
 if(G.equipment.armor&&!G.equipment.chest){G.equipment.chest=G.equipment.armor;delete G.equipment.armor}
 if(G.equipment.accessory&&!G.equipment.necklace){G.equipment.necklace=G.equipment.accessory;delete G.equipment.accessory}
 ['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'].forEach(k=>{if(!G.equipment.hasOwnProperty(k))G.equipment[k]=null});
-showScreen('main-screen');toast('게임 로드 완료!')}catch(e){toast('로드 실패: '+e.message)}}
+}
+return true;
+}
+
+function loadGame(){
+const raw=localStorage.getItem('symmetry_save');
+if(!raw){toast('저장된 데이터가 없습니다');return}
+try{
+const s=JSON.parse(raw);
+if(!restoreState(s)){toast('잘못된 세이브 데이터');return}
+showScreen('main-screen');toast('게임 로드 완료!');
+}catch(e){toast('로드 실패: '+e.message)}
+}
+
+// 클라우드에서 로드 (타이틀 화면의 '이어하기'에서 사용)
+async function loadFromCloud(){
+try{
+const uid=getCPQUserId();
+const res=await fetch(CPQ_API+'/api/save?user_id='+uid);
+const json=await res.json();
+if(json.data){
+if(restoreState(json.data)){
+localStorage.setItem('symmetry_save',JSON.stringify(json.data));
+showScreen('main-screen');toast('☁️ 클라우드 세이브 로드 완료!');return true;
+}
+}
+}catch(e){console.warn('[CloudLoad]',e.message)}
+return false;
+}
+
+// 이어하기: 클라우드 우선 → 로컬 폴백
+async function continueGame(){
+toast('데이터 불러오는 중...');
+const cloudOk=await loadFromCloud();
+if(!cloudOk)loadGame();
+}
+
+// ===== CHARACTER CHANGE (골드 상점) =====
+let _changeSlot=-1;
+function startCharChange(){
+const price=500+G.level*50;
+if(G.gold<price)return toast(`골드가 부족합니다! (${price} 필요)`);
+// 슬롯 선택 팝업
+const el=document.createElement('div');el.id='char-change-popup';
+el.innerHTML=`<div class="edp-overlay" onclick="closeCharChange()"><div class="edp-card" onclick="event.stopPropagation()" style="max-width:320px">
+<div style="font-size:16px;font-weight:700;margin-bottom:12px;text-align:center">🔄 직업 변경 (💰${price})</div>
+<div style="font-size:13px;color:var(--text2);margin-bottom:12px;text-align:center">변경할 캐릭터를 선택하세요</div>
+<div style="display:flex;gap:8px;justify-content:center">${[0,1,2].map(s=>{
+if(!G.slotUnlocked[s]||!G.party[s])return'';
+const cn=G.party[s].className||'빈 슬롯';
+const cls=CLASSES[G.party[s].className];
+return`<button class="btn btn-sm" onclick="selectChangeSlot(${s})" style="min-width:80px">${cls?cls.weapon:''} ${cn}</button>`;
+}).join('')}</div>
+</div></div>`;
+document.body.appendChild(el);
+}
+function closeCharChange(){const el=document.getElementById('char-change-popup');if(el)el.remove()}
+function selectChangeSlot(slot){
+_changeSlot=slot;closeCharChange();
+// 직업 선택 화면으로
+G._pendingClassChange=true;
+G._changeSlotTarget=slot;
+showScreen('class-screen');
+}
+function confirmClassChange(className){
+const slot=G._changeSlotTarget;
+const price=500+G.level*50;
+if(G.gold<price)return toast('골드가 부족합니다!');
+G.gold-=price;
+const cls=CLASSES[className];
+// 기존 장비 → 인벤토리
+const oldChar=G.party[slot];
+if(oldChar&&oldChar.equipment){Object.values(oldChar.equipment).forEach(e=>{if(e)G.inventory.push(e)})}
+// 새 캐릭 생성
+G.party[slot]={className,classData:cls,level:oldChar?oldChar.level:1,exp:0,
+hp:cls.baseHP,maxHP:cls.baseHP,atk:cls.baseATK,def:cls.baseDEF,
+hunger:100,mood:80,floor:oldChar?oldChar.floor:1,
+equippedSkills:[],equippedPassives:[],allSkills:[...cls.skills],allPassives:[...cls.passives],
+equipment:{helmet:null,chest:null,gloves:null,pants:null,boots:null,weapon:null,necklace:null,ring1:null,ring2:null,offhand:null},
+critBonus:0,hpBonus:0,atkBonus:0,defBonus:0,expBonus:0,_appliedBuffs:[],_statUpgrades:{}};
+if(slot===G.activeSlot){loadSlotToG(slot)}
+delete G._pendingClassChange;delete G._changeSlotTarget;
+saveGame();showScreen('main-screen');
+toast(`${className}(으)로 전직 완료! ⚔️`);
+}
 
 // Init
 renderClassSelect();

@@ -118,6 +118,32 @@ export default {
       }
     }
 
+    // POST /api/save — 클라우드 세이브
+    if (url.pathname === '/api/save' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const { user_id, data } = body;
+        if (!user_id || !data) return new Response(JSON.stringify({ error: 'user_id and data required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+        await env.CPQ_KV.put('save:' + user_id, JSON.stringify(data));
+        return new Response(JSON.stringify({ ok: true }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // GET /api/save?user_id= — 클라우드 로드
+    if (url.pathname === '/api/save' && request.method === 'GET') {
+      try {
+        const user_id = url.searchParams.get('user_id');
+        if (!user_id) return new Response(JSON.stringify({ error: 'user_id required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+        const raw = await env.CPQ_KV.get('save:' + user_id);
+        if (!raw) return new Response(JSON.stringify({ data: null }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ data: JSON.parse(raw) }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+    }
+
     // GET /api/items/:id
     const itemMatch = url.pathname.match(/^\/api\/items\/([aw]\d{3})$/);
     if (itemMatch && request.method === 'GET') {
