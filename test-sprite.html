@@ -1,0 +1,21 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{background:#0a0a1a;padding:40px;color:#fff;font-family:sans-serif}
+.test{margin:20px 0;padding:10px;background:rgba(255,255,255,.05);border-radius:8px;display:flex;align-items:center;gap:8px}
+@keyframes t1{from{background-position:0 0}to{background-position:-712px 0}}
+.spr{display:inline-block;overflow:hidden;background-repeat:no-repeat;image-rendering:pixelated;background-image:url('img/warrior-idle.png')}
+</style></head><body>
+<h2>Sprite Debug</h2>
+<div class="test">
+  <span>50px (current bug?):</span>
+  <span class="spr" style="width:35px;height:50px;background-size:712px 50px;animation:t1 .64s steps(8) infinite"></span>
+  <span>← 여기 위아래 확인</span>
+</div>
+<div class="test">
+  <span>128px (원본):</span>
+  <span class="spr" style="width:89px;height:128px;background-size:712px 128px;animation:t1 .64s steps(8) infinite"></span>
+</div>
+<div class="test">
+  <span>원본 이미지 첫 프레임:</span>
+  <img src="img/warrior-idle.png" style="height:128px;image-rendering:pixelated">
+</div>
+</body></html>
