@@ -2,13 +2,20 @@
 (function(){const c=document.getElementById('title-particles');for(let i=0;i<30;i++){const s=document.createElement('span');s.style.left=Math.random()*100+'%';s.style.animationDuration=(4+Math.random()*6)+'s';s.style.animationDelay=Math.random()*5+'s';s.style.width=s.style.height=(1+Math.random()*3)+'px';c.appendChild(s)}})();
 
 // ===== CLASS SELECT =====
-function renderClassSelect(){const c=document.getElementById('class-cards');c.innerHTML='';
+// 임시 선택 저장 (G를 건드리지 않음)
+let _pendingClassName=null;
+
+function renderClassSelect(){const c=document.getElementById('class-cards');c.innerHTML='';_pendingClassName=null;
 Object.entries(CLASSES).forEach(([name,cls])=>{
 const d=document.createElement('div');d.className='class-card';d.onclick=()=>{document.querySelectorAll('.class-card').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');
-// 추가 슬롯 생성 시 기존 전역 상태 보존
-const savedParty=G.party;const savedUnlocked=G.slotUnlocked;const savedGold=G.gold;const savedPoints=G.points;const savedInv=G.inventory;const savedSlot=G.activeSlot;const savedPending=G._pendingSlot;
+// 추가 슬롯이든 첫 캐릭이든 임시 변수에만 저장
+_pendingClassName=name;
+// 첫 캐릭 생성(party가 없거나 slot0이 비어있을 때)만 G에 미리 반영
+if(!G.party||!G.party[0]){
+const savedParty=G.party;const savedUnlocked=G.slotUnlocked;const savedGold=G.gold;const savedPoints=G.points;const savedInv=G.inventory;
 G=newGame();G.className=name;G.classData=cls;G.maxHP=cls.baseHP;G.hp=cls.baseHP;G.atk=cls.baseATK;G.def=cls.baseDEF;G.allSkills=[...cls.skills];G.allPassives=[...cls.passives];
-if(savedParty){G.party=savedParty;G.slotUnlocked=savedUnlocked;G.gold=savedGold;G.points=savedPoints;G.inventory=savedInv;G.activeSlot=savedSlot;G._pendingSlot=savedPending}
+if(savedParty){G.party=savedParty;G.slotUnlocked=savedUnlocked;G.gold=savedGold;G.points=savedPoints;G.inventory=savedInv}
+}
 document.getElementById('class-confirm-btn').disabled=false};
 const sprData=CHAR_SVG[name];
 let avatarHTML='';
@@ -21,26 +28,24 @@ avatarHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span 
 }
 d.innerHTML=`${avatarHTML}<div class="class-info"><h3>${cls.weapon} ${name}</h3><p>${cls.desc}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
 c.appendChild(d)})}
-function confirmClass(){if(!G.className)return;
-// 스킬 없이 시작 — 게임 내에서 획득
-G.equippedSkills=[];G.equippedPassives=[];G.allSkills=[];G.allPassives=[];
-// 추가 슬롯에 캐릭터 생성
+function confirmClass(){if(!_pendingClassName)return;
+const selectedName=_pendingClassName;
+const cls=CLASSES[selectedName];
+_pendingClassName=null;
+
+// 추가 슬롯에 캐릭터 생성 (G는 건드리지 않음!)
 if(G._pendingSlot!==undefined&&G._pendingSlot>0){
 const slot=G._pendingSlot;delete G._pendingSlot;
-const cls2=CLASSES[G.className];
-// 새 캐릭을 party에만 저장 (G는 건드리지 않음)
-G.party[slot]={className:G.className,classData:cls2,level:1,exp:0,hp:cls2.baseHP,maxHP:cls2.baseHP,atk:cls2.baseATK,def:cls2.baseDEF,
+G.party[slot]={className:selectedName,classData:cls,level:1,exp:0,hp:cls.baseHP,maxHP:cls.baseHP,atk:cls.baseATK,def:cls.baseDEF,
 hunger:100,mood:80,floor:1,
-equippedSkills:[],equippedPassives:[],allSkills:[...cls2.skills],allPassives:[...cls2.passives],
+equippedSkills:[],equippedPassives:[],allSkills:[...cls.skills],allPassives:[...cls.passives],
 equipment:{helmet:null,chest:null,gloves:null,pants:null,boots:null,weapon:null,necklace:null,ring1:null,ring2:null,offhand:null},
 critBonus:0,hpBonus:0,atkBonus:0,defBonus:0,expBonus:0,_appliedBuffs:[]};
-// 캐릭1(slot0) 데이터로 G 복원
-const p0=G.party[0];
-if(p0){Object.keys(p0).forEach(k=>{G[k]=p0[k]})}
-G.activeSlot=0;
 saveGame();showScreen('main-screen');
 return;
 }
+// 첫 캐릭 생성 — G에 이미 반영되어 있음
+G.equippedSkills=[];G.equippedPassives=[];G.allSkills=[];G.allPassives=[];
 saveGame();showScreen('main-screen')}
 
 // ===== SKILL SELECT =====
@@ -183,7 +188,6 @@ function renderSidePanel(slot){
 const panelId='char-panel-'+slot;
 const panel=document.getElementById(panelId);
 if(!panel)return;
-// 잠금 오버레이 외 기존 캐릭 컨텐츠 제거
 const existing=panel.querySelector('.side-char-content');
 if(existing)existing.remove();
 if(!G.party||!G.party[slot]||!G.slotUnlocked[slot])return;
@@ -200,6 +204,16 @@ spriteHTML=`<div class="char-sprite" style="background-image:url('${anim.src}');
 }else{
 spriteHTML=`<div style="font-size:48px;text-align:center">${cls.weapon}</div>`;
 }
+// 장비 미니 슬롯
+const eq=char.equipment||{};
+const slots=['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'];
+const slotIcons={helmet:'🪖',chest:'👕',gloves:'🧤',pants:'👖',boots:'👢',weapon:'⚔️',necklace:'📿',ring1:'💍',ring2:'💍',offhand:'🛡️'};
+const equipHTML=slots.map(s=>{
+const item=eq[s];
+const icon=item?(item.svgData?`<div class="item-svg" style="width:20px;height:20px">${item.svgData}</div>`:item.emoji):slotIcons[s];
+const border=item?`border-color:${GRADE_COLORS[item.grade]}`:'';
+return `<div class="side-equip-slot ${item?'has-item':''}" style="${border}" title="${s}">${icon}</div>`;
+}).join('');
 const div=document.createElement('div');
 div.className='side-char-content';
 div.innerHTML=`
@@ -208,6 +222,7 @@ div.innerHTML=`
 <div class="side-char-name">${cls.weapon} ${char.className}</div>
 <div class="side-char-level">Lv.${char.level}</div>
 <div class="side-char-hp">❤️ ${Math.floor(char.hp)}/${char.maxHP}</div>
-</div>`;
+</div>
+<div class="side-equip-grid">${equipHTML}</div>`;
 panel.appendChild(div);
 }
