@@ -102,7 +102,7 @@ function syncActiveChar(){saveCharToSlot()}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='class-screen')renderClassSelect();if(id==='main-screen'){renderMainScreen();startTicking()}}
 
 // ===== MAIN SCREEN =====
-function renderMainScreen(){updateBars();renderCharacter();renderEquipRow();renderSkillRow();updateSlotUI()}
+function renderMainScreen(){updateBars();renderCharacter();renderEquipRow();renderSkillRow();updateSlotUI();checkPendingRewards()}
 
 function getMoodStatus(){
 if(G.mood>=80)return'😊 좋음';

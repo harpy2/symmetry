@@ -294,23 +294,18 @@ const onCD=remaining>0;
 const goldReward=80;
 const pointReward=15;
 
-// 상품 이미지
-const imgHTML=m.images&&m.images.length?`<div class="cpq-img"><img src="${m.images[0]}" alt="${m.name}" onerror="this.style.display='none'"></div>`:'';
-
 let actionHTML='';
 if(onCD){
 actionHTML=`<div class="cooldown">⏳ 참여 완료! 보상 대기 중...</div>`;
 }else{
-actionHTML=`<div class="cpq-walk-area">
-${imgHTML}
-<button class="btn btn-sm cpq-link-btn" onclick="joinCPQ(${i})">📋 미션 참여</button>
-</div>`;
+actionHTML=`<button class="btn btn-sm cpq-link-btn" onclick="joinCPQ(${i})" style="margin-top:8px">⚔️ 의뢰 수행</button>`;
 }
 
 cards.push(`<div class="mission-card">
 <div class="npc-row"><div class="npc-avatar" style="background:${npc.color}">${npc.avatar}</div>
-<div><div class="npc-name">${npc.npc}</div><div style="font-size:11px;color:var(--text2)">${m.name||''}</div></div></div>
-<div class="mission-reward">보상: 💰 ${goldReward} + 💎 ${pointReward}</div>
+<div class="npc-info"><div class="npc-name">${npc.npc}</div></div></div>
+<div class="mission-title">${m.name||'의뢰'}</div>
+<div class="mission-reward">💰 ${goldReward} + 💎 ${pointReward}</div>
 ${actionHTML}
 </div>`);
 }
