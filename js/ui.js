@@ -178,24 +178,36 @@ document.getElementById('levelup-overlay').classList.remove('active');
 toast(`${window._levelChoices[i].name} 획득!`);updateBars();renderCharacter();saveGame();
 if(window._levelResolve){window._levelResolve();window._levelResolve=null}}
 
-// ===== PARTY SYSTEM =====
-let activeSlot=0;
-const partySlots=[{unlocked:true},{unlocked:false},{unlocked:false}];
-
-function switchCharacter(idx){
-if(!partySlots[idx].unlocked){toast('💎 포인트로 슬롯을 구매하세요');return}
-activeSlot=idx;
-document.querySelectorAll('.char-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
-document.querySelectorAll('.char-panel').forEach((p,i)=>{p.classList.toggle('active',i===idx)});
+// ===== SIDE PANEL RENDERING =====
+function renderSidePanel(slot){
+const panelId='char-panel-'+slot;
+const panel=document.getElementById(panelId);
+if(!panel)return;
+// 잠금 오버레이 외 기존 캐릭 컨텐츠 제거
+const existing=panel.querySelector('.side-char-content');
+if(existing)existing.remove();
+if(!G.party||!G.party[slot]||!G.slotUnlocked[slot])return;
+const char=G.party[slot];
+const cls=CLASSES[char.className];
+if(!cls)return;
+const sprData=CHAR_SVG[char.className];
+let spriteHTML='';
+if(sprData&&sprData.type==='sprite'){
+const anim=sprData.idle;
+const animName='side-'+char.className;
+spriteHTML=`<div class="char-sprite" style="background-image:url('${anim.src}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div>
+<style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style>`;
+}else{
+spriteHTML=`<div style="font-size:48px;text-align:center">${cls.weapon}</div>`;
 }
-
-function renderPartyLayout(){
-const tabs=document.getElementById('char-tab-bar');
-if(tabs){tabs.innerHTML='';
-partySlots.forEach((_,i)=>{
-const t=document.createElement('button');
-t.className='char-tab'+(i===activeSlot?' active':'');
-t.onclick=()=>switchCharacter(i);
-t.textContent=partySlots[i].unlocked?`캐릭${i+1}`:`캐릭${i+1}🔒`;
-tabs.appendChild(t)})}
+const div=document.createElement('div');
+div.className='side-char-content';
+div.innerHTML=`
+<div class="side-char-sprite">${spriteHTML}</div>
+<div class="side-char-info">
+<div class="side-char-name">${cls.weapon} ${char.className}</div>
+<div class="side-char-level">Lv.${char.level}</div>
+<div class="side-char-hp">❤️ ${Math.floor(char.hp)}/${char.maxHP}</div>
+</div>`;
+panel.appendChild(div);
 }

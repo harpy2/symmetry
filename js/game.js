@@ -92,6 +92,8 @@ tabs[1].textContent=G.party&&G.party[0]?G.party[0].className||'캐릭1':'캐릭1
 tabs[2].textContent=G.slotUnlocked[2]?(G.party[2]?G.party[2].className||'캐릭3':'캐릭3 (빈)'):'캐릭3🔒';
 tabs.forEach((t,i)=>{t.classList.toggle('active',slotOrder[i]===G.activeSlot)});
 }
+// 사이드 패널에 캐릭터 렌더링
+if(typeof renderSidePanel==='function'){renderSidePanel(1);renderSidePanel(2)}
 }
 
 function syncActiveChar(){saveCharToSlot()}
