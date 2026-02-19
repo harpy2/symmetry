@@ -124,6 +124,8 @@ if(won){
 let goldReward=Math.floor((combat.goldReward||10)*moodMult.gold);
 let expReward=Math.floor((combat.expReward||15)*moodMult.exp);
 G.gold+=goldReward;G.exp+=expReward;
+// 서브 캐릭도 동일 경험치
+for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){if(!G.party[_s].exp)G.party[_s].exp=0;G.party[_s].exp+=expReward;}}
 G.mood=Math.min(100,G.mood+(isBoss?15:5));
 await addHuntLine(`획득: 💰 +${goldReward}, 경험치 +${expReward}`,'loot',log);
 
@@ -149,9 +151,20 @@ const lvlMsgs=['기분이 한결 좋아진 것 같다...','승리를 자축하�
 const lvlMsg=lvlMsgs[Math.floor(Math.random()*lvlMsgs.length)];
 await addHuntLine(`✨ ${lvlMsg}`,'loading',log);
 const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
-if(SKILL_LEVELS.includes(G.level)){await showSkillLearn('active');}
-else if(PASSIVE_LEVELS.includes(G.level)){await showSkillLearn('passive');}
-else{await showLevelUp(null);}}
+if(SKILL_LEVELS.includes(G.level)){await showSkillLearn('active',G.activeSlot);}
+else if(PASSIVE_LEVELS.includes(G.level)){await showSkillLearn('passive',G.activeSlot);}
+else{await showLevelUp(null,G.activeSlot);}}
+// 서브 캐릭터 레벨업 (독립 EXP 기반)
+for(let _s=0;_s<3;_s++){
+if(_s===G.activeSlot||!G.slotUnlocked[_s]||!G.party[_s])continue;
+const sub=G.party[_s];if(!sub.exp)sub.exp=0;
+const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
+while(sub.exp>=100){sub.exp-=100;sub.level=(sub.level||1)+1;sub.maxHP=(sub.maxHP||100)+20;sub.atk=(sub.atk||15)+3;sub.def=(sub.def||8)+2;sub.hp=sub.maxHP;
+await addHuntLine(`✨ ${sub.className}도 레벨 업! Lv.${sub.level}`,'loading',log);
+if(SKILL_LEVELS.includes(sub.level)){await showSkillLearn('active',_s);}
+else if(PASSIVE_LEVELS.includes(sub.level)){await showSkillLearn('passive',_s);}
+else{await showLevelUp(null,_s);}
+}}
 }else{
 G.mood=Math.max(0,G.mood-10)}
 

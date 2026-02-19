@@ -95,21 +95,22 @@ renderSkillManage();renderSkillRow();saveGame()}
 
 // ===== LEVEL UP =====
 // ===== 스킬 습득 (레벨 5/10/15/20/25/30) =====
-function showSkillLearn(type){return new Promise(resolve=>{
+function showSkillLearn(type,slot){return _showSkillLearnForSlot(type,slot!==undefined?slot:G.activeSlot)}
+function _showSkillLearnForSlot(type,slot){return new Promise(resolve=>{
 const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
 const isActive=type==='active';
-const classData=CLASSES[G.className];
+const char=slot===G.activeSlot?G:(G.party&&G.party[slot]?G.party[slot]:G);
+const classData=CLASSES[char.className];
+if(!classData){resolve();ol.classList.remove('active');return}
 const pool=isActive?classData.skills:classData.passives;
-const learned=isActive?G.equippedSkills:G.equippedPassives;
+const learned=isActive?(char.equippedSkills||[]):(char.equippedPassives||[]);
 const unlearned=pool.filter(s=>!learned.some(e=>e.name===s.name));
-// 3개 후보 — 소환사는 소환 스킬 우선
 let candidates;
-if(isActive&&(G.className==='소환사'||G.className==='엔지니어')){
+if(isActive&&(char.className==='소환사'||char.className==='엔지니어')){
   const summonSkills=unlearned.filter(s=>s.summon);
   const otherSkills=unlearned.filter(s=>!s.summon);
   const shuffledSummon=[...summonSkills].sort(()=>Math.random()-0.5);
   const shuffledOther=[...otherSkills].sort(()=>Math.random()-0.5);
-  // 최소 2개 소환 스킬 + 1개 기타 (없으면 소환으로 채움)
   candidates=[...shuffledSummon.slice(0,2),...shuffledOther.slice(0,1)];
   if(candidates.length<3)candidates.push(...shuffledSummon.slice(2,2+(3-candidates.length)));
   if(candidates.length<3)candidates.push(...shuffledOther.slice(1,1+(3-candidates.length)));
@@ -119,23 +120,29 @@ if(isActive&&(G.className==='소환사'||G.className==='엔지니어')){
   candidates=shuffled.slice(0,3);
 }
 if(candidates.length===0){resolve();ol.classList.remove('active');return}
-document.getElementById('levelup-sub').textContent=`Lv.${G.level} — ${isActive?'⚔️ 액티브 스킬':'🛡️ 패시브 스킬'} 습득!`;
+const slotLabel=slot===0?'':'['+char.className+'] ';
+document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${char.level} — ${isActive?'⚔️ 액티브 스킬':'🛡️ 패시브 스킬'} 습득!`;
 document.getElementById('levelup-choices').innerHTML=candidates.map((c,i)=>`<div class="levelup-choice" onclick="pickSkillLearn(${i})"><div class="lc-name">${c.icon} ${c.name}</div><div class="lc-desc">${c.desc}${c.dmg?' | DMG: '+c.dmg:''}${c.aoe?' | 광역':''}${c.dot?' | 지속뎀':''}${c.hits>1?' | '+c.hits+'회타':''}</div></div>`).join('');
-window._skillCandidates=candidates;window._skillType=type;window._skillResolve=resolve;
+window._skillCandidates=candidates;window._skillType=type;window._skillSlot=slot;window._skillResolve=resolve;
 })}
 function pickSkillLearn(i){
 const s=window._skillCandidates[i];
-if(window._skillType==='active')G.equippedSkills.push(s);
-else G.equippedPassives.push(s);
-toast(`${s.icon} ${s.name} 습득!`);
+const slot=window._skillSlot;
+const char=slot===G.activeSlot?G:(G.party&&G.party[slot]?G.party[slot]:G);
+if(window._skillType==='active'){if(!char.equippedSkills)char.equippedSkills=[];char.equippedSkills.push(s);}
+else{if(!char.equippedPassives)char.equippedPassives=[];char.equippedPassives.push(s);}
+toast(`${s.icon} ${s.name} 습득!${slot!==G.activeSlot?' ('+char.className+')':''}`);
 document.getElementById('levelup-overlay').classList.remove('active');
 saveGame();
 if(window._skillResolve){window._skillResolve();window._skillResolve=null}
 }
 
 // ===== LEVEL UP (스탯 선택) =====
-async function showLevelUp(preloadedChoices){return new Promise(resolve=>{const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
-document.getElementById('levelup-sub').textContent=`Lv.${G.level} 달성! HP+20, ATK+3, DEF+2`;
+async function showLevelUp(preloadedChoices,slot){return new Promise(resolve=>{const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
+window._levelSlot=slot!==undefined?slot:G.activeSlot;
+const _char=window._levelSlot===G.activeSlot?G:(G.party&&G.party[window._levelSlot]?G.party[window._levelSlot]:G);
+const slotLabel=window._levelSlot===0?'':'['+_char.className+'] ';
+document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${_char.level} 달성! HP+20, ATK+3, DEF+2`;
 
 let choices = preloadedChoices;
 if(!choices){
@@ -195,9 +202,12 @@ if(!G._appliedBuffs)G._appliedBuffs=[];
 document.getElementById('auto-levelup-toggle').checked=!!G.autoLevelUp;
 window._levelResolve=resolve;
 if(G.autoLevelUp){setTimeout(()=>pickLevelBuff(Math.floor(Math.random()*3)),500);return}});}
-function pickLevelBuff(i){window._levelChoices[i].apply(G);
-if(!G._appliedBuffs)G._appliedBuffs=[];
-G._appliedBuffs.push({name:window._levelChoices[i].name,desc:window._levelChoices[i].desc});
+function pickLevelBuff(i){
+const slot=window._levelSlot!==undefined?window._levelSlot:G.activeSlot;
+const char=slot===G.activeSlot?G:(G.party&&G.party[slot]?G.party[slot]:G);
+window._levelChoices[i].apply(char);
+if(!char._appliedBuffs)char._appliedBuffs=[];
+char._appliedBuffs.push({name:window._levelChoices[i].name,desc:window._levelChoices[i].desc});
 document.getElementById('levelup-overlay').classList.remove('active');
 toast(`${window._levelChoices[i].name} 획득!`);updateBars();renderCharacter();saveGame();
 if(window._levelResolve){window._levelResolve();window._levelResolve=null}}
