@@ -318,10 +318,10 @@ body.innerHTML=cards.join('');
 }
 
 async function joinCPQ(idx){
-const m=_cpqMissions[idx];if(!m||!m.lurl)return toast('미션 링크가 없습니다');
+const m=_cpqMissions[idx];if(!m)return toast('미션 정보가 없습니다');
 const uid=getCPQUserId();
 try{
-const res=await fetch(CPQ_API+'/api/cpq/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,campaign_id:String(m.id),lurl:m.lurl})});
+const res=await fetch(CPQ_API+'/api/cpq/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,campaign_id:m.id})});
 const data=await res.json();
 if(data.redirect_url){
 // 쿨다운 설정 (재참여 방지)

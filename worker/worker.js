@@ -124,19 +124,18 @@ export default {
         const adbcRes = await fetch('https://api.adbc.io/api/v3/reward/campaigns?token=' + env.ADBC_TOKEN + '&level=2');
         if (!adbcRes.ok) return new Response(JSON.stringify({ error: 'adbc API error', missions: [] }), { status: 502, headers: { ...headers, 'Content-Type': 'application/json' } });
         const adbcData = await adbcRes.json();
-        const allCampaigns = (adbcData.data || adbcData.campaigns || adbcData || []);
-        // non-incent만 필터
-        const filtered = Array.isArray(allCampaigns) ? allCampaigns.filter(c => c.incent_type !== 'incent') : [];
+        const allCampaigns = adbcData.camp || adbcData.data || [];
         // 랜덤 셔플 후 count개
-        const shuffled = filtered.sort(() => Math.random() - 0.5).slice(0, count);
+        const shuffled = allCampaigns.sort(() => Math.random() - 0.5).slice(0, count);
         const missions = shuffled.map(c => ({
-          id: c.id || c.ad_id,
-          type: c.type || c.ad_type || 'cpc_detail_place',
-          name: c.name || c.ad_name || '',
-          icon: c.icon || '',
-          images: c.images || (c.image ? [c.image] : []),
-          join_desc: c.join_desc || c.description || '',
-          lurl: c.lurl || c.link_url || '',
+          id: c.campid,
+          type: c.detail_type || 'cpc_detail_place',
+          name: c.name || '',
+          icon: c.iconurl || '',
+          images: (c.ctv || []).map(ct => ct.url),
+          join_desc: c.joindesc || '',
+          reward_desc: c.rewarddesc || '',
+          price: c.price || 0,
         }));
         return new Response(JSON.stringify({ missions }), { headers: { ...headers, 'Content-Type': 'application/json' } });
       } catch (e) {
@@ -144,22 +143,27 @@ export default {
       }
     }
 
-    // POST /api/cpq/join — 미션 참여: cbparam(click_id) 생성 + KV 저장 + lurl 반환
+    // POST /api/cpq/join — 미션 참여: adbc join API 호출 → lurl에 cbparam 붙여서 반환
     if (url.pathname === '/api/cpq/join' && request.method === 'POST') {
       try {
         const body = await request.json();
-        const { user_id, campaign_id, lurl } = body;
-        if (!user_id || !campaign_id || !lurl) {
-          return new Response(JSON.stringify({ error: 'user_id, campaign_id, lurl required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+        const { user_id, campaign_id, ip } = body;
+        if (!user_id || !campaign_id) {
+          return new Response(JSON.stringify({ error: 'user_id, campaign_id required' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
         }
-        // click_id 생성 (UUID)
+        // cbparam용 click_id 생성 (UUID)
         const click_id = crypto.randomUUID();
         // KV에 저장 (TTL 24시간)
         await env.CPQ_KV.put('cb:' + click_id, JSON.stringify({ user_id, campaign_id, ts: Date.now() }), { expirationTtl: 86400 });
-        // lurl에 cbparam 추가
-        const separator = lurl.includes('?') ? '&' : '?';
-        const redirectUrl = lurl + separator + 'cbparam=' + click_id;
-        return new Response(JSON.stringify({ click_id, redirect_url: redirectUrl }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        // adbc 참여 API 호출
+        const clientIp = ip || request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+        const joinUrl = `https://adbc.io/reward/v3/join?token=${env.ADBC_TOKEN}&userid=${encodeURIComponent(user_id)}&campid=${campaign_id}&cbparam=${click_id}&ip=${encodeURIComponent(clientIp)}&adid=${encodeURIComponent(user_id)}`;
+        const joinRes = await fetch(joinUrl);
+        const joinData = await joinRes.json();
+        if (joinData.result !== 200 || !joinData.lurl) {
+          return new Response(JSON.stringify({ error: 'adbc join failed', detail: joinData }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+        }
+        return new Response(JSON.stringify({ click_id, redirect_url: joinData.lurl, click_id_adbc: joinData.click_id }), { headers: { ...headers, 'Content-Type': 'application/json' } });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
       }
