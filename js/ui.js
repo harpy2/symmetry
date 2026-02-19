@@ -22,7 +22,7 @@ let avatarHTML='';
 if(sprData&&sprData.type==='sprite'){
 const anim=sprData.idle;
 const animName='csel-'+name;
-avatarHTML=`<div class="class-avatar"><div class="char-sprite" style="background-image:url('${anim.src}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div><style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style></div>`;
+avatarHTML=`<div class="class-avatar"><div class="char-sprite" style="background-image:url('${anim.src}${SPRITE_VER}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div><style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style></div>`;
 }else{
 avatarHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span style="font-size:36px">${cls.weapon}</span></div>`;
 }
@@ -199,7 +199,7 @@ let spriteHTML='';
 if(sprData&&sprData.type==='sprite'){
 const anim=sprData.idle;
 const animName='side-'+char.className;
-spriteHTML=`<div class="char-sprite" style="background-image:url('${anim.src}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div>
+spriteHTML=`<div class="char-sprite" style="background-image:url('${anim.src}${SPRITE_VER}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:${animName} ${sprData.frames*0.12}s steps(${sprData.frames}) infinite"></div>
 <style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style>`;
 }else{
 spriteHTML=`<div style="font-size:48px;text-align:center">${cls.weapon}</div>`;

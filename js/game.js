@@ -138,7 +138,7 @@ const charData=CHAR_SVG[G.className];
 let charHTML='';
 if(charData&&charData.type==='sprite'){
 const anim=charData.idle;
-charHTML=`<div class="char-sprite" style="background-image:url('${anim.src}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:sprite-${G.className} ${charData.frames*0.12}s steps(${charData.frames}) infinite"></div>
+charHTML=`<div class="char-sprite" style="background-image:url('${anim.src}${SPRITE_VER}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:sprite-${G.className} ${charData.frames*0.12}s steps(${charData.frames}) infinite"></div>
 <style>@keyframes sprite-${G.className}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style>`;
 }else if(typeof charData==='string'){
 charHTML=`<div class="char-svg-wrap">${charData}</div>`;

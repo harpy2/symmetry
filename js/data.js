@@ -1,4 +1,5 @@
 // ===== CHARACTER SVGs =====
+const SPRITE_VER='?v=2';
 const CHAR_SVG={
 전사:{type:'sprite',frames:8,
   idle:{src:'img/warrior-idle.png',w:89,h:128,tw:712},

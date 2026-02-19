@@ -253,7 +253,7 @@ const loopCount=loops||1;
 const isIdle=actionType==='idle'||actionType==='walk';
 const oneCycleDur=8*0.1;
 el.style.animation='none';
-el.style.backgroundImage="url('"+anim.src+"')";
+el.style.backgroundImage="url('"+anim.src+SPRITE_VER+"')";
 el.style.width=sw+'px';
 el.style.height=Math.round(anim.h*(sw/anim.w))+'px';
 el.style.backgroundSize=stw+'px '+Math.round(anim.h*(sw/anim.w))+'px';
