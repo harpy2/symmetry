@@ -396,11 +396,31 @@ showScreen('main-screen');toast('☁️ 클라우드 세이브 로드 완료!');
 return false;
 }
 
-// 이어하기: 클라우드 우선 → 로컬 폴백
+// 세이브 데이터 점수 (높을수록 진행도 높음)
+function _saveScore(s){if(!s)return 0;const lv=s.level||1;const party=(s.party||[]).filter(p=>p&&p.className).length;const gold=s.gold||0;return lv*1000+party*500+gold;}
+
+// 이어하기: 클라우드 vs 로컬 비교 후 진행도 높은 쪽 사용
 async function continueGame(){
 toast('데이터 불러오는 중...');
-const cloudOk=await loadFromCloud();
-if(!cloudOk)loadGame();
+let cloudData=null;
+try{
+const uid=getCPQUserId();
+const res=await fetch(CPQ_API+'/api/save?user_id='+uid);
+const json=await res.json();
+cloudData=json.data||null;
+}catch(e){}
+const localRaw=localStorage.getItem('symmetry_save');
+let localData=null;
+try{if(localRaw)localData=JSON.parse(localRaw)}catch(e){}
+const cs=_saveScore(cloudData),ls=_saveScore(localData);
+const chosen=cs>=ls?cloudData:localData;
+if(!chosen){toast('저장된 데이터가 없습니다');return}
+if(restoreState(chosen)){
+localStorage.setItem('symmetry_save',JSON.stringify(chosen));
+showScreen('main-screen');toast(cs>=ls&&cloudData?'☁️ 클라우드 세이브 로드 완료!':'게임 로드 완료!');
+// 더 진행된 데이터를 클라우드에도 동기화
+if(ls>cs&&localData)cloudSave(localData);
+}else{toast('잘못된 세이브 데이터')}
 }
 
 // ===== CHARACTER CHANGE (골드 상점) =====
