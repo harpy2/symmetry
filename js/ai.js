@@ -206,6 +206,23 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     totalTaken[0]=0;
   }
 
+  // 소환수 수집 (소환 스킬 보유 파티 멤버의 소환수)
+  const summons = [];
+  for (const member of partyMembers) {
+    const hasSummonBuff = member.skills.some(s => s.summonBuff);
+    for (const sk of member.skills) {
+      if (sk.summon) {
+        for (let i = 0; i < sk.summon.count; i++) {
+          const sAtk = hasSummonBuff ? Math.floor(sk.summon.atk * 1.5) : sk.summon.atk;
+          summons.push({ name: sk.summon.name, icon: sk.summon.icon, atk: sAtk, hp: sk.summon.hp + G.floor * 2, maxHP: sk.summon.hp + G.floor * 2, taunt: sk.summon.taunt || false, ownerSlot: member.slot });
+        }
+      }
+    }
+  }
+  if (summons.length > 0) {
+    lines.push({ text: `🔮 소환수 ${summons.length}마리 전투 참여! (${[...new Set(summons.map(s=>s.icon+s.name))].join(', ')})`, type: 'buff' });
+  }
+
   const maxRounds = isBoss ? 8 : 3 + enemyCount + Math.floor(Math.random() * 2);
 
   for (let r = 0; r < maxRounds; r++) {
@@ -341,6 +358,42 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         }
       }
     } // end party member loop
+
+    // 소환수 공격 턴
+    const aliveSummons = summons.filter(s => s.hp > 0);
+    for (const sm of aliveSummons) {
+      const curAlive = enemies.filter(e => e.alive);
+      if (curAlive.length === 0) break;
+      const target = curAlive[Math.floor(Math.random() * curAlive.length)];
+      const dmg = Math.max(1, Math.floor(sm.atk * (0.8 + Math.random() * 0.4) * (1 + G.floor * 0.05)));
+      target.hp -= dmg; totalDmg += dmg;
+      if (target.hp <= 0) {
+        target.alive = false;
+        lines.push({ text: `${sm.icon} ${sm.name} → ${enemy}에게 ${dmg} 피해! 처치!`, type: 'action' });
+      } else {
+        lines.push({ text: `${sm.icon} ${sm.name} → ${enemy}에게 ${dmg} 피해!`, type: 'action' });
+      }
+    }
+
+    // 적이 소환수 공격 (도발 소환수 우선, 아니면 랜덤)
+    if (aliveSummons.length > 0) {
+      const stillAliveE = enemies.filter(e => e.alive);
+      for (const attacker of stillAliveE) {
+        if (Math.random() < 0.4) { // 40% 확률로 소환수 타겟
+          const tauntSummons = aliveSummons.filter(s => s.taunt && s.hp > 0);
+          const targetSm = tauntSummons.length > 0 ? tauntSummons[0] : aliveSummons[Math.floor(Math.random() * aliveSummons.length)];
+          if (targetSm && targetSm.hp > 0) {
+            const eDmg = Math.max(1, Math.floor((isBoss ? (4 + G.floor) : (2 + G.floor * 0.5)) * (0.6 + Math.random() * 0.4)));
+            targetSm.hp -= eDmg;
+            if (targetSm.hp <= 0) {
+              lines.push({ text: `${enemy} → ${targetSm.icon} ${targetSm.name} -${eDmg} HP — 소환수 소멸!`, type: 'enemy-atk' });
+            } else {
+              lines.push({ text: `${enemy} → ${targetSm.icon} ${targetSm.name} -${eDmg} HP`, type: 'enemy-atk' });
+            }
+          }
+        }
+      }
+    }
   } // end round loop
 
   const won = enemies.every(e => !e.alive);

@@ -102,9 +102,22 @@ const classData=CLASSES[G.className];
 const pool=isActive?classData.skills:classData.passives;
 const learned=isActive?G.equippedSkills:G.equippedPassives;
 const unlearned=pool.filter(s=>!learned.some(e=>e.name===s.name));
-// 3개 후보 (배우지 않은 것 중 랜덤)
-const shuffled=[...unlearned].sort(()=>Math.random()-0.5);
-const candidates=shuffled.slice(0,3);
+// 3개 후보 — 소환사는 소환 스킬 우선
+let candidates;
+if(isActive&&G.className==='소환사'){
+  const summonSkills=unlearned.filter(s=>s.summon);
+  const otherSkills=unlearned.filter(s=>!s.summon);
+  const shuffledSummon=[...summonSkills].sort(()=>Math.random()-0.5);
+  const shuffledOther=[...otherSkills].sort(()=>Math.random()-0.5);
+  // 최소 2개 소환 스킬 + 1개 기타 (없으면 소환으로 채움)
+  candidates=[...shuffledSummon.slice(0,2),...shuffledOther.slice(0,1)];
+  if(candidates.length<3)candidates.push(...shuffledSummon.slice(2,2+(3-candidates.length)));
+  if(candidates.length<3)candidates.push(...shuffledOther.slice(1,1+(3-candidates.length)));
+  candidates=candidates.slice(0,3).sort(()=>Math.random()-0.5);
+}else{
+  const shuffled=[...unlearned].sort(()=>Math.random()-0.5);
+  candidates=shuffled.slice(0,3);
+}
 if(candidates.length===0){resolve();ol.classList.remove('active');return}
 document.getElementById('levelup-sub').textContent=`Lv.${G.level} — ${isActive?'⚔️ 액티브 스킬':'🛡️ 패시브 스킬'} 습득!`;
 document.getElementById('levelup-choices').innerHTML=candidates.map((c,i)=>`<div class="levelup-choice" onclick="pickSkillLearn(${i})"><div class="lc-name">${c.icon} ${c.name}</div><div class="lc-desc">${c.desc}${c.dmg?' | DMG: '+c.dmg:''}${c.aoe?' | 광역':''}${c.dot?' | 지속뎀':''}${c.hits>1?' | '+c.hits+'회타':''}</div></div>`).join('');
