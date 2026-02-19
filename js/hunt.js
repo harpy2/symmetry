@@ -100,10 +100,22 @@ await addHuntLine(line.text,type,log);
 await wait(500);
 }
 
-// === Phase 6: 결과 처리 ===
+// === Phase 6: 결과 처리 (파티 전체 피해 적용) ===
 const won=combat.result==='win';
-const totalTaken=combat.totalTaken||0;
-G.hp=Math.max(1,G.hp-totalTaken);
+const takenMap=combat.totalTaken||{};
+// 각 파티 멤버에게 피해 적용
+if(G.party){
+  for(let s=0;s<3;s++){
+    if(G.party[s]&&takenMap[s]){
+      G.party[s].hp=Math.max(1,G.party[s].hp-takenMap[s]);
+    }
+  }
+  // 현재 활성 슬롯 G에 반영
+  if(G.party[G.activeSlot])G.hp=G.party[G.activeSlot].hp;
+}else{
+  const totalTaken=takenMap[0]||0;
+  G.hp=Math.max(1,G.hp-totalTaken);
+}
 G.hunger=Math.max(0,G.hunger-(isBoss?8:4));
 
 if(won){
