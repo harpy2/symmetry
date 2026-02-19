@@ -226,14 +226,16 @@ G[cur]-=item.price;item.action();updateBars();renderCharacter();saveGame()}
 const CPQ_API='https://symmetry-api.harpy922.workers.dev';
 let _cpqMissions=[];
 
-// 유저 UUID (쿠키 기반)
+// 유저 UUID (localStorage 영구 저장)
 function getCPQUserId(){
-let uid=document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('sym_uid='));
-if(uid)return uid.split('=')[1];
+let uid=localStorage.getItem('sym_uid');
+if(uid)return uid;
 uid=crypto.randomUUID();
-document.cookie='sym_uid='+uid+';path=/;max-age='+60*60*24*365+';SameSite=Lax';
+localStorage.setItem('sym_uid',uid);
 return uid;
 }
+// 접속 즉시 UUID 확보
+getCPQUserId();
 
 const NPC_POOL=[
 {npc:'대장장이 모루스',avatar:'🔨',color:'#8B4513'},
