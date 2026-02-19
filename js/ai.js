@@ -408,7 +408,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
             lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
           } else {
             const eCrit = eRoll > 0.9;
-            const rawDmg = (isBoss ? (8 + G.floor * 2) : (5 + G.floor * 1)) * floorScale * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5)) * fearMult;
+            const rawDmg = (isBoss ? (8 + G.floor * 2) : (10 + G.floor * 1)) * floorScale * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5)) * fearMult;
             let eDmg = Math.max(1, Math.floor(rawDmg - member.def / 3));
             totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
             lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
