@@ -269,7 +269,7 @@ void el.offsetHeight;
 el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loopCount);
 el.classList.add('active');
 clearTimeout(el._idleTimer);
-if(!isIdle&&actionType!=='death'){
+if(!isIdle){
   el._idleTimer=setTimeout(function(){showBgSprite(className,'idle')},oneCycleDur*loopCount*1000);
 }
 }
@@ -298,7 +298,6 @@ showBgSprite(G.className,'idle');
 d.textContent=text;d.style.textAlign='center';d.style.margin='0 auto';
 }
 else if(cls==='defeat'){
-showBgSprite(G.className,'death',1,true);
 d.textContent=text;d.style.textAlign='center';d.style.margin='0 auto';
 }
 else if(cls==='damage'){d.textContent=text;d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake');
