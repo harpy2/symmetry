@@ -1,5 +1,5 @@
 // ===== CHARACTER SVGs =====
-const SPRITE_VER='?v=5';
+const SPRITE_VER='?v=6';
 const CHAR_SVG={
 전사:{type:'sprite',frames:8,
   idle:{src:'img/warrior-idle.png',w:89,h:128,tw:712},
@@ -59,10 +59,10 @@ const CHAR_SVG={
   death:{src:'img/druid-death.png',w:137,h:128,tw:1096}},
 소환사:{type:'sprite',frames:8,
   idle:{src:'img/summoner-idle.png',w:92,h:128,tw:736},
-  walk:{src:'img/summoner-walk.png',w:103,h:128,tw:824},
-  cast:{src:'img/summoner-cast.png',w:122,h:128,tw:976},
-  slash:{src:'img/summoner-slash.png',w:144,h:128,tw:1152},
-  block:{src:'img/summoner-block.png',w:104,h:128,tw:832},
+  walk:{src:'img/summoner-walk.png',w:93,h:128,tw:744},
+  cast:{src:'img/summoner-cast.png',w:133,h:128,tw:1064},
+  slash:{src:'img/summoner-slash.png',w:119,h:128,tw:952},
+  block:{src:'img/summoner-block.png',w:89,h:128,tw:712},
   death:{src:'img/summoner-death.png',w:152,h:128,tw:1216}},
 흑마법사:{type:'sprite',frames:8,
   idle:{src:'img/black_wizard-idle.png',w:75,h:128,tw:600},
