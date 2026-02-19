@@ -216,7 +216,7 @@ else if(n.includes('방패')||n.includes('방어'))action='block';
 const anim=charData[action]||charData.slash||charData.idle;
 if(!anim)return null;
 const animName='hl-'+G.className+'-'+action;
-return `<span class="hunt-line-sprite" style="background-image:url('${anim.src}');width:${Math.round(anim.w*32/anim.h)}px;background-size:${Math.round(anim.tw*32/anim.h)}px 32px;animation:${animName} ${8*0.08}s steps(8) infinite"></span><style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${Math.round(anim.tw*32/anim.h)}px 0}}</style>`;
+return `<span class="hunt-line-sprite" style="background-image:url('${anim.src}');width:${Math.round(anim.w*40/anim.h)}px;background-size:${Math.round(anim.tw*40/anim.h)}px 40px;animation:${animName} ${8*0.08}s steps(8) infinite"></span><style>@keyframes ${animName}{from{background-position:0 0}to{background-position:-${Math.round(anim.tw*40/anim.h)}px 0}}</style>`;
 }
 function addHuntLine(text,cls,log){return new Promise(r=>{const d=document.createElement('div');d.className='hunt-line '+cls;d.style.width='fit-content';d.style.maxWidth='90%';d.style.position='relative';
 if(cls==='action'||cls==='critical'){
