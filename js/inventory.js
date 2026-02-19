@@ -201,26 +201,109 @@ function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=M
 
 // ===== SHOP =====
 let currentShopTab='gold';
-const GOLD_SHOP=[
-{name:'빵',icon:'🍞',desc:'배고픔 30 회복',price:20,currency:'gold',action:()=>{G.hunger=Math.min(100,G.hunger+30);toast('빵을 먹었다! 🍞')}},
-{name:'스테이크',icon:'🥩',desc:'배고픔 70 회복',price:50,currency:'gold',action:()=>{G.hunger=Math.min(100,G.hunger+70);toast('스테이크를 먹었다! 🥩')}},
-{name:'HP 포션',icon:'🧪',desc:'HP 50 회복',price:30,currency:'gold',action:()=>{G.hp=Math.min(G.maxHP,G.hp+50);toast('HP 회복! 🧪')}},
-{name:'고급 HP 포션',icon:'⚗️',desc:'HP 완전 회복',price:80,currency:'gold',action:()=>{G.hp=G.maxHP;toast('HP 완전 회복! ⚗️')}},
-{name:'기분전환 맥주',icon:'🍺',desc:'기분 40 회복',price:25,currency:'gold',action:()=>{G.mood=Math.min(100,G.mood+40);toast('기분이 좋아졌다! 🍺')}},
+
+// 골드 상점: 소비 아이템 + 스탯 업그레이드
+function getStatUpgradePrice(stat){
+const count=G._statUpgrades?G._statUpgrades[stat]||0:0;
+return Math.floor(100*(1.3**count)); // 130% 씩 증가
+}
+function getStatUpgradeCount(stat){return G._statUpgrades?G._statUpgrades[stat]||0:0}
+
+const GOLD_CONSUMABLES=[
+{name:'빵',icon:'🍞',desc:'배고픔 30 회복',price:20,action:()=>{G.hunger=Math.min(100,G.hunger+30);toast('빵을 먹었다! 🍞')}},
+{name:'스테이크',icon:'🥩',desc:'배고픔 70 회복',price:50,action:()=>{G.hunger=Math.min(100,G.hunger+70);toast('스테이크를 먹었다! 🥩')}},
+{name:'HP 포션',icon:'🧪',desc:'HP 50 회복',price:30,action:()=>{G.hp=Math.min(G.maxHP,G.hp+50);toast('HP 회복! 🧪')}},
+{name:'고급 HP 포션',icon:'⚗️',desc:'HP 완전 회복',price:80,action:()=>{G.hp=G.maxHP;toast('HP 완전 회복! ⚗️')}},
+{name:'기분전환 맥주',icon:'🍺',desc:'기분 40 회복',price:25,action:()=>{G.mood=Math.min(100,G.mood+40);toast('기분이 좋아졌다! 🍺')}},
 ];
-const POINT_SHOP=[
-{name:'엘릭서',icon:'✨',desc:'장비 내구도 영구화 (미구현)',price:50,currency:'point',action:()=>{toast('준비 중입니다!')}},
-{name:'스킬 리셋',icon:'🔄',desc:'스킬 로드아웃 초기화',price:30,currency:'point',action:()=>{showScreen('skill-screen');renderSkillSelect();toast('스킬을 다시 선택하세요!')}},
-{name:'캐릭터 슬롯',icon:'👤',desc:'추가 캐릭터 슬롯',price:100,currency:'point',disabled:true,action:()=>{toast('준비중...')}},
+
+const STAT_UPGRADES=[
+{stat:'maxHP',name:'HP 강화',icon:'❤️',desc:'최대 HP +10',value:10},
+{stat:'atk',name:'공격력 강화',icon:'⚔️',desc:'공격력 +3',value:3},
+{stat:'def',name:'방어력 강화',icon:'🛡️',desc:'방어력 +2',value:2},
+{stat:'critBonus',name:'치명타 강화',icon:'💥',desc:'치명타 확률 +1%',value:1},
 ];
+
+function buyStatUpgrade(idx){
+const u=STAT_UPGRADES[idx];
+const price=getStatUpgradePrice(u.stat);
+if(G.gold<price)return toast('골드가 부족합니다!');
+G.gold-=price;
+if(!G._statUpgrades)G._statUpgrades={};
+G._statUpgrades[u.stat]=(G._statUpgrades[u.stat]||0)+1;
+G[u.stat]=(G[u.stat]||0)+u.value;
+if(u.stat==='maxHP')G.hp=Math.min(G.hp+u.value,G.maxHP);
+toast(`${u.icon} ${u.name} 완료! (+${u.value})`);
+updateBars();renderCharacter();saveGame();renderShop('gold');
+}
+
+// 다이아 상점: 유니크/에픽 아이템 + 스킬 리셋
+async function buyRandomItem(grade){
+const prices={유니크:50,에픽:150};
+const price=prices[grade];
+if(G.points<price)return toast('💎가 부족합니다!');
+if(G.inventory.length>=30)return toast('인벤토리가 가득 찼습니다!');
+G.points-=price;
+toast('아이템 생성 중...');
+// generateItem을 활용하되 등급 강제
+const item=await generateItemForGrade(grade);
+G.inventory.push(item);
+updateBars();saveGame();renderShop('point');
+showItemDropPopup(item);
+}
+
+async function generateItemForGrade(grade){
+const allTypes=['helmet','chest','gloves','pants','boots','weapon','necklace','ring1','ring2','offhand'];
+const type=allTypes[Math.floor(Math.random()*allTypes.length)];
+const apiItem=await fetchRandomItemFromAPI(type);
+let name,emoji,svgData;
+if(apiItem){name=apiItem.name;emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';svgData=apiItem.svg||null}
+else{const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];const si=Math.floor(Math.random()*suffixes.length);name=`${ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)]} ${ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)]}의 ${suffixes[si]}`;emoji=emojis[si];svgData=null}
+const gMult={유니크:2.2,에픽:3.5}[grade];
+const floorMult=1+G.floor*0.1;
+const stats={};const pool=[...STAT_POOL[type]];
+for(let i=0;i<3&&pool.length>0;i++){const idx=Math.floor(Math.random()*pool.length);stats[pool.splice(idx,1)[0]]=rollStatValue(pool[0]||'ATK',gMult,floorMult)}
+let skillMods=[];const modCount=grade==='에픽'?2:1;
+const aiMods=await generateSkillCustomAI(modCount);
+if(aiMods&&aiMods.length>=modCount){skillMods=aiMods.slice(0,modCount)}
+else{for(let m=0;m<modCount;m++)skillMods.push(generateSkillCustom())}
+const durability=Math.floor({유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
+return{id:Date.now()+Math.random(),name,type,grade,emoji:emoji||'📦',svgData,stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}
+}
+
 function renderShop(tab){currentShopTab=tab;
 document.querySelectorAll('.shop-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='gold'?0:1)));
-const items=tab==='gold'?GOLD_SHOP:POINT_SHOP;
-document.getElementById('shop-items').innerHTML=items.map((item,i)=>`<div class="shop-item ${item.disabled?'style="opacity:.4"':''}" onclick="buyShopItem('${tab}',${i})"><div class="s-icon">${item.icon}</div><div class="s-info"><div class="s-name">${item.name}</div><div class="s-desc">${item.desc}</div></div><div class="s-price">${tab==='gold'?'💰':'💎'} ${item.price}</div></div>`).join('')}
+const container=document.getElementById('shop-items');
+if(tab==='gold'){
+// 소비 아이템
+let html='<div class="shop-section-title">🧪 소비 아이템</div>';
+html+=GOLD_CONSUMABLES.map((item,i)=>`<div class="shop-item" onclick="buyGoldConsumable(${i})"><div class="s-icon">${item.icon}</div><div class="s-info"><div class="s-name">${item.name}</div><div class="s-desc">${item.desc}</div></div><div class="s-price">💰 ${item.price}</div></div>`).join('');
+// 스탯 업그레이드
+html+='<div class="shop-section-title" style="margin-top:16px">💪 스탯 강화</div>';
+html+=STAT_UPGRADES.map((u,i)=>{
+const count=getStatUpgradeCount(u.stat);
+const price=getStatUpgradePrice(u.stat);
+return`<div class="shop-item" onclick="buyStatUpgrade(${i})"><div class="s-icon">${u.icon}</div><div class="s-info"><div class="s-name">${u.name} <span style="color:var(--cyan);font-size:11px">Lv.${count}</span></div><div class="s-desc">${u.desc}</div></div><div class="s-price">💰 ${price.toLocaleString()}</div></div>`}).join('');
+container.innerHTML=html;
+}else{
+// 다이아 상점: 아이템 구매 + 스킬 리셋
+let html='<div class="shop-section-title">📦 아이템 구매</div>';
+html+=`<div class="shop-item" onclick="buyRandomItem('유니크')"><div class="s-icon" style="color:var(--purple)">💜</div><div class="s-info"><div class="s-name" style="color:var(--purple)">유니크 아이템 상자</div><div class="s-desc">랜덤 유니크 등급 장비 획득</div></div><div class="s-price">💎 50</div></div>`;
+html+=`<div class="shop-item" onclick="buyRandomItem('에픽')"><div class="s-icon" style="color:var(--orange)">🧡</div><div class="s-info"><div class="s-name" style="color:var(--orange)">에픽 아이템 상자</div><div class="s-desc">랜덤 에픽 등급 장비 획득</div></div><div class="s-price">💎 150</div></div>`;
+html+='<div class="shop-section-title" style="margin-top:16px">⚙️ 기타</div>';
+html+=`<div class="shop-item" onclick="buySkillReset()"><div class="s-icon">🔄</div><div class="s-info"><div class="s-name">스킬 리셋</div><div class="s-desc">장착된 스킬 초기화</div></div><div class="s-price">💎 30</div></div>`;
+container.innerHTML=html;
+}
+}
 function switchShopTab(tab,el){renderShop(tab)}
-function buyShopItem(tab,idx){const items=tab==='gold'?GOLD_SHOP:POINT_SHOP;const item=items[idx];if(item.disabled)return toast('준비중입니다!');
-const cur=tab==='gold'?'gold':'points';if(G[cur]<item.price)return toast('재화가 부족합니다!');
-G[cur]-=item.price;item.action();updateBars();renderCharacter();saveGame()}
+function buyGoldConsumable(idx){const item=GOLD_CONSUMABLES[idx];
+if(G.gold<item.price)return toast('골드가 부족합니다!');
+G.gold-=item.price;item.action();updateBars();renderCharacter();saveGame()}
+function buySkillReset(){
+if(G.points<30)return toast('💎가 부족합니다!');
+G.points-=30;G.equippedSkills=[];G.equippedPassives=[];
+toast('🔄 스킬이 초기화되었습니다!');updateBars();saveGame();renderShop('point');
+}
 
 // ===== CPQ MISSIONS =====
 const CPQ_API='https://symmetry-api.harpy922.workers.dev';

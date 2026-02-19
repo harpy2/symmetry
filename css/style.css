@@ -310,6 +310,7 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .shop-item .s-name{font-size:14px;font-weight:700}
 .shop-item .s-desc{font-size:11px;color:var(--text2);margin-top:2px}
 .shop-item .s-price{font-size:14px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+.shop-section-title{font-size:13px;font-weight:700;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--glass-border);margin-bottom:4px}
 
 /* ============ MISSIONS ============ */
 .mission-card{background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:18px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden}
