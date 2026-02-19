@@ -105,6 +105,7 @@ function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classL
 
 // ===== MAIN SCREEN =====
 function renderMainScreen(){updateBars();renderCharacter();renderEquipRow();renderSkillRow();updateSlotUI();checkPendingRewards();
+if(typeof renderSkillPanel==='function'&&G.party&&G.party[G.activeSlot])renderSkillPanel(0,G.party[G.activeSlot]||G);
 if(G.autoHunt){setTimeout(()=>{openOverlay('hunt')},300)}}
 
 function getMoodStatus(){

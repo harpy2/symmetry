@@ -15,7 +15,7 @@ gtag('config', 'G-XY7YKM0M37');
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=80">
+<link rel="stylesheet" href="css/style.css?v=81">
 </head>
 <body>
 
@@ -56,6 +56,7 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="top-bar">
 <span class="gold"><span class="currency-icon">💰</span> <span id="player-gold">100</span></span>
 <span class="points"><span class="currency-icon">💎</span> <span id="player-points">10</span></span>
+<button class="skill-info-btn mobile-only" onclick="showSkillPopup()">🗡️ 스킬</button>
 </div>
 <div class="char-tab-bar" id="char-tab-bar">
 <button class="char-tab" onclick="switchCharacter(1)">캐릭2🔒</button>
@@ -81,6 +82,7 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="char-area" id="char-area-1"></div>
 <div class="equip-col equip-col-right" id="equip-col-right-1"></div>
 </div>
+<div class="skill-panel" id="skill-panel-1"></div>
 </div>
 </div>
 <div class="char-panel active" data-slot="0">
@@ -98,7 +100,7 @@ gtag('config', 'G-XY7YKM0M37');
 <!-- 오른쪽 장비: 목걸이/반지1/반지2/보조무기 -->
 <div class="equip-col equip-col-right" id="equip-col-right"></div>
 </div>
-<!-- skill row removed -->
+<div class="skill-panel" id="skill-panel-0"></div>
 </div>
 <div class="char-panel" data-slot="2" id="char-panel-2">
 <div class="locked-overlay" id="lock-overlay-2">
@@ -118,6 +120,7 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="char-area" id="char-area-2"></div>
 <div class="equip-col equip-col-right" id="equip-col-right-2"></div>
 </div>
+<div class="skill-panel" id="skill-panel-2"></div>
 </div>
 </div>
 </div>
@@ -127,6 +130,14 @@ gtag('config', 'G-XY7YKM0M37');
 <button class="menu-btn" onclick="openOverlay('shop')"><span class="icon">🏪</span><span class="label">상점</span></button>
 <button class="menu-btn" onclick="openOverlay('inventory')"><span class="icon">🎒</span><span class="label">장비</span></button>
 <!-- skills menu removed -->
+</div>
+</div>
+
+<!-- SKILL POPUP (mobile) -->
+<div class="skill-popup-overlay" id="skill-popup" onclick="this.classList.remove('active')">
+<div class="skill-popup-card" onclick="event.stopPropagation()">
+<div class="skill-popup-header"><h3>🗡️ 스킬 목록</h3><button class="close-btn" onclick="document.getElementById('skill-popup').classList.remove('active')">✕</button></div>
+<div class="skill-popup-body" id="skill-popup-body"></div>
 </div>
 </div>
 
@@ -230,10 +241,10 @@ gtag('config', 'G-XY7YKM0M37');
 </div>
 
 <script src="js/data.js?v=27"></script>
-<script src="js/ai.js?v=26"></script>
-<script src="js/ui.js?v=25"></script>
+<script src="js/ai.js?v=27"></script>
+<script src="js/ui.js?v=26"></script>
 <script src="js/inventory.js?v=22"></script>
 <script src="js/hunt.js?v=143"></script>
-<script src="js/game.js?v=30"></script>
+<script src="js/game.js?v=31"></script>
 </body>
 </html>

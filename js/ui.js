@@ -266,4 +266,37 @@ const leftEl=document.getElementById('equip-col-left-'+slot);
 const rightEl=document.getElementById('equip-col-right-'+slot);
 if(leftEl)leftEl.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=eq[s.key];return`<div class="equip-slot ${item?'has-item':''}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${eqIcon(item,s.icon)}</div>`}).join('');
 if(rightEl)rightEl.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=eq[s.key];return`<div class="equip-slot ${item?'has-item':''}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${eqIcon(item,s.icon)}</div>`}).join('');
+// 스킬 패널 렌더링
+renderSkillPanel(slot,char);
+}
+
+function renderSkillPanel(slot,char){
+const panel=document.getElementById('skill-panel-'+slot);
+if(!panel)return;
+const actives=char.equippedSkills||[];
+const passives=char.equippedPassives||[];
+if(actives.length===0&&passives.length===0){panel.innerHTML='<div class="sp-title">스킬 없음</div>';return}
+let html='';
+if(actives.length>0){html+='<div class="sp-title">⚔️ 액티브</div>';actives.forEach(s=>{html+=`<div class="sp-item"><span class="sp-icon">${s.icon}</span><span>${s.name}</span> <span class="sp-desc">${s.desc||''}</span></div>`})}
+if(passives.length>0){html+='<div class="sp-title sp-passive">🛡️ 패시브</div>';passives.forEach(s=>{html+=`<div class="sp-item sp-passive"><span class="sp-icon">${s.icon}</span><span>${s.name}</span> <span class="sp-desc">${s.desc||''}</span></div>`})}
+panel.innerHTML=html;
+}
+
+function showSkillPopup(){
+const body=document.getElementById('skill-popup-body');
+let html='';
+for(let s=0;s<3;s++){
+if(!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;
+const char=G.party[s];const cls=CLASSES[char.className];
+if(!cls)continue;
+const actives=char.equippedSkills||[];
+const passives=char.equippedPassives||[];
+html+=`<div class="sp-section"><div class="sp-section-title">${cls.weapon} ${char.className} (Lv.${char.level})</div>`;
+if(actives.length>0){actives.forEach(sk=>{html+=`<div class="sp-row"><span class="sp-name">${sk.icon} ${sk.name}</span><span class="sp-desc">${sk.desc||''}</span></div>`})}
+if(passives.length>0){passives.forEach(sk=>{html+=`<div class="sp-row"><span class="sp-name" style="color:var(--cyan)">${sk.icon} ${sk.name}</span><span class="sp-desc">${sk.desc||''}</span></div>`})}
+if(actives.length===0&&passives.length===0)html+='<div class="sp-row"><span class="sp-desc">스킬 없음</span></div>';
+html+='</div>';
+}
+body.innerHTML=html;
+document.getElementById('skill-popup').classList.add('active');
 }

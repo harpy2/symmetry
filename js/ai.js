@@ -99,15 +99,14 @@ async function generateCombatAI(enemy, enemyCount, isBoss) {
     atk: G.atk + getEquipStat('ATK'),
     def: G.def + getEquipStat('DEF'),
     critBonus: G.critBonus || 0,
-    equippedSkillNames: availSkills.map(s => s.name),
-    equippedSkillDetails: availSkills.map(s => ({name:s.name,icon:s.icon,desc:s.desc||'',dmg:s.dmg||0,aoe:!!s.aoe,dot:!!s.dot,hits:s.hits||1,buff:!!s.buff,summon:s.summon?s.summon.name:null})),
-    equippedPassives: (G.equippedPassives||[]).map(p => ({name:p.name,icon:p.icon,desc:p.desc||''})),
-    battleSequence: sequence,
-    partyInfo: (G.party||[]).filter(p=>p&&p.className).map(p=>({
+    skills: availSkills.map(s => `${s.icon}${s.name}: ${s.desc||'기본 공격'}`),
+    passives: (G.equippedPassives||[]).map(p => `${p.icon}${p.name}: ${p.desc||''}`),
+    party: (G.party||[]).filter(p=>p&&p.className).map(p=>({
       class:p.className,level:p.level||1,
-      skills:(p.equippedSkills||[]).map(s=>({name:s.name,icon:s.icon,desc:s.desc||'',dmg:s.dmg||0,aoe:!!s.aoe,buff:!!s.buff})),
-      passives:(p.equippedPassives||[]).map(p2=>({name:p2.name,desc:p2.desc||''}))
+      skills:(p.equippedSkills||[]).map(s=>`${s.icon}${s.name}: ${s.desc||''}`),
+      passives:(p.equippedPassives||[]).map(p2=>`${p2.icon}${p2.name}: ${p2.desc||''}`)
     })),
+    battleSequence: sequence,
     enemy,
     enemyCount,
     isBoss
