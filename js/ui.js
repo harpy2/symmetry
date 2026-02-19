@@ -104,7 +104,7 @@ const learned=isActive?G.equippedSkills:G.equippedPassives;
 const unlearned=pool.filter(s=>!learned.some(e=>e.name===s.name));
 // 3개 후보 — 소환사는 소환 스킬 우선
 let candidates;
-if(isActive&&G.className==='소환사'){
+if(isActive&&(G.className==='소환사'||G.className==='엔지니어')){
   const summonSkills=unlearned.filter(s=>s.summon);
   const otherSkills=unlearned.filter(s=>!s.summon);
   const shuffledSummon=[...summonSkills].sort(()=>Math.random()-0.5);
