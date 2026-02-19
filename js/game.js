@@ -130,12 +130,20 @@ moodText.textContent=Math.floor(G.mood)+'% '+getMoodStatus();
 }
 
 function renderCharacter(){const area=document.getElementById('char-area');const cls=CLASSES[G.className];if(!cls)return;
-const svg=CHAR_SVG[G.className]||'';
+const charData=CHAR_SVG[G.className];
+let charHTML='';
+if(charData&&charData.type==='sprite'){
+charHTML=`<div class="char-sprite" style="background-image:url('${charData.src}');width:${charData.w}px;height:${charData.h}px;animation:spriteWalk ${charData.frames*0.12}s steps(${charData.frames}) infinite"></div>`;
+}else if(charData&&typeof charData==='string'){
+charHTML=`<div class="char-svg-wrap">${charData}</div>`;
+}else{
+charHTML=`<div class="char-svg-wrap">${charData||''}</div>`;
+}
 // Build sparkles
 let sparklesHTML='<div class="char-sparkles">';
 for(let i=0;i<6;i++){const x=20+Math.random()*160;const y=20+Math.random()*160;const delay=Math.random()*3;const dur=1.5+Math.random()*2;sparklesHTML+=`<span style="left:${x}px;top:${y}px;animation-delay:${delay}s;animation-duration:${dur}s"></span>`}
 sparklesHTML+='</div>';
-area.innerHTML=`<div class="character">${sparklesHTML}<div class="char-glow" style="background:${cls.glow}"></div><div class="char-svg-wrap">${svg}</div></div>`}
+area.innerHTML=`<div class="character">${sparklesHTML}<div class="char-glow" style="background:${cls.glow}"></div>${charHTML}</div>`}
 
 // 장비 스탯 합산 헬퍼 (% 문자열도 숫자로 파싱)
 function getEquipStat(stat){
