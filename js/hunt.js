@@ -238,10 +238,12 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
-// 비율 유지, 최소 너비 150px 보장 (캐스터 계열 작아짐 방지)
+// 높이 200px 기준 스케일 (프레임 비율 유지)
 let scale=200/anim.h;
 let sw=Math.round(anim.w*scale);
-if(sw<150){scale=150/anim.w;sw=150;}
+let sh=200;
+// 너비가 너무 크면 축소 (최대 250px)
+if(sw>250){scale=250/anim.w;sw=250;sh=Math.round(anim.h*scale);}
 let stw=sw*charData.frames;
 const animName='bg-'+className+'-'+actionType+'-'+sw;
 if(!document.getElementById('style-'+animName)){
@@ -255,8 +257,8 @@ const oneCycleDur=8*0.1;
 el.style.animation='none';
 el.style.backgroundImage="url('"+anim.src+SPRITE_VER+"')";
 el.style.width=sw+'px';
-el.style.height=Math.round(anim.h*(sw/anim.w))+'px';
-el.style.backgroundSize=stw+'px '+Math.round(anim.h*(sw/anim.w))+'px';
+el.style.height=sh+'px';
+el.style.backgroundSize=stw+'px '+sh+'px';
 el.style.backgroundPosition='0 0';
 el.offsetHeight;
 el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loopCount);
