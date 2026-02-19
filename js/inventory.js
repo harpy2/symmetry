@@ -376,20 +376,18 @@ const cards=[];
 for(let i=0;i<_cpqMissions.length;i++){
 const m=_cpqMissions[i];
 const npc=NPC_POOL[i%NPC_POOL.length];
-const cd=G.missionCooldowns['cpq_'+m.id]||0;
-const remaining=Math.max(0,cd-Date.now());
-const onCD=remaining>0;
+const joined=!!G.missionCooldowns['cpq_'+m.id];
 const goldReward=80;
 const pointReward=15;
 
 let actionHTML='';
-if(onCD){
-actionHTML=`<div class="cooldown">⏳ 참여 완료! 보상 대기 중...</div>`;
+if(joined){
+actionHTML=`<div class="cooldown">✅ 참여 완료</div>`;
 }else{
 actionHTML=`<button class="btn btn-sm cpq-link-btn" onclick="joinCPQ(${i})" style="margin-top:8px">⚔️ 의뢰 수행</button>`;
 }
 
-cards.push(`<div class="mission-card">
+cards.push(`<div class="mission-card${joined?' mission-done':''}"
 <div class="npc-row"><div class="npc-avatar" style="background:${npc.color}">${npc.avatar}</div>
 <div class="npc-info"><div class="npc-name">${npc.npc}</div></div></div>
 <div class="mission-title">${m.name||'의뢰'}</div>
@@ -407,8 +405,8 @@ try{
 const res=await fetch(CPQ_API+'/api/cpq/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,campaign_id:m.id})});
 const data=await res.json();
 if(data.redirect_url){
-// 쿨다운 설정 (재참여 방지)
-G.missionCooldowns['cpq_'+m.id]=Date.now()+600000; // 10분
+// 영구 참여 기록
+G.missionCooldowns['cpq_'+m.id]=true;
 saveGame();
 // 새 탭으로 광고 페이지 열기
 window.open(data.redirect_url,'_blank');

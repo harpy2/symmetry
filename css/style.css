@@ -322,6 +322,7 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .mission-card .mission-reward{font-size:13px;color:var(--success);margin-bottom:6px;font-weight:700}
 .mission-card .cpq-badge{position:absolute;top:14px;right:14px;background:linear-gradient(135deg,var(--accent),#7c3aed);color:#fff;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:.5px;box-shadow:0 2px 10px rgba(155,89,182,.3)}
 .mission-card .cooldown{color:var(--text2);font-size:12px;text-align:center;padding:10px;background:rgba(255,255,255,.03);border-radius:10px}
+.mission-card.mission-done{opacity:.5;pointer-events:none}
 .cpq-img{margin:10px 0;text-align:center}
 .cpq-img img{max-width:100%;max-height:150px;border-radius:10px;border:1px solid var(--glass-border)}
 .cpq-input-row{display:flex;gap:8px;margin-top:10px}
