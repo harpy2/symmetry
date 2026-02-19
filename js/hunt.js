@@ -241,8 +241,8 @@ if(!anim){el.style.backgroundImage='';el.style.width='0';return}
 // 비율 유지, 최소 너비 150px 보장 (캐스터 계열 작아짐 방지)
 let scale=200/anim.h;
 let sw=Math.round(anim.w*scale);
-let stw=Math.round(anim.tw*scale);
-if(sw<150){scale=150/anim.w;sw=150;stw=Math.round(anim.tw*scale);}
+if(sw<150){scale=150/anim.w;sw=150;}
+let stw=sw*charData.frames;
 const animName='bg-'+className+'-'+actionType+'-'+sw;
 if(!document.getElementById('style-'+animName)){
   const s=document.createElement('style');s.id='style-'+animName;
