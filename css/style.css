@@ -191,10 +191,6 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .skill-panel .sp-item .sp-icon{flex-shrink:0}
 .skill-panel .sp-item .sp-desc{color:var(--text2);font-size:10px}
 .skill-panel .sp-passive{color:var(--cyan)}
-/* 모바일 스킬 버튼 */
-.skill-info-btn{display:none;background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;color:var(--gold);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer}
-.mobile-only{display:none}
-@media(max-width:767px){.mobile-only{display:inline-block}}
 /* 스킬 팝업 */
 .skill-popup-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center}
 .skill-popup-overlay.active{display:flex}
