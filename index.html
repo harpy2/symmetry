@@ -15,7 +15,7 @@ gtag('config', 'G-XY7YKM0M37');
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=78">
+<link rel="stylesheet" href="css/style.css?v=79">
 </head>
 <body>
 
@@ -54,7 +54,6 @@ gtag('config', 'G-XY7YKM0M37');
 <!-- MAIN SCREEN -->
 <div id="main-screen" class="screen">
 <div class="top-bar">
-<span class="level-badge">⭐ Lv.<span id="player-level">1</span></span>
 <span class="gold"><span class="currency-icon">💰</span> <span id="player-gold">100</span></span>
 <span class="points"><span class="currency-icon">💎</span> <span id="player-points">10</span></span>
 </div>
@@ -71,6 +70,7 @@ gtag('config', 'G-XY7YKM0M37');
 <button class="btn btn-sm" onclick="unlockSlot(1)">💰 2,000 골드로 해제</button>
 </div>
 <div class="slot-content" id="slot-content-1" style="display:none">
+<div class="panel-level-badge" id="panel-level-1">⭐ Lv.1</div>
 <div class="status-bars">
 <div class="stat-bar bar-hp"><span class="label">❤️</span><div class="bar-bg"><div class="bar-fill" id="hp-bar-1" style="width:100%"></div><span class="bar-text" id="hp-text-1">0/0</span></div></div>
 <div class="stat-bar bar-hunger"><span class="label">🍖</span><div class="bar-bg"><div class="bar-fill" id="hunger-bar-1" style="width:100%"></div><span class="bar-text" id="hunger-text-1">100%</span></div></div>
@@ -84,6 +84,7 @@ gtag('config', 'G-XY7YKM0M37');
 </div>
 </div>
 <div class="char-panel active" data-slot="0">
+<div class="panel-level-badge" id="panel-level-0">⭐ Lv.1</div>
 <div class="status-bars">
 <div class="stat-bar bar-hp"><span class="label">❤️</span><div class="bar-bg"><div class="bar-fill" id="hp-bar" style="width:100%"></div><span class="bar-text" id="hp-text">100/100</span></div></div>
 <div class="stat-bar bar-hunger"><span class="label">🍖</span><div class="bar-bg"><div class="bar-fill" id="hunger-bar" style="width:100%"></div><span class="bar-text" id="hunger-text">100%</span></div></div>
@@ -106,6 +107,7 @@ gtag('config', 'G-XY7YKM0M37');
 <button class="btn btn-sm" onclick="unlockSlot(2)">💰 5,000 골드로 해제</button>
 </div>
 <div class="slot-content" id="slot-content-2" style="display:none">
+<div class="panel-level-badge" id="panel-level-2">⭐ Lv.1</div>
 <div class="status-bars">
 <div class="stat-bar bar-hp"><span class="label">❤️</span><div class="bar-bg"><div class="bar-fill" id="hp-bar-2" style="width:100%"></div><span class="bar-text" id="hp-text-2">0/0</span></div></div>
 <div class="stat-bar bar-hunger"><span class="label">🍖</span><div class="bar-bg"><div class="bar-fill" id="hunger-bar-2" style="width:100%"></div><span class="bar-text" id="hunger-text-2">100%</span></div></div>
@@ -229,9 +231,9 @@ gtag('config', 'G-XY7YKM0M37');
 
 <script src="js/data.js?v=27"></script>
 <script src="js/ai.js?v=20"></script>
-<script src="js/ui.js?v=22"></script>
+<script src="js/ui.js?v=23"></script>
 <script src="js/inventory.js?v=21"></script>
 <script src="js/hunt.js?v=141"></script>
-<script src="js/game.js?v=27"></script>
+<script src="js/game.js?v=28"></script>
 </body>
 </html>

@@ -112,7 +112,7 @@ return'😢 최악';
 }
 
 function updateBars(){
-document.getElementById('player-level').textContent=G.level;
+const pl0=document.getElementById('panel-level-0');if(pl0)pl0.textContent='⭐ Lv.'+G.level;
 document.getElementById('player-gold').textContent=G.gold;
 document.getElementById('player-points').textContent=G.points;
 document.getElementById('hp-bar').style.width=(G.hp/G.maxHP*100)+'%';

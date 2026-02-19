@@ -211,6 +211,9 @@ content.style.display='';
 const char=G.party[slot];
 const cls=CLASSES[char.className];
 if(!cls)return;
+// Level badge
+const lvBadge=document.getElementById('panel-level-'+slot);
+if(lvBadge)lvBadge.textContent='⭐ Lv.'+char.level;
 // HP bar
 const hpPct=char.maxHP>0?Math.floor(char.hp/char.maxHP*100):0;
 const hpBar=document.getElementById('hp-bar-'+slot);
