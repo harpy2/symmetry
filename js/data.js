@@ -17,7 +17,13 @@ const CHAR_SVG={
   shot:{src:'img/gunner-shot.png',w:106,h:128,tw:848},
   slash:{src:'img/gunner-slash.png',w:114,h:128,tw:912},
   block:{src:'img/gunner-block.png',w:85,h:128,tw:680},
-  death:{src:'img/gunner-death.png',w:131,h:128,tw:1048}}
+  death:{src:'img/gunner-death.png',w:131,h:128,tw:1048}},
+궁수:{type:'sprite',frames:8,
+  idle:{src:'img/archer-idle.png',w:96,h:128,tw:768},
+  shot:{src:'img/archer-shot.png',w:98,h:128,tw:784},
+  slash:{src:'img/archer-slash.png',w:117,h:128,tw:936},
+  block:{src:'img/archer-block.png',w:91,h:128,tw:728},
+  death:{src:'img/archer-death.png',w:140,h:128,tw:1120}}
 };
 
 // ===== GAME DATA =====
