@@ -238,11 +238,11 @@ const charData=CHAR_SVG[className];
 if(!charData||charData.type!=='sprite'){el.style.backgroundImage='';el.style.width='0';return}
 const anim=charData[actionType]||charData.slash||charData.idle;
 if(!anim){el.style.backgroundImage='';el.style.width='0';return}
-// 고정 높이 200px, 비율 유지하되 최소 너비 130px 보장
-const scale=200/anim.h;
+// 비율 유지, 최소 너비 150px 보장 (캐스터 계열 작아짐 방지)
+let scale=200/anim.h;
 let sw=Math.round(anim.w*scale);
 let stw=Math.round(anim.tw*scale);
-if(sw<130){const s2=130/anim.w;sw=130;stw=Math.round(anim.tw*s2);}
+if(sw<150){scale=150/anim.w;sw=150;stw=Math.round(anim.tw*scale);}
 const animName='bg-'+className+'-'+actionType+'-'+sw;
 if(!document.getElementById('style-'+animName)){
   const s=document.createElement('style');s.id='style-'+animName;
