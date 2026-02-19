@@ -138,8 +138,9 @@ const charData=CHAR_SVG[G.className];
 let charHTML='';
 if(charData&&charData.type==='sprite'){
 const anim=charData.idle;
-charHTML=`<div class="char-sprite" style="background-image:url('${anim.src}${SPRITE_VER}');width:${anim.w}px;height:${anim.h}px;background-size:${anim.tw}px ${anim.h}px;animation:sprite-${G.className} ${charData.frames*0.12}s steps(${charData.frames}) infinite"></div>
-<style>@keyframes sprite-${G.className}{from{background-position:0 0}to{background-position:-${anim.tw}px 0}}</style>`;
+const targetH=200;const sprScale=Math.min(targetH/anim.h,2.5);const sprW=Math.round(anim.w*sprScale);const sprH=Math.round(anim.h*sprScale);const sprTW=Math.round(anim.tw*sprScale);
+charHTML=`<div class="char-sprite" style="background-image:url('${anim.src}${SPRITE_VER}');width:${sprW}px;height:${sprH}px;background-size:${sprTW}px ${sprH}px;animation:sprite-${G.className} ${charData.frames*0.12}s steps(${charData.frames}) infinite;transform:none"></div>
+<style>@keyframes sprite-${G.className}{from{background-position:0 0}to{background-position:-${sprTW}px 0}}</style>`;
 }else if(typeof charData==='string'){
 charHTML=`<div class="char-svg-wrap">${charData}</div>`;
 }
