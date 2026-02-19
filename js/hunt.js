@@ -231,7 +231,7 @@ if(n.includes('평타'))return 'slash';
 return CLASS_DEFAULT_ACTION[charClass||G.className]||'slash';
 }
 
-function showBgSprite(className,actionType,loops){
+function showBgSprite(className,actionType,loops,keepAfter){
 const el=document.getElementById('hunt-bg-sprite');
 if(!el)return;
 const charData=CHAR_SVG[className];
@@ -263,6 +263,7 @@ el.style.animation=animName+' '+oneCycleDur+'s steps(8) '+(isIdle?'infinite':loo
 el.classList.add('active');
 clearTimeout(el._idleTimer);
 if(!isIdle){
+  // 공격 끝나면 해당 캐릭 idle 유지 (다음 공격이 올 때까지)
   el._idleTimer=setTimeout(function(){showBgSprite(className,'idle')},oneCycleDur*loopCount*1000);
 }
 }
@@ -272,12 +273,15 @@ if(cls==='action'||cls==='critical'){
 const spriteClass=charClass||G.className;
 const actionType=getActionType(text,spriteClass);
 const loops=hits||1;
-showBgSprite(spriteClass,actionType,loops);
+showBgSprite(spriteClass,actionType,loops,true);
 d.textContent=text;
 d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.classList.add('hunt-slide-right');
 d._isAttack=true;d._isCrit=cls==='critical';
 }
-else if(cls==='enemy-atk'){d.textContent=text;d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left');
+else if(cls==='enemy-atk'){
+const hitChar=charClass||G.className;
+showBgSprite(hitChar,'block',1);
+d.textContent=text;d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left');
 // 적 공격 데미지 팝업
 const dmgMatch=text.match(/-(\d+)\s*HP/);
 if(dmgMatch){const pop=document.createElement('span');pop.className='hunt-dmg-pop player-dmg';pop.textContent='-'+dmgMatch[1];d.appendChild(pop);setTimeout(()=>pop.remove(),1500)}

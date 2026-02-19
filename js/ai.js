@@ -324,13 +324,13 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           const eRoll = Math.random();
           const evadeChance = 0.15 + member.evade / 100;
           if (eRoll < evadeChance) {
-            lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0 });
+            lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
           } else {
             const eCrit = eRoll > 0.9;
             const rawDmg = (isBoss ? (5 + G.floor * 2) : (3 + G.floor)) * (eCrit ? 1.8 : (0.6 + Math.random() * 0.4)) * fearMult;
             let eDmg = Math.max(1, Math.floor(rawDmg - member.def / 3));
             totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
-            lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg });
+            lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
             if (fx.reflect > 0) {
               const reflDmg = Math.floor(eDmg * fx.reflect / 100);
               attacker.hp -= reflDmg; totalDmg += reflDmg;
