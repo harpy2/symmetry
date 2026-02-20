@@ -351,18 +351,51 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const isMain = member.slot === G.activeSlot;
       const memberLabel = partyMembers.length > 1 ? `[${member.weapon}${member.name}] ` : '';
       const weaponIcon = member.weapon||'⚔️';
+
+      // === 힐러 AI: 아군이 위험하면 힐/부활 우선 ===
+      let didHealAction = false;
+      const healSkills = member.skills.filter(s => s.heal && !s.buff && !s.summon);
+      const reviveSkill = member.skills.find(s => s.name && s.name.includes('부활'));
+      if (healSkills.length > 0) {
+        // 1) 죽은 아군 부활
+        const deadAlly = partyMembers.find(m => m._dead && m.slot !== member.slot);
+        if (deadAlly && reviveSkill) {
+          deadAlly._dead = false;
+          const reviveHP = Math.floor(deadAlly.maxHP * 0.3);
+          totalTaken[deadAlly.slot] = Math.max(0, (totalTaken[deadAlly.slot]||0) - reviveHP);
+          const allyLabel = `[${deadAlly.weapon}${deadAlly.name}]`;
+          lines.push({ text: `${memberLabel}💛 ${reviveSkill.name} → ${allyLabel} 부활! HP ${reviveHP} 회복!`, type: 'buff', charClass: member.name });
+          didHealAction = true;
+        }
+        // 2) HP 50% 이하 아군 힐
+        if (!didHealAction) {
+          const wounded = partyMembers.filter(m => !m._dead && (m.hp - (totalTaken[m.slot]||0)) < m.maxHP * 0.5).sort((a,b) => (a.hp-(totalTaken[a.slot]||0))/a.maxHP - (b.hp-(totalTaken[b.slot]||0))/b.maxHP);
+          if (wounded.length > 0) {
+            const target = wounded[0];
+            const hSkill = healSkills[Math.floor(Math.random() * healSkills.length)];
+            const healPct = /(\d+)%/.test(hSkill.desc) ? parseInt(hSkill.desc.match(/(\d+)%/)[1]) : 15;
+            const healAmt = Math.floor(target.maxHP * healPct / 100);
+            totalTaken[target.slot] = Math.max(0, (totalTaken[target.slot]||0) - healAmt);
+            const targetLabel = target.slot === member.slot ? '자신' : `[${target.weapon}${target.name}]`;
+            lines.push({ text: `${memberLabel}${hSkill.icon} ${hSkill.name} → ${targetLabel} HP +${healAmt} 회복!`, type: 'buff', charClass: member.name });
+            didHealAction = true;
+          }
+        }
+      }
+
       const basicAtk = { name: '평타', icon: weaponIcon, dmg: 10, aoe: false };
       const nonSummonSkills = member.skills.filter(s => !s.summon && !s.buff);
       const hasSkills = nonSummonSkills.length > 0;
-      // 쿨다운 감소: 평타 선택 확률 감소 (100%면 평타 제거)
       let skillPool;
       if(!hasSkills){skillPool=[basicAtk]}
       else if(member.cooldownReduce>=100){skillPool=[...nonSummonSkills]}
       else if(member.cooldownReduce>0&&Math.random()*100<member.cooldownReduce){skillPool=[...nonSummonSkills]}
       else{skillPool=[basicAtk,...nonSummonSkills]}
-      const skill = skillPool[Math.floor(Math.random() * skillPool.length)];
+      const skill = didHealAction ? null : skillPool[Math.floor(Math.random() * skillPool.length)];
       const skillDmgMult = 1 + member.skillDmgBonus / 100;
 
+      let enemyStunned = false, enemyFeared = false, isMiss = false;
+      if (skill) {
       // 커스텀 효과 (메인 캐릭만 장비 효과 적용)
       const mods = isMain ? getSkillMods(skill.name) : [];
       const fx = { hits:1, dmgBonus:0, aoe:skill.aoe||false, multiTarget:1, healPct:0, extraCast:0, critDmgBonus:0, defBuff:0, penetrate:false, atkSpdBuff:0, dot:0,
@@ -394,7 +427,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       if (roll < critChance) { isCrit = true; dmgMult = (isBoss ? 2.5 : 1.5) + fx.critDmgBonus / 100; tag = '💥크리티컬! '; }
       else if (isBoss && roll > 70) { dmgMult = 0.3; tag = '❌빗나감... '; }
       else { dmgMult = 0.8 + Math.random() * 0.4; }
-      const isMiss = tag.includes('빗나감');
+      isMiss = tag.includes('빗나감');
       const isAoe = fx.aoe;
 
       // 공격 실행
@@ -458,7 +491,6 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       }
 
       // 상태이상
-      let enemyStunned = false, enemyFeared = false;
       if (!isMiss) {
         const desc = skill.desc || '';
         if (desc.includes('스턴') || desc.includes('행동 불가') || (fx.stun > 0 && Math.random()*100 < fx.stun)) { enemyStunned = true; lines.push({ text: `${memberLabel}💫 ${enemy} 스턴! 행동 불가!`, type: 'buff' }); }
@@ -482,6 +514,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           else{lines.push({ text: `${enemy}에게 ${bonusDmg} 추가 피해! (HP: ${bonusTarget.hp}/${singleHP})`, type: 'damage' })}
         }
       }
+
+      } // end if(skill) — 공격 블록
 
       // 적 반격 → 이 멤버에게 피해
       const stillAlive = enemies.filter(e => e.alive);
