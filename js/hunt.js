@@ -57,9 +57,10 @@ const stage=getStageInfo(G.floor);
 if(!G._lastStage||G._lastStage!==stage.name){G._lastStage=stage.name;await showStageTransition(stage)}
 
 const tmpl=HUNT_TEMPLATES[Math.floor(Math.random()*HUNT_TEMPLATES.length)];
-const enemy=isBoss?tmpl.boss:tmpl.enemies[Math.floor(Math.random()*tmpl.enemies.length)];
+const enemyRaw=isBoss?tmpl.boss:tmpl.enemies[Math.floor(Math.random()*tmpl.enemies.length)];
+const enemy=t(enemyRaw);
 // 도감 등록
-addToCodex('monster',enemy);
+addToCodex('monster',enemyRaw);
 const maxByFloor=G.level<5?2:Math.min(20,Math.max(5,Math.floor(G.floor/10)+5));
 const enemyCount=isBoss?1:Math.floor(Math.random()*maxByFloor)+1;
 
