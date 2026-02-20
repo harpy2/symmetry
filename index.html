@@ -24,17 +24,17 @@ gtag('config', 'G-XY7YKM0M37');
 <div id="title-screen" class="screen active">
 <div class="title-particles" id="title-particles"></div>
 <h1>SYMMETRY</h1>
-<div class="subtitle">AI 키우기 RPG</div>
+<div class="subtitle" id="title-subtitle">AI 키우기 RPG</div>
 <div class="title-btn-group">
-<button class="btn" onclick="showScreen('class-screen')">시작하기</button>
-<button class="btn btn-secondary btn-sm" onclick="continueGame()">이어하기</button>
+<button class="btn" onclick="showScreen('class-screen')" id="btn-start">시작하기</button>
+<button class="btn btn-secondary btn-sm" onclick="continueGame()" id="btn-continue">이어하기</button>
 </div>
 <div class="version">v1.0</div>
 </div>
 
 <!-- CLASS SELECT -->
 <div id="class-screen" class="screen">
-<div class="class-header">⚔️ 직업을 선택하세요</div>
+<div class="class-header" id="class-header">⚔️ 직업을 선택하세요</div>
 <div class="class-cards" id="class-cards"></div>
 <div class="class-select-btn"><button class="btn" onclick="confirmClass()" id="class-confirm-btn" disabled>선택 완료</button></div>
 </div>
@@ -292,12 +292,116 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="levelup-choices" id="levelup-choices"></div>
 </div>
 
-<script src="js/data.js?v=33"></script>
-<script src="js/content.js?v=10"></script>
-<script src="js/ai.js?v=44"></script>
-<script src="js/ui.js?v=32"></script>
-<script src="js/inventory.js?v=31"></script>
-<script src="js/hunt.js?v=157"></script>
-<script src="js/game.js?v=36"></script>
+<script src="js/i18n.js?v=1"></script>
+<script src="js/data.js?v=34"></script>
+<script src="js/content.js?v=11"></script>
+<script src="js/ai.js?v=45"></script>
+<script src="js/ui.js?v=33"></script>
+<script src="js/inventory.js?v=32"></script>
+<script src="js/hunt.js?v=158"></script>
+<script src="js/game.js?v=37"></script>
+<script>
+// i18n: translate static HTML
+(function(){
+if(LANG==='ko')return;
+var m={
+'title-subtitle':'AI 키우기 RPG',
+'btn-start':'시작하기',
+'btn-continue':'이어하기',
+'class-header':'⚔️ 직업을 선택하세요',
+'class-confirm-btn':'선택 완료'
+};
+for(var id in m){var el=document.getElementById(id);if(el)el.textContent=t(m[id])}
+
+// Skill screen
+var ss=document.querySelector('.skill-header');if(ss)ss.textContent='✨ '+t('스킬을 선택하세요');
+var acLabel=document.querySelector('#active-skill-grid')?.previousElementSibling;
+var spb=document.getElementById('skill-confirm-btn');if(spb)spb.textContent=t('출발!');
+
+// Bottom menu
+document.querySelectorAll('.menu-btn .label').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(I18N[txt])el.textContent=t(txt);
+});
+
+// Overlay headers
+document.querySelectorAll('.overlay-header h2').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(I18N[txt])el.textContent=t(txt);
+});
+
+// Hunt status labels
+var hsLabels={'⚔️ 공격력':'⚔️ '+t('공격력'),'🛡️ 방어력':'🛡️ '+t('방어력'),'💥 치명타':'💥 '+t('치명타'),'⚡ 공격속도':'⚡ '+t('공격속도'),'🍖 배고픔':'🍖 '+t('배고픔'),'😊 기분':'😊 '+t('기분'),'⭐ 레벨':'⭐ '+t('레벨'),'💰 골드':'💰 '+t('골드'),'🏔️ 층':'🏔️ '+t('층')};
+document.querySelectorAll('.hs-label').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(hsLabels[txt])el.textContent=hsLabels[txt];
+});
+// Hunt tooltips
+document.querySelectorAll('.hs-tooltip').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(I18N[txt])el.textContent=t(txt);
+});
+
+// Hunt buttons
+var hb=document.getElementById('hunt-btn');if(hb)hb.textContent=t('🗡️ 사냥 시작');
+var ahb=document.getElementById('auto-hunt-btn');if(ahb)ahb.textContent=t('🔄 자동사냥');
+
+// Hunt panel titles
+document.querySelectorAll('.hunt-panel-title').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(txt==='📊 상태')el.textContent='📊 '+t('상태');
+  if(txt==='✦ 장비 효과')el.textContent='✦ '+t('장비 효과');
+});
+var hmEmpty=document.querySelector('.hm-empty');if(hmEmpty)hmEmpty.textContent=t('장착된 효과 없음');
+
+// Skill popup header
+var sph=document.querySelector('.skill-popup-header h3');if(sph)sph.textContent='🗡️ '+t('스킬 목록');
+
+// Level up overlay
+var lvTitle=document.querySelector('.levelup-title');if(lvTitle)lvTitle.textContent=t('🎉 레벨 업!');
+var lvSelLabel=document.querySelector('#levelup-choices')?.previousElementSibling;
+if(lvSelLabel&&lvSelLabel.textContent.trim()==='보상을 선택하세요')lvSelLabel.textContent=t('보상을 선택하세요');
+var autoLabel=document.querySelector('.auto-levelup-toggle label');
+if(autoLabel){var inp=autoLabel.querySelector('input');autoLabel.textContent=' '+t('🤖 자동 선택');if(inp)autoLabel.prepend(inp)}
+
+// Shop tabs
+document.querySelectorAll('.shop-tab').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(txt==='💰 골드 상점')el.textContent=t('💰 골드 상점');
+  if(txt==='💎 포인트 상점')el.textContent=t('💎 포인트 상점');
+});
+
+// Bulk sell buttons
+document.querySelectorAll('#overlay-inventory button').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(txt.includes('유니크 이하'))el.textContent='🗑️ '+t('유니크 이하 일괄 판매');
+  if(txt.includes('에픽 이하'))el.textContent='🗑️ '+t('에픽 이하 일괄 판매');
+});
+
+// Challenge cards
+document.querySelectorAll('.challenge-name').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(I18N[txt])el.textContent=t(txt);
+});
+document.querySelectorAll('.challenge-desc').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(I18N[txt])el.textContent=t(txt);
+});
+
+// Lock overlay text
+document.querySelectorAll('.lock-text').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(I18N[txt])el.textContent=t(txt);
+});
+
+// Char tab bar
+document.querySelectorAll('.char-tab').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(txt.includes('캐릭2'))el.textContent=t('캐릭2')+(txt.includes('🔒')?'🔒':'');
+  if(txt.includes('캐릭1'))el.textContent=t('캐릭1');
+  if(txt.includes('캐릭3'))el.textContent=t('캐릭3')+(txt.includes('🔒')?'🔒':'');
+});
+})();
+</script>
 </body>
 </html>
