@@ -200,7 +200,25 @@ let expReward=Math.floor((combat.expReward||15)*moodMult.exp);
 G.exp+=expReward;
 for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){if(!G.party[_s].exp)G.party[_s].exp=0;G.party[_s].exp+=expReward;}}
 await addHuntLine(`패배했지만 경험치 +${expReward} 획득`,'loot',log);
-G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className})}
+G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className});
+// 패배 시에도 레벨업 처리
+const expToLevelD=()=>Math.floor(100+G.level*5);
+while(G.exp>=expToLevelD()){G.exp-=expToLevelD();G.level++;G.maxHP+=8;G.atk+=1;G.def+=1;G.hp=G.maxHP;
+const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
+if(SKILL_LEVELS.includes(G.level)){await showSkillLearn('active',G.activeSlot);}
+else if(PASSIVE_LEVELS.includes(G.level)){await showSkillLearn('passive',G.activeSlot);}
+else{await showLevelUp(null,G.activeSlot);}}
+for(let _s=0;_s<3;_s++){
+if(_s===G.activeSlot||!G.slotUnlocked[_s]||!G.party[_s])continue;
+const sub=G.party[_s];if(!sub.exp)sub.exp=0;
+const subEtl=()=>Math.floor(100+(sub.level||1)*5);
+while(sub.exp>=subEtl()){sub.exp-=subEtl();sub.level=(sub.level||1)+1;sub.maxHP=(sub.maxHP||100)+8;sub.atk=(sub.atk||15)+1;sub.def=(sub.def||8)+1;sub.hp=sub.maxHP;
+const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
+if(SKILL_LEVELS.includes(sub.level)){await showSkillLearn('active',_s);}
+else if(PASSIVE_LEVELS.includes(sub.level)){await showSkillLearn('passive',_s);}
+else{await showLevelUp(null,_s);}
+}}
+}
 
 // 패배 시 처리
 if(!won){
