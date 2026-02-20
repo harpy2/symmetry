@@ -280,7 +280,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     }
   }
 
-  const maxRounds = 999;
+  const maxRounds = 50;
 
   // 선공 판정: 50% 확률로 적이 먼저 공격
   const enemyFirst = Math.random() < 0.5;
@@ -354,9 +354,10 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
       // === 힐러 AI: 아군이 위험하면 힐/부활 우선 ===
       let didHealAction = false;
+      try {
       const healSkills = member.skills.filter(s => s.heal && !s.buff && !s.summon);
       const reviveSkill = member.skills.find(s => s.name && s.name.includes('부활'));
-      if (healSkills.length > 0) {
+      if (healSkills.length > 0 && partyMembers.length > 1 && Math.random() < 0.6) {
         // 1) 죽은 아군 부활
         const deadAlly = partyMembers.find(m => m._dead && m.slot !== member.slot);
         if (deadAlly && reviveSkill) {
@@ -382,6 +383,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           }
         }
       }
+      } catch(e) { didHealAction = false; }
 
       const basicAtk = { name: '평타', icon: weaponIcon, dmg: 10, aoe: false };
       const nonSummonSkills = member.skills.filter(s => !s.summon && !s.buff);
@@ -606,7 +608,16 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
   const allEnemiesDead = enemies.every(e => !e.alive);
   const allPartyDead = partyMembers.every(m => m._dead);
-  const won = allEnemiesDead && !allPartyDead;
+  let won;
+  if (allPartyDead) { won = false; }
+  else if (allEnemiesDead) { won = true; }
+  else {
+    // 라운드 소진 — HP 비율 판정
+    const eHpPct = enemies.filter(e=>e.alive).reduce((s,e)=>s+e.hp,0) / (singleHP * enemyCount);
+    const pHpPct = partyMembers.filter(m=>!m._dead).reduce((s,m)=>s+(m.hp-(totalTaken[m.slot]||0)),0) / partyMembers.reduce((s,m)=>s+m.maxHP,0);
+    won = pHpPct >= eHpPct;
+    lines.push({ text: won ? '⏱️ 시간 초과 — 판정승!' : '⏱️ 시간 초과 — 판정패...', type: won ? 'victory' : 'defeat' });
+  }
   const goldMult = 1 + (G.goldBonus || 0) / 100 + getEquipStat('골드 획득') / 100;
   const expMult = 1 + (G.expBonus || 0) / 100 + getEquipStat('경험치 보너스') / 100;
   const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * enemyCount * (0.8 + Math.random() * 0.4) * goldMult) : 0;
