@@ -95,9 +95,9 @@ else{p.classList.remove('active')}
 const tabs=document.querySelectorAll('.char-tab');
 const slotOrder=[1,0,2]; // HTML 탭 순서: 캐릭2, 캐릭1, 캐릭3
 if(tabs.length>=3){
-tabs[0].textContent=G.slotUnlocked[1]?(G.party[1]?G.party[1].className||'캐릭2':'캐릭2 (빈)'):'캐릭2🔒';
-tabs[1].textContent=G.party&&G.party[0]?G.party[0].className||'캐릭1':'캐릭1';
-tabs[2].textContent=G.slotUnlocked[2]?(G.party[2]?G.party[2].className||'캐릭3':'캐릭3 (빈)'):'캐릭3🔒';
+tabs[0].textContent=G.slotUnlocked[1]?(G.party[1]?t(G.party[1].className)||t('캐릭2'):t('캐릭2')+' '+t('(빈)')):(t('캐릭2')+'🔒');
+tabs[1].textContent=G.party&&G.party[0]?t(G.party[0].className)||t('캐릭1'):t('캐릭1');
+tabs[2].textContent=G.slotUnlocked[2]?(G.party[2]?t(G.party[2].className)||t('캐릭3'):t('캐릭3')+' '+t('(빈)')):(t('캐릭3')+'🔒');
 tabs.forEach((t,i)=>{t.classList.toggle('active',slotOrder[i]===G.activeSlot)});
 }
 // 사이드 패널에 캐릭터 렌더링
@@ -264,12 +264,12 @@ for(const s of slotOrder){
 if(G.slotUnlocked[s]&&G.party[s]){
 const cls=CLASSES[G.party[s].className];
 const icon=cls?cls.weapon:'⚔️';
-const charName=G.party[s].className||('캐릭'+(s+1));
+const charName=t(G.party[s].className)||t('캐릭'+(s+1));
 charBtns+=`<button class="idp-char-btn" onclick="equipFromPopupToChar(this,${s})" title="${charName}">${icon}<span>${charName}</span></button>`;
 }else if(G.slotUnlocked[s]){
-charBtns+=`<button class="idp-char-btn disabled" disabled>🔓<span>빈 슬롯</span></button>`;
+charBtns+=`<button class="idp-char-btn disabled" disabled>🔓<span>${t('빈 슬롯')}</span></button>`;
 }else{
-charBtns+=`<button class="idp-char-btn disabled" disabled>🔒<span>잠김</span></button>`;
+charBtns+=`<button class="idp-char-btn disabled" disabled>🔒<span>${t('잠김')}</span></button>`;
 }
 }
 charBtns+='</div>';
