@@ -538,7 +538,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
             let eDmg = Math.max(1, Math.floor(rawDmg * (1 - defReduce)));
             totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
             lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
-            const totalReflect = (fx.reflect || 0) + (member._reflect || 0);
+            const totalReflect = (typeof fx!=='undefined' && fx.reflect || 0) + (member._reflect || 0);
             if (totalReflect > 0) {
               const reflDmg = Math.floor(eDmg * totalReflect / 100);
               attacker.hp -= reflDmg; totalDmg += reflDmg;
