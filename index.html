@@ -286,9 +286,9 @@ gtag('config', 'G-XY7YKM0M37');
 <!-- LEVEL UP -->
 <div class="levelup-overlay" id="levelup-overlay">
 <div class="particles" id="levelup-particles"></div>
-<div class="levelup-title">🎉 레벨 업!</div>
+<div class="levelup-title" id="levelup-title">🎉 레벨 업!</div>
 <div class="levelup-sub" id="levelup-sub">Lv.2 달성!</div>
-<div style="color:var(--text2);font-size:12px;margin-bottom:8px">보상을 선택하세요</div>
+<div id="levelup-select-label" style="color:var(--text2);font-size:12px;margin-bottom:8px">보상을 선택하세요</div>
 <div class="auto-levelup-toggle"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="auto-levelup-toggle" onchange="G.autoLevelUp=this.checked;saveGame()"> 🤖 자동 선택</label></div>
 <div class="levelup-choices" id="levelup-choices"></div>
 </div>
@@ -358,9 +358,9 @@ var hmEmpty=document.querySelector('.hm-empty');if(hmEmpty)hmEmpty.textContent=t
 var sph=document.querySelector('.skill-popup-header h3');if(sph)sph.textContent='🗡️ '+t('스킬 목록');
 
 // Level up overlay
-var lvTitle=document.querySelector('.levelup-title');if(lvTitle)lvTitle.textContent=t('🎉 레벨 업!');
-var lvSelLabel=document.querySelector('#levelup-choices')?.previousElementSibling;
-if(lvSelLabel&&lvSelLabel.textContent.trim()==='보상을 선택하세요')lvSelLabel.textContent=t('보상을 선택하세요');
+var lvTitle=document.getElementById('levelup-title');if(lvTitle)lvTitle.textContent=t('🎉 레벨 업!');
+var lvSelLabel=document.getElementById('levelup-select-label');
+if(lvSelLabel)lvSelLabel.textContent=t('보상을 선택하세요');
 var autoLabel=document.querySelector('.auto-levelup-toggle label');
 if(autoLabel){var inp=autoLabel.querySelector('input');autoLabel.textContent=' '+t('🤖 자동 선택');if(inp)autoLabel.prepend(inp)}
 
