@@ -149,13 +149,13 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="hunt-panel hunt-panel-left">
 <div class="hunt-panel-title">📊 상태</div>
 <div class="hunt-stat-list" id="hunt-stat-list">
-<div class="hs-row"><span class="hs-label">❤️ HP</span><span class="hs-val" id="hs-hp">100/100</span></div>
-<div class="hs-row"><span class="hs-label">⚔️ 공격력</span><span class="hs-val" id="hs-atk">10</span></div>
-<div class="hs-row"><span class="hs-label">🛡️ 방어력</span><span class="hs-val" id="hs-def">5</span></div>
-<div class="hs-row"><span class="hs-label">💥 치명타</span><span class="hs-val" id="hs-crit">10%</span></div>
-<div class="hs-row"><span class="hs-label">⚡ 공격속도</span><span class="hs-val" id="hs-aspd">1.0x</span></div>
-<div class="hs-row"><span class="hs-label">🍖 배고픔</span><span class="hs-val" id="hs-hunger">100%</span></div>
-<div class="hs-row"><span class="hs-label">😊 기분</span><span class="hs-val" id="hs-mood">100%</span></div>
+<div class="hs-row" title="체력 — 0이 되면 전투 불능"><span class="hs-label">❤️ HP</span><span class="hs-val" id="hs-hp">100/100</span></div>
+<div class="hs-row" title="스킬/평타 데미지에 반영. 소환수도 ATK 기반"><span class="hs-label">⚔️ 공격력</span><span class="hs-val" id="hs-atk">10</span></div>
+<div class="hs-row" title="받는 피해 감소"><span class="hs-label">🛡️ 방어력</span><span class="hs-val" id="hs-def">5</span></div>
+<div class="hs-row" title="크리티컬 확률 — 발동 시 1.5~2.5배 데미지"><span class="hs-label">💥 치명타</span><span class="hs-val" id="hs-crit">10%</span></div>
+<div class="hs-row" title="추가 공격 확률 — 턴당 2회 공격 (캡 50%)"><span class="hs-label">⚡ 공격속도</span><span class="hs-val" id="hs-aspd">1.0x</span></div>
+<div class="hs-row" title="낮으면 사냥 불가"><span class="hs-label">🍖 배고픔</span><span class="hs-val" id="hs-hunger">100%</span></div>
+<div class="hs-row" title="낮으면 사냥 불가, 전투 패배 시 감소"><span class="hs-label">😊 기분</span><span class="hs-val" id="hs-mood">100%</span></div>
 <div class="hs-row"><span class="hs-label">⭐ 레벨</span><span class="hs-val" id="hs-level">1</span></div>
 <div class="hs-row"><span class="hs-label">💰 골드</span><span class="hs-val" id="hs-gold">0</span></div>
 <div class="hs-row"><span class="hs-label">🏔️ 층</span><span class="hs-val" id="hs-floor">1</span></div>
@@ -246,7 +246,7 @@ gtag('config', 'G-XY7YKM0M37');
 <script src="js/ai.js?v=30"></script>
 <script src="js/ui.js?v=30"></script>
 <script src="js/inventory.js?v=27"></script>
-<script src="js/hunt.js?v=148"></script>
+<script src="js/hunt.js?v=149"></script>
 <script src="js/game.js?v=35"></script>
 </body>
 </html>

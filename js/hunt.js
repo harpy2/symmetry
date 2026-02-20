@@ -271,7 +271,10 @@ const title=document.getElementById('mobile-popup-title');
 const body=document.getElementById('mobile-popup-body');
 if(type==='stat'){
 title.textContent='📊 상태';
-let statHtml=document.getElementById('hunt-stat-list').innerHTML;
+const descs={'❤️ HP':'체력 — 0이 되면 전투 불능','⚔️ 공격력':'스킬/평타 데미지에 반영. 소환수도 ATK 기반','🛡️ 방어력':'받는 피해 감소','💥 치명타':'크리티컬 확률 — 발동 시 1.5~2.5배 데미지','⚡ 공격속도':'추가 공격 확률 — 턴당 2회 공격 (캡 50%)','🍖 배고픔':'낮으면 사냥 불가','😊 기분':'낮으면 사냥 불가, 패배 시 감소'};
+const el=document.getElementById('hunt-stat-list').cloneNode(true);
+el.querySelectorAll('.hs-row').forEach(row=>{const label=row.querySelector('.hs-label');if(!label)return;const d=descs[label.textContent.trim()];if(d){const desc=document.createElement('div');desc.style.cssText='font-size:10px;color:var(--text2);margin-top:1px;padding-left:2px';desc.textContent=d;row.appendChild(desc);row.style.flexWrap='wrap'}});
+let statHtml=el.innerHTML;
 for(let s=0;s<3;s++){if(s===G.activeSlot||!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;const c=G.party[s];const cls=CLASSES[c.className];if(!cls)continue;
 statHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${c.className} (Lv.${c.level})</div><div style="font-size:12px;line-height:1.8;color:var(--text1)">❤️ HP: ${Math.floor(c.hp)}/${c.maxHP}<br>⚔️ ATK: ${c.atk}<br>🛡️ DEF: ${c.def}<br>🎯 치명타: ${10+(c.critBonus||0)}%<br>📊 EXP: ${c.exp||0}%</div></div>`}
 body.innerHTML=statHtml;
@@ -296,18 +299,6 @@ title.textContent='⚙️ 설정';
 body.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoLevelUp?'checked':''} onchange="G.autoLevelUp=this.checked;saveGame()"> 🤖 레벨업 자동 선택</label>
 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoHunt?'checked':''} onchange="G.autoHunt=this.checked;updateAutoHuntUI();saveGame()"> 🔄 자동 사냥</label>
-<div style="font-size:11px;color:var(--text2);margin-top:4px">📊 스탯 설명</div>
-<div style="font-size:11px;color:var(--text2);line-height:1.6">
-⚔️ ATK — 공격력 (스킬/평타 데미지에 반영)<br>
-🛡️ DEF — 방어력 (받는 피해 감소)<br>
-❤️ HP — 체력 (0이 되면 전투 불능)<br>
-🎯 치명타 — 크리티컬 확률 (발동 시 1.5~2.5배 데미지)<br>
-⚡ 공격속도 — 추가 공격 확률 (턴당 2회 공격, 캡 50%)<br>
-⏱️ 쿨다운 감소 — 스킬 사용 우선 확률 (평타 대신 스킬, 캡 100%)<br>
-🗡️ 관통 — 적 방어력 무시 고정 데미지<br>
-💨 회피율 — 적 공격 회피 확률<br>
-📜 소환수는 소환자의 ATK 기반으로 공격력 결정
-</div>
 </div>`;
 }else{
 title.textContent='✦ 장비 효과';
