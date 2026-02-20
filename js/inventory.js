@@ -414,14 +414,21 @@ const data=await res.json();
 if(data.redirect_url){
 // 영구 참여 기록
 G.missionCooldowns['cpq_'+m.id]=true;
-// 즉시 보상 지급
+// 새 탭으로 광고 페이지 열기
+window.open(data.redirect_url,'_blank');
+toast('의뢰 페이지로 이동 중... 돌아오면 보상 지급!');
+// 탭 복귀 시 보상 지급
+const onReturn=()=>{
+if(document.visibilityState==='visible'){
+document.removeEventListener('visibilitychange',onReturn);
 const goldReward=80;const pointReward=15;
 G.gold+=goldReward;G.points+=pointReward;
 updateBars();saveGame();
-// 새 탭으로 광고 페이지 열기
-window.open(data.redirect_url,'_blank');
 toast(`🎁 미션 보상 수령! 💰+${goldReward} 💎+${pointReward}`);
 renderMissions();
+}
+};
+document.addEventListener('visibilitychange',onReturn);
 }else{
 toast('미션 참여 실패: '+(data.error||'알 수 없는 오류'));
 }
