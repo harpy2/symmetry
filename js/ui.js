@@ -277,7 +277,7 @@ const panel=document.getElementById('skill-panel-'+slot);
 if(!panel)return;
 const actives=char.equippedSkills||[];
 const passives=char.equippedPassives||[];
-if(actives.length===0&&passives.length===0){panel.innerHTML='<div class="sp-title">스킬 없음</div>';return}
+if(actives.length===0&&passives.length===0){panel.innerHTML='';return}
 let html='';
 if(actives.length>0){html+='<div class="sp-title">⚔️ 액티브</div>';actives.forEach(s=>{html+=`<div class="sp-item"><span class="sp-icon">${s.icon}</span><span>${s.name}</span> <span class="sp-desc">${s.desc||''}</span></div>`})}
 if(passives.length>0){html+='<div class="sp-title sp-passive">🛡️ 패시브</div>';passives.forEach(s=>{html+=`<div class="sp-item sp-passive"><span class="sp-icon">${s.icon}</span><span>${s.name}</span> <span class="sp-desc">${s.desc||''}</span></div>`})}
