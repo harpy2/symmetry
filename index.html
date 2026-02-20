@@ -15,13 +15,14 @@ gtag('config', 'G-XY7YKM0M37');
 <title>SYMMETRY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=87">
+<link rel="stylesheet" href="css/style.css?v=88">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9910139662531641" crossorigin="anonymous"></script>
 </head>
 <body>
 
 <!-- TITLE SCREEN -->
 <div id="title-screen" class="screen active">
+<div id="lang-toggle" onclick="toggleLang()" title="Language">🌐 <span id="lang-label">EN</span></div>
 <div class="title-particles" id="title-particles"></div>
 <h1>SYMMETRY</h1>
 <div class="subtitle" id="title-subtitle">AI 키우기 RPG</div>
@@ -230,8 +231,8 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="overlay-body">
 <div id="item-detail-area"></div>
 <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-<button class="btn btn-sm btn-secondary" onclick="bulkSell('유니크')" style="font-size:11px">🗑️ 유니크 이하 일괄 판매</button>
-<button class="btn btn-sm btn-secondary" onclick="bulkSell('에픽')" style="font-size:11px">🗑️ 에픽 이하 일괄 판매</button>
+<button class="btn btn-sm btn-secondary" onclick="bulkSell('Unique')" style="font-size:11px">🗑️ 유니크 이하 일괄 판매</button>
+<button class="btn btn-sm btn-secondary" onclick="bulkSell('Epic')" style="font-size:11px">🗑️ 에픽 이하 일괄 판매</button>
 </div>
 <div class="inv-grid" id="inv-grid"></div>
 </div>
@@ -292,7 +293,7 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="levelup-choices" id="levelup-choices"></div>
 </div>
 
-<script src="js/i18n.js?v=1"></script>
+<script src="js/i18n.js?v=2"></script>
 <script src="js/data.js?v=34"></script>
 <script src="js/content.js?v=11"></script>
 <script src="js/ai.js?v=46"></script>
@@ -302,8 +303,7 @@ gtag('config', 'G-XY7YKM0M37');
 <script src="js/game.js?v=37"></script>
 <script>
 // i18n: translate static HTML
-(function(){
-if(LANG==='ko')return;
+function applyI18n(){
 var m={
 'title-subtitle':'AI 키우기 RPG',
 'btn-start':'시작하기',
@@ -401,7 +401,9 @@ document.querySelectorAll('.char-tab').forEach(function(el){
   if(txt.includes('캐릭1'))el.textContent=t('캐릭1');
   if(txt.includes('캐릭3'))el.textContent=t('캐릭3')+(txt.includes('🔒')?'🔒':'');
 });
-})();
+}
+applyI18n();
+initLangToggle();
 </script>
 </body>
 </html>

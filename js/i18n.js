@@ -1,5 +1,5 @@
 // ===== INTERNATIONALIZATION (i18n) =====
-const LANG = navigator.language?.startsWith('ko') ? 'ko' : 'en';
+let LANG = localStorage.getItem('sym_lang') || (navigator.language?.startsWith('ko') ? 'ko' : 'en');
 
 const I18N = {
   // === UI: Title & Buttons ===
@@ -1162,4 +1162,15 @@ function t(key, ...args) {
     str = str.replace('{' + i + '}', args[i]);
   }
   return str;
+}
+
+function toggleLang() {
+  LANG = LANG === 'ko' ? 'en' : 'ko';
+  localStorage.setItem('sym_lang', LANG);
+  location.reload();
+}
+
+function initLangToggle() {
+  const label = document.getElementById('lang-label');
+  if (label) label.textContent = LANG === 'ko' ? 'EN' : '한';
 }
