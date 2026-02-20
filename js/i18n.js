@@ -70,6 +70,12 @@ const I18N = {
   '레어': { en: 'Rare' },
   '유니크': { en: 'Unique' },
   '에픽': { en: 'Epic' },
+  // === Grade Names (reverse: English key → Korean display) ===
+  'Normal': { ko: '일반' },
+  'Magic': { ko: '매직' },
+  'Rare': { ko: '레어' },
+  'Unique': { ko: '유니크' },
+  'Epic': { ko: '에픽' },
 
   // === Equip Slot Names ===
   '투구': { en: 'Helmet' },

@@ -250,7 +250,7 @@ function toast(msg){const t=document.createElement('div');t.className='toast';t.
 
 // ===== ITEM DROP POPUP =====
 function showItemDropPopup(item){
-const gradeColors={일반:'#999',매직:'#2ecc71',레어:'var(--blue)',유니크:'var(--purple)',에픽:'var(--orange)'};
+const gradeColors={Normal:'#999',Magic:'#2ecc71',Rare:'var(--blue)',Unique:'var(--purple)',Epic:'var(--orange)'};
 const statsText=Object.entries(item.stats).map(([k,v])=>`${k}+${v}`).join('  ');
 const modsText=(item.skillMods&&item.skillMods.length)?item.skillMods.map(m=>`<div style="color:#00d4ff;font-size:11px">✦ ${m.mod}</div>`).join(''):'';
 const el=document.createElement('div');

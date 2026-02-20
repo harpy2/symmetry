@@ -118,14 +118,14 @@ name=`${prefix} ${material}의 ${suffixes[si]}`;
 emoji=emojis[si];svgData=null;
 }
 
-const roll=Math.random()*100;let grade='일반';
-// 일반45% 매직30% 레어15% 유니크8% 에픽2%
-if(roll<2)grade='에픽';else if(roll<10)grade='유니크';else if(roll<25)grade='레어';else if(roll<55)grade='매직';
-const gMult={일반:1,매직:1.3,레어:1.5,유니크:2.2,에픽:3.5}[grade];
+const roll=Math.random()*100;let grade='Normal';
+// Normal45% Magic30% Rare15% Unique8% Epic2%
+if(roll<2)grade='Epic';else if(roll<10)grade='Unique';else if(roll<25)grade='Rare';else if(roll<55)grade='Magic';
+const gMult={Normal:1,Magic:1.3,Rare:1.5,Unique:2.2,Epic:3.5}[grade];
 const floorMult=1+G.floor*0.1;
 
-// 등급별 스탯 옵션 개수: 일반=1, 매직=2, 레어=3, 유니크=3, 에픽=3
-const statCount={일반:1,매직:2,레어:3,유니크:3,에픽:3}[grade];
+// 등급별 스탯 옵션 개수: Normal=1, Magic=2, Rare=3, Unique=3, Epic=3
+const statCount={Normal:1,Magic:2,Rare:3,Unique:3,Epic:3}[grade];
 const stats={};
 const pool=[...STAT_POOL[type]];
 for(let i=0;i<statCount&&pool.length>0;i++){
@@ -136,7 +136,7 @@ stats[stat]=rollStatValue(stat,gMult,floorMult);
 
 // 스킬 강화 커스텀 옵션: 유니크=1, 에픽=2 (AI 우선, fallback 로컬)
 let skillMods=[];
-const modCount=grade==='에픽'?2:grade==='유니크'?1:0;
+const modCount=grade==='Epic'?2:grade==='Unique'?1:0;
 if(modCount>0){
 const aiMods=await generateSkillCustomAI(modCount);
 if(aiMods&&aiMods.length>=modCount){skillMods=aiMods.slice(0,modCount)}
@@ -148,12 +148,12 @@ do{custom=generateSkillCustom();tries++}while(usedMods.has(custom.mod)&&tries<10
 usedMods.add(custom.mod);skillMods.push(custom);
 }}}
 
-const durability=Math.floor({일반:50,매직:65,레어:80,유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
+const durability=Math.floor({Normal:50,Magic:65,Rare:80,Unique:120,Epic:180}[grade]*(0.8+Math.random()*0.4));
 return{id:Date.now()+Math.random(),name,type,grade,emoji:emoji||'📦',svgData,stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}}
 
 // ===== INVENTORY =====
 let invFilter=null;
-const GRADE_ORDER={에픽:0,유니크:1,레어:2,매직:3,일반:4};
+const GRADE_ORDER={Epic:0,Unique:1,Rare:2,Magic:3,Normal:4};
 function renderInventory(filter){invFilter=filter||null;
 const detail=document.getElementById('item-detail-area');detail.innerHTML='';
 const grid=document.getElementById('inv-grid');grid.innerHTML='';
@@ -190,7 +190,7 @@ const isEquipped=Object.values(G.equipment).some(e=>e&&e.id===item.id);
 // 다른 캐릭에 장착되어있는지도 체크
 let equippedBy=-1;
 if(G.party){G.party.forEach((p,si)=>{if(p&&p.equipment){Object.values(p.equipment).forEach(e=>{if(e&&e.id===item.id)equippedBy=si})}})}
-const sellPrice=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));
+const sellPrice=Math.floor(({Normal:5,Magic:10,Rare:15,Unique:40,Epic:100}[item.grade]||5)*(1+G.floor*0.1));
 const detailIcon=item.svgData?`<div class="item-svg item-svg-lg">${item.svgData}</div>`:`<div style="font-size:36px">${item.emoji}</div>`;
 // 캐릭별 장착 버튼
 let equipBtns='';
@@ -235,10 +235,10 @@ renderInventory();renderEquipRow();renderCharacter();saveGame();
 function unequipItem(type){if(!G.equipment[type])return;G.inventory.push(G.equipment[type]);G.equipment[type]=null;
 toast(t('장비 해제'));renderInventory();renderEquipRow();renderCharacter();saveGame()}
 function repairItem(idx){const item=G.inventory[idx];if(!item)return;const cost=Math.floor((item.maxDurability-item.durability)*0.5);if(G.gold<cost){toast(t('골드가 부족합니다!'));return}G.gold-=cost;item.durability=item.maxDurability;toast(t('수리 완료!'));renderInventory();showItemDetail(idx);updateBars();saveGame()}
-function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));G.gold+=price;G.inventory.splice(idx,1);toast(t('판매 완료!')+` 💰+${price}`);document.getElementById('item-detail-area').innerHTML='';renderInventory();updateBars();saveGame()}
+function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=Math.floor(({Normal:5,Magic:10,Rare:15,Unique:40,Epic:100}[item.grade]||5)*(1+G.floor*0.1));G.gold+=price;G.inventory.splice(idx,1);toast(t('판매 완료!')+` 💰+${price}`);document.getElementById('item-detail-area').innerHTML='';renderInventory();updateBars();saveGame()}
 
 function bulkSell(belowGrade){
-const gradeRank={일반:0,매직:1,레어:2,유니크:3,에픽:4};
+const gradeRank={Normal:0,Magic:1,Rare:2,Unique:3,Epic:4};
 const threshold=gradeRank[belowGrade]||0;
 // 장착된 아이템 id 수집
 const equippedIds=new Set();
@@ -248,7 +248,7 @@ if(toSell.length===0)return toast(t('판매할 장비가 없습니다'));
 if(!confirm(t('{0} 미만 장비 {1}개를 판매할까요?',t(belowGrade),toSell.length)))return;
 let totalGold=0;
 for(const item of toSell){
-const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));
+const price=Math.floor(({Normal:5,Magic:10,Rare:15,Unique:40,Epic:100}[item.grade]||5)*(1+G.floor*0.1));
 totalGold+=price;
 const idx=G.inventory.indexOf(item);
 if(idx>=0)G.inventory.splice(idx,1);
@@ -299,7 +299,7 @@ updateBars();renderCharacter();saveGame();renderShop('gold');
 
 // 다이아 상점: 유니크/에픽 아이템 + 스킬 리셋
 async function buyRandomItem(grade){
-const prices={유니크:50,에픽:150};
+const prices={Unique:50,Epic:150};
 const price=prices[grade];
 if(G.points<price)return toast(t('💎가 부족합니다!'));
 if(G.inventory.length>=30)return toast(t('인벤토리가 가득 찼습니다!'));
@@ -319,15 +319,15 @@ const apiItem=await fetchRandomItemFromAPI(type);
 let name,emoji,svgData;
 if(apiItem){name=apiItem.name;emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';svgData=apiItem.svg||null}
 else{const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];const si=Math.floor(Math.random()*suffixes.length);name=`${ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)]} ${ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)]}의 ${suffixes[si]}`;emoji=emojis[si];svgData=null}
-const gMult={유니크:2.2,에픽:3.5}[grade];
+const gMult={Unique:2.2,Epic:3.5}[grade];
 const floorMult=1+G.floor*0.1;
 const stats={};const pool=[...STAT_POOL[type]];
 for(let i=0;i<3&&pool.length>0;i++){const idx=Math.floor(Math.random()*pool.length);stats[pool.splice(idx,1)[0]]=rollStatValue(pool[0]||'ATK',gMult,floorMult)}
-let skillMods=[];const modCount=grade==='에픽'?2:1;
+let skillMods=[];const modCount=grade==='Epic'?2:1;
 const aiMods=await generateSkillCustomAI(modCount);
 if(aiMods&&aiMods.length>=modCount){skillMods=aiMods.slice(0,modCount)}
 else{for(let m=0;m<modCount;m++)skillMods.push(generateSkillCustom())}
-const durability=Math.floor({유니크:120,에픽:180}[grade]*(0.8+Math.random()*0.4));
+const durability=Math.floor({Unique:120,Epic:180}[grade]*(0.8+Math.random()*0.4));
 return{id:Date.now()+Math.random(),name,type,grade,emoji:emoji||'📦',svgData,stats,skillMods,durability,maxDurability:durability,desc:FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)]}
 }
 
@@ -351,8 +351,8 @@ container.innerHTML=html;
 }else{
 // 다이아 상점: 아이템 구매 + 스킬 리셋
 let html=`<div class="shop-section-title">📦 ${t('아이템 구매')}</div>`;
-html+=`<div class="shop-item" onclick="buyRandomItem('유니크')"><div class="s-icon" style="color:var(--purple)">💜</div><div class="s-info"><div class="s-name" style="color:var(--purple)">${t('유니크 아이템 상자')}</div><div class="s-desc">${t('랜덤 유니크 등급 장비 획득')}</div></div><div class="s-price">💎 50</div></div>`;
-html+=`<div class="shop-item" onclick="buyRandomItem('에픽')"><div class="s-icon" style="color:var(--orange)">🧡</div><div class="s-info"><div class="s-name" style="color:var(--orange)">${t('에픽 아이템 상자')}</div><div class="s-desc">${t('랜덤 에픽 등급 장비 획득')}</div></div><div class="s-price">💎 150</div></div>`;
+html+=`<div class="shop-item" onclick="buyRandomItem('Unique')"><div class="s-icon" style="color:var(--purple)">💜</div><div class="s-info"><div class="s-name" style="color:var(--purple)">${t('유니크 아이템 상자')}</div><div class="s-desc">${t('랜덤 유니크 등급 장비 획득')}</div></div><div class="s-price">💎 50</div></div>`;
+html+=`<div class="shop-item" onclick="buyRandomItem('Epic')"><div class="s-icon" style="color:var(--orange)">🧡</div><div class="s-info"><div class="s-name" style="color:var(--orange)">${t('에픽 아이템 상자')}</div><div class="s-desc">${t('랜덤 에픽 등급 장비 획득')}</div></div><div class="s-price">💎 150</div></div>`;
 html+=`<div class="shop-section-title" style="margin-top:16px">⚙️ ${t('기타')}</div>`;
 html+=`<div class="shop-item" onclick="buySkillReset()"><div class="s-icon">🔄</div><div class="s-info"><div class="s-name">${t('스킬 리셋')}</div><div class="s-desc">${t('장착된 스킬 초기화')}</div></div><div class="s-price">💎 30</div></div>`;
 container.innerHTML=html;

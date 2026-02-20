@@ -33,7 +33,7 @@ async function generateItemAI() {
     if (!result.id) result.id = Date.now() + Math.random();
     if (!result.emoji) result.emoji = result.type === 'weapon' ? '🗡️' : result.type === 'armor' ? '🛡️' : '📿';
     if (!result.durability) {
-      const baseDur = { 일반: 50, 매직: 65, 레어: 80, 유니크: 120, 에픽: 180 }[result.grade] || 60;
+      const baseDur = { Normal: 50, Magic: 65, Rare: 80, Unique: 120, Epic: 180 }[result.grade] || 60;
       result.durability = Math.floor(baseDur * (0.8 + Math.random() * 0.4));
     }
     if (!result.maxDurability) result.maxDurability = result.durability;
