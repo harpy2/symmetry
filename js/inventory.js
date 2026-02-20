@@ -151,8 +151,23 @@ let invFilter=null;
 function renderInventory(filter){invFilter=filter||null;
 const detail=document.getElementById('item-detail-area');detail.innerHTML='';
 const grid=document.getElementById('inv-grid');grid.innerHTML='';
+const isPC=window.innerWidth>=769;
 for(let i=0;i<30;i++){const item=G.inventory[i];const d=document.createElement('div');d.className='inv-slot'+(item?' grade-'+item.grade:'');
-if(item){const icon=item.svgData?`<div class="item-svg">${item.svgData}</div>`:`<span>${item.emoji}</span>`;d.innerHTML=`${icon}<div class="dur-bar"><div class="dur-fill" style="width:${item.durability/item.maxDurability*100}%"></div></div>`;d.onclick=()=>showItemDetail(i)}
+if(item){
+if(isPC){
+// PC: 셀 안에 이름+스탯+옵션 + 배경 아이콘
+const iconSmall=item.svgData?`<div class="item-svg">${item.svgData}</div>`:`<span style="font-size:16px">${item.emoji}</span>`;
+const bgIcon=item.svgData?`<div class="inv-bg-icon"><div class="item-svg">${item.svgData}</div></div>`:`<div class="inv-bg-icon">${item.emoji}</div>`;
+const nameColor=GRADE_COLORS[item.grade]||'var(--text1)';
+const stats=Object.entries(item.stats).map(([k,v])=>`${k}+${v}`).join(' / ');
+const mods=(item.skillMods&&item.skillMods.length)?item.skillMods.map(m=>`✦ ${m.mod}`).join('<br>'):'';
+d.innerHTML=`${bgIcon}<div class="inv-item-header">${iconSmall}<span class="inv-item-name" style="color:${nameColor}">${item.name}</span></div><div class="inv-item-stats">${stats}</div>${mods?`<div class="inv-item-mods">${mods}</div>`:''}<div class="dur-bar"><div class="dur-fill" style="width:${item.durability/item.maxDurability*100}%"></div></div>`;
+}else{
+// 모바일: 기존 아이콘만
+const icon=item.svgData?`<div class="item-svg">${item.svgData}</div>`:`<span>${item.emoji}</span>`;
+d.innerHTML=`${icon}<div class="dur-bar"><div class="dur-fill" style="width:${item.durability/item.maxDurability*100}%"></div></div>`;
+}
+d.onclick=()=>showItemDetail(i)}
 grid.appendChild(d)}}
 
 function showItemDetail(idx){const item=G.inventory[idx];if(!item)return;
