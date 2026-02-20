@@ -212,7 +212,11 @@ export default {
         if (joinData.result !== 200 || !joinData.lurl) {
           return new Response(JSON.stringify({ error: 'adbc join failed', detail: joinData }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
         }
-        return new Response(JSON.stringify({ click_id, redirect_url: joinData.lurl, click_id_adbc: joinData.click_id }), { headers: { ...headers, 'Content-Type': 'application/json' } });
+        // lurl에 sub1=click_id 파라미터 추가
+        const lurl = joinData.lurl;
+        const separator = lurl.includes('?') ? '&' : '?';
+        const finalUrl = lurl + separator + 'sub1=' + encodeURIComponent(click_id);
+        return new Response(JSON.stringify({ click_id, redirect_url: finalUrl, click_id_adbc: joinData.click_id }), { headers: { ...headers, 'Content-Type': 'application/json' } });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
       }
