@@ -229,29 +229,79 @@ html+=`<div class="quest-card ${done?'done':''}">
 body.innerHTML=html;
 }
 
+// ===== CHALLENGE MODE HELPERS =====
+let _challengeOrigAuto=false;
+function enterChallengeMode(title){
+closeOverlay('challenge');
+openOverlay('hunt');
+_challengeOrigAuto=G.autoHunt;
+G.autoHunt=false;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='none';
+document.getElementById('auto-hunt-btn').style.display='none';
+// 헤더 변경
+const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
+if(hdr)hdr.innerHTML=title;
+}
+function exitChallengeMode(){
+G.autoHunt=_challengeOrigAuto;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='';
+document.getElementById('auto-hunt-btn').style.display='';
+// 헤더 복원
+const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
+if(hdr)hdr.innerHTML='⚔️ 사냥 — <span id="hunt-floor">'+G.floor+'</span>층';
+updateBars();saveGame();checkAchievements();
+}
+
 // ===== CHALLENGE BOSS =====
 function startDailyBoss(){
 if(G.dailyBossUsed)return toast('오늘의 도전 보스는 이미 도전했습니다!');
 G.dailyBossUsed=true;saveGame();
-// 사냥 오버레이 열고 보스전 시작
-closeOverlay('challenge');
-openOverlay('hunt');
-const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
+enterChallengeMode('👹 일일 도전 보스');
+
+setTimeout(async()=>{
+const log=document.getElementById('hunt-log');log.innerHTML='';
+showBgSprite(G.className,'idle');
+
 const bossFloor=Math.max(G.floor*2,20);
-G._challengeFloor=bossFloor;
-G._challengeRestore=G.floor;
+const bossName='🔥 도전 보스';
+await addHuntLine('👹 일일 도전 보스 출현!','story',log);
+await addHuntLine(`난이도: ${bossFloor}층 상당 (현재 ${G.floor}층 x2)`,'story',log);
+await addHuntLine('⚔️ 전투 개시!','story',log);
+showBgSprite(G.className,'walk');
+
+const oldFloor=G.floor;
 G.floor=bossFloor;
-setTimeout(()=>{startHunt(true)},500);
-// 전투 끝나면 층 복원 (huntInProgress watch)
-const _checkRestore=setInterval(()=>{
-if(!huntInProgress&&G._challengeRestore){
-G.floor=G._challengeRestore;delete G._challengeRestore;delete G._challengeFloor;
-G.autoHunt=origAuto;updateAutoHuntUI();
-G.points=(G.points||0)+20;
-toast('💎 도전 보스 보상 +20!');
-updateBars();saveGame();checkAchievements();
-clearInterval(_checkRestore);
+const combat=generateCombatLocal(bossName,1,true);
+G.floor=oldFloor;
+
+// 버프 묶기 + 전투 로그
+const displayLines=[];
+for(let li=0;li<combat.lines.length;li++){
+const line=combat.lines[li];
+if(line.type==='buff'){
+const buffGroup=[line.text];
+while(li+1<combat.lines.length&&combat.lines[li+1].type==='buff'){li++;buffGroup.push(combat.lines[li].text)}
+displayLines.push({text:buffGroup.join(' | '),type:'buff',hits:null,charClass:null});
+}else{displayLines.push(line)}
 }
+for(const line of displayLines){
+const type=mapLineType(line.type);
+await addHuntLine(line.text,type,log,line.hits,line.charClass);
+}
+
+const taken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
+
+if(combat.won){
+G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
+G.points=(G.points||0)+20;
+showBgSprite(G.className,'idle');
+await addHuntLine('🏆 도전 보스 격파! 💎+20','victory',log);
+}else{
+G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
+await addHuntLine('💀 도전 보스에게 패배...','defeat',log);
+}
+updateBars();updateHuntStatus();
+exitChallengeMode();
 },500);
 }
 
@@ -262,11 +312,7 @@ let _towerActive=false;
 function startTower(){
 if(_towerActive)return;
 _towerActive=true;_towerFloor=0;
-closeOverlay('challenge');
-openOverlay('hunt');
-const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
-document.getElementById('hunt-btn').style.display='none';
-document.getElementById('auto-hunt-btn').style.display='none';
+enterChallengeMode('🗼 무한의 탑');
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -275,6 +321,10 @@ await addHuntLine('🗼 무한의 탑 도전 시작!','story',log);
 
 while(_towerActive){
 _towerFloor++;
+// 헤더 층수 업데이트
+const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
+if(hdr)hdr.innerHTML=`🗼 무한의 탑 — ${_towerFloor}층`;
+
 const enemyCount=Math.min(5,1+Math.floor(_towerFloor/5));
 const isBoss=_towerFloor%10===0;
 const enemy=isBoss?`🏛️ 탑의 수호신 ${_towerFloor}층`:`탑의 수호자 ${_towerFloor}층`;
@@ -287,7 +337,6 @@ G.floor=_towerFloor*2;
 const combat=generateCombatLocal(enemy,enemyCount,isBoss);
 G.floor=oldFloor;
 
-// 버프 묶기 + 전투 로그 표시
 const displayLines=[];
 for(let li=0;li<combat.lines.length;li++){
 const line=combat.lines[li];
@@ -319,10 +368,7 @@ _towerActive=false;
 }
 }
 
-updateBars();saveGame();checkAchievements();
-G.autoHunt=origAuto;updateAutoHuntUI();
-document.getElementById('hunt-btn').style.display='';
-document.getElementById('auto-hunt-btn').style.display='';
+exitChallengeMode();
 },500);
 }
 
@@ -332,11 +378,7 @@ function startHorde(){
 if(G.dailyHordeUsed)return toast('오늘의 무한의 적은 이미 도전했습니다!');
 if(_hordeActive)return;
 G.dailyHordeUsed=true;_hordeActive=true;saveGame();
-closeOverlay('challenge');
-openOverlay('hunt');
-const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
-document.getElementById('hunt-btn').style.display='none';
-document.getElementById('auto-hunt-btn').style.display='none';
+enterChallengeMode('💀 무한의 적');
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -410,10 +452,7 @@ G.hp=Math.max(1,Math.floor(G.maxHP*0.5));
 await addHuntLine(`${killed}마리 처치 보상: 💰+${consolation}`,'loot',log);
 }
 
-updateBars();saveGame();checkAchievements();
-G.autoHunt=origAuto;updateAutoHuntUI();
-document.getElementById('hunt-btn').style.display='';
-document.getElementById('auto-hunt-btn').style.display='';
+exitChallengeMode();
 _hordeActive=false;
 },500);
 }
@@ -423,11 +462,7 @@ let _pvpActive=false;
 function startPvP(){
 if(_pvpActive)return;
 _pvpActive=true;
-closeOverlay('challenge');
-openOverlay('hunt');
-const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
-document.getElementById('hunt-btn').style.display='none';
-document.getElementById('auto-hunt-btn').style.display='none';
+enterChallengeMode('🤺 PvP 대전');
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -511,10 +546,7 @@ await addHuntLine(`패배... 위로금 💰+${consolation}`,'defeat',log);
 await addHuntLine(`전적: ${G.pvpWins||0}승 ${(G.pvpCount||0)-(G.pvpWins||0)}패`,'loot',log);
 }
 G.hp=Math.max(1,myHP);
-updateBars();saveGame();checkAchievements();
-G.autoHunt=origAuto;updateAutoHuntUI();
-document.getElementById('hunt-btn').style.display='';
-document.getElementById('auto-hunt-btn').style.display='';
+exitChallengeMode();
 _pvpActive=false;
 },500);
 }
