@@ -59,7 +59,7 @@ if(a.check(G.stats)){
 G.achievements.push(a.id);
 if(a.reward.dia){G.points=(G.points||0)+a.reward.dia}
 if(a.reward.gold){G.gold=(G.gold||0)+a.reward.gold}
-toast(`🏆 업적 달성! [${a.name}] 💎+${a.reward.dia||0}`);
+toast(`${t('🏆 업적 달성!')} [${t(a.name)}] 💎+${a.reward.dia||0}`);
 newCount++;
 }
 }
@@ -71,14 +71,14 @@ const body=document.getElementById('achieve-body');
 initStats();
 const done=G.achievements||[];
 let html='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;font-size:12px;color:var(--text2)">';
-html+=`<span>완료: ${done.length}/${ACHIEVEMENTS.length}</span>`;
+html+=`<span>${t('완료')}: ${done.length}/${ACHIEVEMENTS.length}</span>`;
 html+=`<span style="margin-left:auto">💎 총 획득: ${ACHIEVEMENTS.filter(a=>done.includes(a.id)).reduce((s,a)=>s+(a.reward.dia||0),0)}</span>`;
 html+='</div>';
 for(const a of ACHIEVEMENTS){
 const isDone=done.includes(a.id);
 html+=`<div class="achieve-card ${isDone?'done':''}">
 <div class="achieve-icon">${a.icon}</div>
-<div class="achieve-info"><div class="achieve-name">${a.name}</div><div class="achieve-desc">${a.desc}</div></div>
+<div class="achieve-info"><div class="achieve-name">${t(a.name)}</div><div class="achieve-desc">${t(a.desc)}</div></div>
 <div class="achieve-reward">${isDone?'✅':'💎'+a.reward.dia}</div>
 </div>`;
 }
@@ -111,8 +111,8 @@ return new Promise(r=>{
 const el=document.createElement('div');
 el.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.95);opacity:0;transition:opacity 0.5s';
 el.innerHTML=`<div style="font-size:48px;margin-bottom:16px">${stage.name.split(' ')[0]}</div>
-<div style="font-size:22px;font-weight:700;color:${stage.color};margin-bottom:12px">${stage.name}</div>
-<div style="font-size:14px;color:var(--text2);max-width:300px;text-align:center;line-height:1.6">${stage.story}</div>`;
+<div style="font-size:22px;font-weight:700;color:${stage.color};margin-bottom:12px">${t(stage.name)}</div>
+<div style="font-size:14px;color:var(--text2);max-width:300px;text-align:center;line-height:1.6">${t(stage.story)}</div>`;
 document.body.appendChild(el);
 requestAnimationFrame(()=>{el.style.opacity='1'});
 setTimeout(()=>{el.style.opacity='0';setTimeout(()=>{el.remove();r()},500)},2500);
@@ -188,42 +188,42 @@ function claimQuest(type,idx){
 const qs=type==='daily'?G.dailyQuests:G.weeklyQuests;
 if(!qs||!qs.quests[idx])return;
 const q=qs.quests[idx];
-if(q.progress<q.target)return toast('아직 완료되지 않았습니다');
-if(qs.completed.includes(q.id))return toast('이미 수령했습니다');
+if(q.progress<q.target)return toast(t('아직 완료되지 않았습니다'));
+if(qs.completed.includes(q.id))return toast(t('이미 수령했습니다'));
 qs.completed.push(q.id);
 if(q.reward.gold)G.gold+=q.reward.gold;
 if(q.reward.dia)G.points=(G.points||0)+q.reward.dia;
-toast(`🎁 퀘스트 보상! ${q.reward.gold?'💰+'+q.reward.gold+' ':''}${q.reward.dia?'💎+'+q.reward.dia:''}`);
+toast(`${t('🎁 퀘스트 보상!')} ${q.reward.gold?'💰+'+q.reward.gold+' ':''}${q.reward.dia?'💎+'+q.reward.dia:''}`);
 updateBars();saveGame();renderQuests();
 }
 
 function renderQuests(){
 const body=document.getElementById('quest-body');
 initDailyQuests();initWeeklyQuests();
-let html=`<div style="color:var(--gold);font-weight:700;margin-bottom:8px">📅 일일 퀘스트 <span style="font-size:11px;color:var(--text2)">(연속 ${G.dailyStreak||0}일)</span></div>`;
+let html=`<div style="color:var(--gold);font-weight:700;margin-bottom:8px">📅 ${t('일일 퀘스트')} <span style="font-size:11px;color:var(--text2)">(${t('연속')} ${G.dailyStreak||0}${t('일')})</span></div>`;
 G.dailyQuests.quests.forEach((q,i)=>{
 const done=G.dailyQuests.completed.includes(q.id);
 const pct=Math.min(100,Math.floor(q.progress/q.target*100));
 const rwdText=`${q.reward.gold?'💰'+q.reward.gold+' ':''}${q.reward.dia?'💎'+q.reward.dia:''}`;
 html+=`<div class="quest-card ${done?'done':''}">
 <div class="quest-icon">${q.icon}</div>
-<div class="quest-info"><div class="quest-name">${q.name}</div><div class="quest-desc">${q.desc}</div>
+<div class="quest-info"><div class="quest-name">${t(q.name)}</div><div class="quest-desc">${t(q.desc)}</div>
 <div class="quest-bar"><div class="quest-bar-fill" style="width:${pct}%"></div></div>
 <div class="quest-progress">${Math.min(q.progress,q.target)}/${q.target}</div></div>
-<div class="quest-reward"><div style="font-size:11px;color:var(--gold);margin-bottom:4px">${rwdText}</div>${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('daily',${i})" ${q.progress>=q.target?'':'disabled'}>수령</button>`}</div>
+<div class="quest-reward"><div style="font-size:11px;color:var(--gold);margin-bottom:4px">${rwdText}</div>${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('daily',${i})" ${q.progress>=q.target?'':'disabled'}>${t('수령')}</button>`}</div>
 </div>`;
 });
-html+=`<div style="color:var(--cyan);font-weight:700;margin:16px 0 8px">📋 주간 퀘스트</div>`;
+html+=`<div style="color:var(--cyan);font-weight:700;margin:16px 0 8px">📋 ${t('주간 퀘스트')}</div>`;
 G.weeklyQuests.quests.forEach((q,i)=>{
 const done=G.weeklyQuests.completed.includes(q.id);
 const pct=Math.min(100,Math.floor(q.progress/q.target*100));
 const rwdText=`${q.reward.gold?'💰'+q.reward.gold+' ':''}${q.reward.dia?'💎'+q.reward.dia:''}`;
 html+=`<div class="quest-card ${done?'done':''}">
 <div class="quest-icon">${q.icon}</div>
-<div class="quest-info"><div class="quest-name">${q.name}</div><div class="quest-desc">${q.desc}</div>
+<div class="quest-info"><div class="quest-name">${t(q.name)}</div><div class="quest-desc">${t(q.desc)}</div>
 <div class="quest-bar"><div class="quest-bar-fill" style="width:${pct}%"></div></div>
 <div class="quest-progress">${Math.min(q.progress,q.target)}/${q.target}</div></div>
-<div class="quest-reward"><div style="font-size:11px;color:var(--gold);margin-bottom:4px">${rwdText}</div>${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('weekly',${i})" ${q.progress>=q.target?'':'disabled'}>수령</button>`}</div>
+<div class="quest-reward"><div style="font-size:11px;color:var(--gold);margin-bottom:4px">${rwdText}</div>${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('weekly',${i})" ${q.progress>=q.target?'':'disabled'}>${t('수령')}</button>`}</div>
 </div>`;
 });
 body.innerHTML=html;
@@ -261,7 +261,7 @@ if(hdr)hdr.innerHTML='⚔️ 사냥 — <span id="hunt-floor">'+G.floor+'</span>
 
 // ===== CHALLENGE BOSS =====
 function startDailyBoss(){
-if(G.dailyBossUsed)return toast('오늘의 도전 보스는 이미 도전했습니다!');
+if(G.dailyBossUsed)return toast(t('오늘의 도전 보스는 이미 도전했습니다!'));
 G.dailyBossUsed=true;saveGame();
 enterChallengeMode('👹 일일 도전 보스');
 
@@ -271,9 +271,9 @@ showBgSprite(G.className,'idle');
 
 const bossFloor=Math.max(G.floor*2,20);
 const bossName='🔥 도전 보스';
-await addHuntLine('👹 일일 도전 보스 출현!','story',log);
-await addHuntLine(`난이도: ${bossFloor}층 상당 (현재 ${G.floor}층 x2)`,'story',log);
-await addHuntLine('⚔️ 전투 개시!','story',log);
+await addHuntLine(t('👹 일일 도전 보스 출현!'),'story',log);
+await addHuntLine(t('난이도: {0}층 상당 (현재 {1}층 x2)',bossFloor,G.floor),'story',log);
+await addHuntLine(t('⚔️ 전투 개시!'),'story',log);
 showBgSprite(G.className,'walk');
 
 const oldFloor=G.floor;
@@ -302,10 +302,10 @@ if(combat.won){
 G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
 G.points=(G.points||0)+20;
 showBgSprite(G.className,'idle');
-await addHuntLine('🏆 도전 보스 격파! 💎+20','victory',log);
+await addHuntLine(t('🏆 도전 보스 격파!')+' 💎+20','victory',log);
 }else{
 G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
-await addHuntLine('💀 도전 보스에게 패배...','defeat',log);
+await addHuntLine(t('💀 도전 보스에게 패배...'),'defeat',log);
 }
 updateBars();updateHuntStatus();
 exitChallengeMode();
@@ -324,7 +324,7 @@ enterChallengeMode('🗼 무한의 탑');
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
 showBgSprite(G.className,'idle');
-await addHuntLine('🗼 무한의 탑 도전 시작!','story',log);
+await addHuntLine(t('🗼 무한의 탑 도전 시작!'),'story',log);
 
 while(_towerActive){
 _towerFloor++;
@@ -366,11 +366,11 @@ G.gold+=reward;
 if(_towerFloor>(G.towerBest||0))G.towerBest=_towerFloor;
 G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
 showBgSprite(G.className,'idle');
-await addHuntLine(`✨ ${_towerFloor}층 클리어! 💰+${reward} (최고: ${G.towerBest}층)`,'victory',log);
+await addHuntLine(t('✨ {0}층 클리어! 💰+{1} (최고: {2}층)',_towerFloor,reward,G.towerBest),'victory',log);
 updateBars();updateHuntStatus();saveGame();
 }else{
 G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
-await addHuntLine(`💀 ${_towerFloor}층에서 패배! 최고 기록: ${G.towerBest||0}층`,'defeat',log);
+await addHuntLine(t('💀 {0}층에서 패배! 최고 기록: {1}층',_towerFloor,G.towerBest||0),'defeat',log);
 _towerActive=false;
 }
 }
@@ -382,7 +382,7 @@ exitChallengeMode();
 // ===== ENDLESS HORDE (무한의 적) =====
 let _hordeActive=false;
 function startHorde(){
-if(G.dailyHordeUsed)return toast('오늘의 무한의 적은 이미 도전했습니다!');
+if(G.dailyHordeUsed)return toast(t('오늘의 무한의 적은 이미 도전했습니다!'));
 if(_hordeActive)return;
 G.dailyHordeUsed=true;_hordeActive=true;saveGame();
 enterChallengeMode('💀 무한의 적');
@@ -394,7 +394,7 @@ showBgSprite(G.className,'idle');
 const totalEnemies=100;
 let killed=0,wave=0;
 
-await addHuntLine('💀 무한의 적 — 100마리와의 사투!','story',log);
+await addHuntLine(t('💀 무한의 적 — 100마리와의 사투!'),'story',log);
 await addHuntLine(`전력: ⚔️${G.atk+getEquipStat('ATK')} 🛡️${G.def+getEquipStat('DEF')} ❤️${Math.floor(G.hp)}/${G.maxHP}`,'story',log);
 
 while(killed<totalEnemies&&G.hp>0){
@@ -432,13 +432,13 @@ const dmgTaken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
 if(combat.won){
 killed+=count;
 G.hp=Math.max(1,G.hp-dmgTaken);
-await addHuntLine(`✨ 웨이브 ${wave} 클리어! (처치: ${killed}/${totalEnemies})`,'victory',log);
-if(isBoss)await addHuntLine(`🔥 ${wave}웨이브 보스 돌파!`,'victory',log);
+await addHuntLine(t('✨ 웨이브 {0} 클리어! (처치: {1}/{2})',wave,killed,totalEnemies),'victory',log);
+if(isBoss)await addHuntLine(t('🔥 {0}웨이브 보스 돌파!',wave),'victory',log);
 }else{
 const partialKill=combat.lines.filter(l=>l.text&&l.text.includes('처치')).length;
 killed+=partialKill;
 G.hp=Math.max(0,G.hp-dmgTaken);
-await addHuntLine(`💀 웨이브 ${wave}에서 쓰러졌다... (처치: ${killed}/${totalEnemies})`,'defeat',log);
+await addHuntLine(t('💀 웨이브 {0}에서 쓰러졌다... (처치: {1}/{2})',wave,killed,totalEnemies),'defeat',log);
 break;
 }
 updateBars();updateHuntStatus();
@@ -451,12 +451,12 @@ G.gold+=goldReward;G.points=(G.points||0)+diaReward;
 G.hordeClears=(G.hordeClears||0)+1;
 G.hp=Math.max(1,Math.floor(G.maxHP*0.3));
 showBgSprite(G.className,'idle');
-await addHuntLine(`🏆 무한의 적 정복! 💰+${goldReward} 💎+${diaReward}`,'victory',log);
+await addHuntLine(t('🏆 무한의 적 정복!')+` 💰+${goldReward} 💎+${diaReward}`,'victory',log);
 }else{
 const consolation=Math.floor(killed*30);
 G.gold+=consolation;
 G.hp=Math.max(1,Math.floor(G.maxHP*0.5));
-await addHuntLine(`${killed}마리 처치 보상: 💰+${consolation}`,'loot',log);
+await addHuntLine(t('{0}마리 처치 보상: 💰+{1}',killed,consolation),'loot',log);
 }
 
 exitChallengeMode();
@@ -489,10 +489,10 @@ const myDef=G.def+getEquipStat('DEF');
 const myCrit=10+(G.critBonus||0)+getEquipStat('치명타');
 const myAtkSpd=Math.min(getEquipStat('공격속도')+(G.atkSpd||0),50);
 
-await addHuntLine(`🤺 PvP 대전!`,'story',log);
-await addHuntLine(`상대: ${oppData.weapon}${oppClass} Lv.${lvl}`,'story',log);
+await addHuntLine(t('🤺 PvP 대전!'),'story',log);
+await addHuntLine(`${t('상대:')} ${oppData.weapon}${t(oppClass)} Lv.${lvl}`,'story',log);
 await addHuntLine(`ATK ${oppAtk} / DEF ${oppDef} / HP ${oppHP}`,'story',log);
-await addHuntLine('⚔️ 전투 개시!','story',log);
+await addHuntLine(t('⚔️ 전투 개시!'),'story',log);
 
 let myHP=G.hp,eHP=oppHP;
 
@@ -510,10 +510,10 @@ const critTag=isCrit?'💥크리티컬! ':'';
 await addHuntLine(`${skill.icon} ${skill.name} — ${critTag}${finalDmg} 데미지!`,isCrit?'critical':'action',log,1,G.className);
 
 if(eHP<=0){
-await addHuntLine(`${oppClass}에게 ${finalDmg} 피해! 쓰러졌다!`,'damage',log);
+await addHuntLine(`${t(oppClass)}${t('에게')} ${finalDmg} ${t('피해!')} ${t('쓰러졌다!')}`,'damage',log);
 break;
 }
-await addHuntLine(`${oppClass} HP: ${eHP}/${oppHP}`,'damage',log);
+await addHuntLine(`${t(oppClass)} HP: ${eHP}/${oppHP}`,'damage',log);
 
 // 공격속도 보너스
 if(myAtkSpd>0&&Math.random()*100<myAtkSpd){
@@ -521,7 +521,7 @@ const bonusDmg=Math.max(1,Math.floor(myAtk*(0.8+Math.random()*0.4)-oppDef*0.3));
 eHP-=bonusDmg;
 showBgSprite(G.className,getActionType('',G.className),1,true);
 await addHuntLine(`⚡ 연속 공격! ${bonusDmg} 추가 데미지!`,'action',log,1,G.className);
-if(eHP<=0){await addHuntLine(`${oppClass} 쓰러졌다!`,'damage',log);break}
+if(eHP<=0){await addHuntLine(`${t(oppClass)} ${t('쓰러졌다!')}`,'damage',log);break}
 }
 
 // 상대 공격
@@ -530,9 +530,9 @@ const eCrit=Math.random()*100<15;
 const finalEDmg=eCrit?Math.floor(eDmg*1.5):eDmg;
 myHP-=finalEDmg;
 showBgSprite(G.className,'block',1);
-await addHuntLine(`${eCrit?'💥 ':''}${oppClass}의 공격 → -${finalEDmg} HP`,'enemy-atk',log,1,G.className);
+await addHuntLine(`${eCrit?t('💥크리티컬! '):''}${t(oppClass)} ${t('공격')} → -${finalEDmg} HP`,'enemy-atk',log,1,G.className);
 if(myHP<=0){
-await addHuntLine(`${G.className} 쓰러졌다...`,'defeat',log);
+await addHuntLine(`${t(G.className)} ${t('쓰러졌다!')}`,'defeat',log);
 break;
 }
 }
@@ -544,13 +544,13 @@ G.pvpWins=(G.pvpWins||0)+1;
 const reward=Math.floor(200+G.level*10);
 G.gold+=reward;G.points=(G.points||0)+5;
 showBgSprite(G.className,'idle');
-await addHuntLine(`🏆 PvP 승리! 💰+${reward} 💎+5`,'victory',log);
-await addHuntLine(`전적: ${G.pvpWins}승 ${G.pvpCount-G.pvpWins}패`,'loot',log);
+await addHuntLine(t('PvP 승리!')+` 💰+${reward} 💎+5`,'victory',log);
+await addHuntLine(`${t('전적:')} ${G.pvpWins}${t('승')} ${G.pvpCount-G.pvpWins}${t('패')}`,'loot',log);
 }else{
 const consolation=Math.floor(50+G.level*3);
 G.gold+=consolation;
-await addHuntLine(`패배... 위로금 💰+${consolation}`,'defeat',log);
-await addHuntLine(`전적: ${G.pvpWins||0}승 ${(G.pvpCount||0)-(G.pvpWins||0)}패`,'loot',log);
+await addHuntLine(`${t('패배... 위로금')} 💰+${consolation}`,'defeat',log);
+await addHuntLine(`${t('전적:')} ${G.pvpWins||0}${t('승')} ${(G.pvpCount||0)-(G.pvpWins||0)}${t('패')}`,'loot',log);
 }
 G.hp=Math.max(1,myHP);
 exitChallengeMode();
@@ -569,11 +569,11 @@ return false;
 function renderCodex(){
 const body=document.getElementById('codex-body');
 if(!G.codex)G.codex={monsters:[],items:[]};
-let html=`<div style="color:var(--gold);font-weight:700;margin-bottom:8px">👹 몬스터 도감 (${G.codex.monsters.length}종)</div>`;
-if(G.codex.monsters.length===0)html+='<div style="color:var(--text2);font-size:12px;padding:8px">아직 발견한 몬스터가 없습니다</div>';
+let html=`<div style="color:var(--gold);font-weight:700;margin-bottom:8px">👹 ${t('몬스터 도감')} (${G.codex.monsters.length})</div>`;
+if(G.codex.monsters.length===0)html+=`<div style="color:var(--text2);font-size:12px;padding:8px">${t('아직 발견한 몬스터가 없습니다')}</div>`;
 else{G.codex.monsters.forEach(m=>{html+=`<div style="font-size:12px;padding:3px 0;color:var(--text1)">• ${m}</div>`})}
-html+=`<div style="color:var(--cyan);font-weight:700;margin:16px 0 8px">🎒 아이템 도감 (${G.codex.items.length}종)</div>`;
-if(G.codex.items.length===0)html+='<div style="color:var(--text2);font-size:12px;padding:8px">아직 발견한 아이템이 없습니다</div>';
+html+=`<div style="color:var(--cyan);font-weight:700;margin:16px 0 8px">🎒 ${t('아이템 도감')} (${G.codex.items.length})</div>`;
+if(G.codex.items.length===0)html+=`<div style="color:var(--text2);font-size:12px;padding:8px">${t('아직 발견한 아이템이 없습니다')}</div>`;
 else{G.codex.items.forEach(m=>{html+=`<div style="font-size:12px;padding:3px 0;color:var(--text1)">• ${m}</div>`})}
 body.innerHTML=html;
 }
