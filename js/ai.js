@@ -443,6 +443,14 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
       if (modTexts.length > 0 && !isMiss) { modTexts.forEach(m => lines.push({ text: `${memberLabel}⚡ 장비 효과 발동! [${m}]`, type: 'buff' })); }
 
+      // 힐 스킬: 공격하면서 HP 회복
+      if (!isMiss && skill.heal) {
+        const healPct = /(\d+)%.*회복/.test(skill.desc) ? parseInt(skill.desc.match(/(\d+)%.*회복/)[1]) : 15;
+        const healAmt = Math.floor(member.maxHP * healPct / 100);
+        totalTaken[member.slot] = Math.max(0, (totalTaken[member.slot]||0) - healAmt);
+        lines.push({ text: `💚 ${memberLabel}${skill.name} — HP +${healAmt} 회복!`, type: 'buff' });
+      }
+
       // 패시브: 흡혈
       if (!isMiss && member._lifesteal > 0 && totalDmg > 0) {
         const stealAmt = Math.floor(totalDmg * member._lifesteal / 100);
