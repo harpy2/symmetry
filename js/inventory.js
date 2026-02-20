@@ -102,7 +102,10 @@ name=apiItem.name;
 emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';
 svgData=apiItem.svg||null;
 }else{
-const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];
+let suffixes,emojis;
+if(type==='weapon'&&CLASS_WEAPONS[G.className]){
+const cw=CLASS_WEAPONS[G.className];suffixes=cw.names;emojis=cw.emojis;
+}else{suffixes=ITEM_SUFFIX[type];emojis=ITEM_EMOJIS[type]}
 const si=Math.floor(Math.random()*suffixes.length);
 const prefix=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];
 const material=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];
