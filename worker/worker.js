@@ -203,7 +203,7 @@ export default {
         // cbparam용 click_id 생성 (UUID)
         const click_id = crypto.randomUUID();
         // KV에 저장 (TTL 24시간)
-        await env.CPQ_KV.put('cb:' + click_id, JSON.stringify({ user_id, campaign_id, ts: Date.now() }), { expirationTtl: 86400 });
+        await env.CPQ_KV.put('cb:' + click_id, JSON.stringify({ user_id, campaign_id, ts: Date.now() }), { expirationTtl: 604800 }); // 7일
         // adbc 참여 API 호출
         const clientIp = ip || request.headers.get('CF-Connecting-IP') || '0.0.0.0';
         const joinUrl = `https://adbc.io/reward/v3/join?token=${env.ADBC_TOKEN}&userid=${encodeURIComponent(user_id)}&campid=${campaign_id}&cbparam=${click_id}&ip=${encodeURIComponent(clientIp)}&adid=${encodeURIComponent(user_id)}`;
