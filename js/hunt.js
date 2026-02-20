@@ -96,28 +96,42 @@ combat.goldReward=Math.floor((combat.goldReward||0)*(1+scBonus));
 combat.expReward=Math.floor((combat.expReward||0)*(1+scBonus));
 }
 
-// === Phase 5: 한줄씩 표시 ===
+// === Phase 5: 한줄씩 표시 (HP 실시간 반영) ===
+let _liveTaken={};
 for(const line of combat.lines){
 const type=mapLineType(line.type);
 await addHuntLine(line.text,type,log,line.hits,line.charClass);
+// enemy-atk 시 HP 실시간 차감 표시
+if(line.type==='enemy-atk'&&line.dmg>0){
+const tSlot=line.charClass&&G.party?G.party.findIndex(p=>p&&p.className===line.charClass):G.activeSlot;
+const slot=tSlot>=0?tSlot:G.activeSlot;
+_liveTaken[slot]=(_liveTaken[slot]||0)+line.dmg;
+// 임시로 G.hp 반영 (표시용)
+if(slot===G.activeSlot){G.hp=Math.max(1,G.hp-line.dmg)}
+else if(G.party&&G.party[slot]){G.party[slot].hp=Math.max(1,G.party[slot].hp-line.dmg)}
+updateHuntStatus();
+}
+// 힐/버프 시 HP 회복 표시
+if(line.type==='buff'&&line.text&&(line.text.includes('+')&&line.text.includes('HP')||line.text.includes('흡혈')||line.text.includes('재생')||line.text.includes('힐'))){
+updateHuntStatus();
+}
 await wait(500);
 }
 
-// === Phase 6: 결과 처리 (파티 전체 피해 적용) ===
+// === Phase 6: 결과 처리 (실시간 반영 안 된 나머지 피해 적용) ===
 const won=combat.result==='win';
 const takenMap=combat.totalTaken||{};
-// 각 파티 멤버에게 피해 적용
 if(G.party){
   for(let s=0;s<3;s++){
     if(G.party[s]&&takenMap[s]){
-      G.party[s].hp=Math.max(1,G.party[s].hp-takenMap[s]);
+      const remaining=Math.max(0,takenMap[s]-(_liveTaken[s]||0));
+      if(remaining>0)G.party[s].hp=Math.max(1,G.party[s].hp-remaining);
     }
   }
-  // 현재 활성 슬롯 G에 반영
   if(G.party[G.activeSlot])G.hp=G.party[G.activeSlot].hp;
 }else{
-  const totalTaken=takenMap[0]||0;
-  G.hp=Math.max(1,G.hp-totalTaken);
+  const remaining=Math.max(0,(takenMap[0]||0)-(_liveTaken[0]||0));
+  if(remaining>0)G.hp=Math.max(1,G.hp-remaining);
 }
 G.hunger=Math.max(0,G.hunger-(isBoss?8:4));
 
