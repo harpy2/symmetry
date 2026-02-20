@@ -191,13 +191,20 @@ for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){i
 await addHuntLine(`패배했지만 경험치 +${expReward} 획득`,'loot',log);
 G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className})}
 
-// 사망 캐릭 HP 1로 부활
+// 패배 시: 골드 10% 패널티 + HP 50% 회복
+if(!combat.won){
+const penalty=Math.floor(G.gold*0.1);
+if(penalty>0){G.gold-=penalty;await addHuntLine(`전멸 패널티: 골드 -${penalty} 💸`,'defeat',log)}
+G.hp=Math.max(1,Math.floor(G.maxHP*0.5));
+if(G.party){for(let _s=0;_s<3;_s++){if(G.party[_s]&&G.slotUnlocked[_s]){G.party[_s].hp=Math.max(1,Math.floor((G.party[_s].maxHP||G.party[_s].hp)*0.5))}}}
+}else{
 if(G.hp<=0)G.hp=1;
 if(G.party){for(let _s=0;_s<3;_s++){if(G.party[_s]&&G.party[_s].hp<=0)G.party[_s].hp=1}}
+}
 
 updateBars();updateHuntStatus();renderCharacter();renderEquipRow();saveGame();
 huntInProgress=false;document.getElementById('hunt-btn').disabled=false;
-if(G.autoHunt&&G.hp>G.maxHP*0.2){setTimeout(()=>{if(G.autoHunt)startHunt()},1500)}else{G.autoHunt=false;updateAutoHuntUI()}}
+if(G.autoHunt){setTimeout(()=>{if(G.autoHunt)startHunt()},1500)}else{updateAutoHuntUI()}}
 
 // Map AI line types to CSS classes
 function mapLineType(type){
