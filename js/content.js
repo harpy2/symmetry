@@ -336,98 +336,95 @@ footer.innerHTML=`<button class="btn" style="margin-top:8px" onclick="document.g
 }
 
 // ===== ENDLESS HORDE (무한의 적) =====
+let _hordeActive=false;
 function startHorde(){
 if(G.dailyHordeUsed)return toast('오늘의 무한의 적은 이미 도전했습니다!');
-G.dailyHordeUsed=true;saveGame();
+if(_hordeActive)return;
+G.dailyHordeUsed=true;_hordeActive=true;saveGame();
 closeOverlay('challenge');
+openOverlay('hunt');
+const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='none';
+document.getElementById('auto-hunt-btn').style.display='none';
 
-const overlay=document.createElement('div');
-overlay.id='horde-overlay';
-overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;padding:20px';
-overlay.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-<h2 style="color:var(--danger);margin:0">💀 무한의 적</h2>
-<button class="close-btn" onclick="document.getElementById('horde-overlay').remove()">✕</button></div>
-<div id="horde-status" style="text-align:center;color:var(--orange);font-size:14px;font-weight:700;margin-bottom:8px">⚔️ 100마리와의 사투!</div>
-<div id="horde-log" style="flex:1;overflow-y:auto;padding:8px;font-size:13px"></div>
-<div id="horde-footer" style="text-align:center;padding-top:8px"></div>`;
-document.body.appendChild(overlay);
-
-runHorde();
-}
-
-async function runHorde(){
-const logDiv=document.getElementById('horde-log');
-const status=document.getElementById('horde-status');
-const footer=document.getElementById('horde-footer');
-if(!logDiv)return;
+setTimeout(async()=>{
+const log=document.getElementById('hunt-log');log.innerHTML='';
+showBgSprite(G.className,'idle');
 
 const totalEnemies=100;
-let killed=0;
-let wave=0;
+let killed=0,wave=0;
 
-const addLine=(text,color)=>new Promise(r=>{
-const d=document.createElement('div');
-d.style.cssText=`padding:3px 0;color:${color};opacity:0;transition:opacity .2s`;
-d.textContent=text;logDiv.appendChild(d);logDiv.scrollTop=logDiv.scrollHeight;
-requestAnimationFrame(()=>d.style.opacity='1');
-setTimeout(r,200);
-});
-
-await addLine('💀 100마리의 적이 몰려온다!','var(--danger)');
-await addLine(`현재 전력: ATK ${G.atk+getEquipStat('ATK')} / DEF ${G.def+getEquipStat('DEF')} / HP ${G.hp}`,'var(--text2)');
+await addHuntLine('💀 무한의 적 — 100마리와의 사투!','story',log);
+await addHuntLine(`전력: ⚔️${G.atk+getEquipStat('ATK')} 🛡️${G.def+getEquipStat('DEF')} ❤️${Math.floor(G.hp)}/${G.maxHP}`,'story',log);
 
 while(killed<totalEnemies&&G.hp>0){
 wave++;
 const remaining=totalEnemies-killed;
 const count=Math.min(remaining,Math.floor(3+Math.random()*5));
-const enemy=`웨이브 ${wave} (${count}마리)`;
-status.textContent=`⚔️ 처치: ${killed}/${totalEnemies} | HP: ${Math.floor(G.hp)}/${G.maxHP}`;
+const isBoss=wave%10===0;
+const enemyName=isBoss?`💀 어둠의 대장 (웨이브${wave})`:`어둠의 군단 (웨이브${wave})`;
+
+await addHuntLine(`── 웨이브 ${wave} | ${enemyName} ${count}마리 ──`,'story',log);
+showBgSprite(G.className,'walk');
 
 const oldFloor=G.floor;
 G.floor=Math.max(G.floor,10+wave*2);
-const combat=generateCombatLocal('어둠의 군단',count,wave%10===0);
+const combat=generateCombatLocal(enemyName,count,isBoss);
 G.floor=oldFloor;
 
-// 요약만 표시
-const dmgDealt=combat.totalDmg||0;
+// 전투 로그를 일반 전투처럼 표시 (버프 묶기)
+const displayLines=[];
+for(let li=0;li<combat.lines.length;li++){
+const line=combat.lines[li];
+if(line.type==='buff'){
+const buffGroup=[line.text];
+while(li+1<combat.lines.length&&combat.lines[li+1].type==='buff'){li++;buffGroup.push(combat.lines[li].text)}
+displayLines.push({text:buffGroup.join(' | '),type:'buff',hits:null,charClass:null});
+}else{displayLines.push(line)}
+}
+for(const line of displayLines){
+const type=mapLineType(line.type);
+await addHuntLine(line.text,type,log,line.hits,line.charClass);
+}
+
 const dmgTaken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
 
 if(combat.won){
 killed+=count;
 G.hp=Math.max(1,G.hp-dmgTaken);
-const waveColor=wave%10===0?'var(--gold)':'var(--cyan)';
-await addLine(`웨이브 ${wave}: ${count}마리 처치! (${dmgDealt} 데미지 | -${dmgTaken} HP)`,waveColor);
-if(wave%10===0)await addLine(`🔥 ${wave}웨이브 돌파! 남은 적: ${totalEnemies-killed}`,'var(--orange)');
+await addHuntLine(`✨ 웨이브 ${wave} 클리어! (처치: ${killed}/${totalEnemies})`,'victory',log);
+if(isBoss)await addHuntLine(`🔥 ${wave}웨이브 보스 돌파!`,'victory',log);
 }else{
 const partialKill=combat.lines.filter(l=>l.text&&l.text.includes('처치')).length;
 killed+=partialKill;
 G.hp=Math.max(0,G.hp-dmgTaken);
-await addLine(`웨이브 ${wave}: ${partialKill}/${count}마리 처치... 쓰러졌다!`,'var(--danger)');
+await addHuntLine(`💀 웨이브 ${wave}에서 쓰러졌다... (처치: ${killed}/${totalEnemies})`,'defeat',log);
 break;
 }
-updateBars();
+updateBars();updateHuntStatus();
 }
 
-// 결과
 const won=killed>=totalEnemies;
-status.textContent=won?`🏆 100마리 전멸! 웨이브 ${wave}`:`💀 ${killed}/${totalEnemies}마리 처치 후 패배...`;
-
 if(won){
-const goldReward=5000+G.floor*100;
-const diaReward=50;
+const goldReward=5000+G.floor*100;const diaReward=50;
 G.gold+=goldReward;G.points=(G.points||0)+diaReward;
 G.hordeClears=(G.hordeClears||0)+1;
 G.hp=Math.max(1,Math.floor(G.maxHP*0.3));
-await addLine(`🏆 무한의 적 정복! 💰+${goldReward} 💎+${diaReward}`,'var(--gold)');
+showBgSprite(G.className,'idle');
+await addHuntLine(`🏆 무한의 적 정복! 💰+${goldReward} 💎+${diaReward}`,'victory',log);
 }else{
 const consolation=Math.floor(killed*30);
 G.gold+=consolation;
 G.hp=Math.max(1,Math.floor(G.maxHP*0.5));
-await addLine(`${killed}마리 처치 보상: 💰+${consolation}`,'var(--text2)');
+await addHuntLine(`${killed}마리 처치 보상: 💰+${consolation}`,'loot',log);
 }
 
 updateBars();saveGame();checkAchievements();
-footer.innerHTML=`<button class="btn" style="margin-top:8px" onclick="document.getElementById('horde-overlay').remove()">닫기</button>`;
+G.autoHunt=origAuto;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='';
+document.getElementById('auto-hunt-btn').style.display='';
+_hordeActive=false;
+},500);
 }
 
 // ===== PVP =====
