@@ -399,7 +399,11 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           lines.push({text:`${memberLabel}💀 네크로맨서! ${enemy}의 시체가 아군 망령으로 부활!`,type:'buff'});}}
           else{lines.push({ text: `${enemy}에게 ${finalDmg} 피해! (HP: ${target.hp}/${singleHP})`, type: 'damage' });}
         }
-        if (fx.dot > 0) { enemies.filter(e => e.alive).forEach(e => { e.dot = fx.dot; }); if (hit === 0) lines.push({ text: `${memberLabel}✦ ${skill.name} — 지속 피해 부여! (매 턴 ${fx.dot})`, type: 'buff' }); }
+        // 지속 피해 적용 (장비옵션 dot + 스킬 dot + dotBoost 패시브)
+        const skillDot = skill.dot ? Math.floor(skill.dot * (1 + member.atk / 50)) : 0;
+        const dotBoostMult = member._dotBoost > 0 ? (1 + member._dotBoost / 100) : 1;
+        const totalDot = Math.floor(((fx.dot || 0) + skillDot) * dotBoostMult);
+        if (totalDot > 0) { enemies.filter(e => e.alive).forEach(e => { e.dot = Math.max(e.dot, totalDot); }); if (hit === 0) lines.push({ text: `${memberLabel}✦ ${skill.name} — 지속 피해 부여! (매 턴 ${totalDot})`, type: 'buff' }); }
       }
 
       if (modTexts.length > 0 && !isMiss) { modTexts.forEach(m => lines.push({ text: `${memberLabel}⚡ 장비 효과 발동! [${m}]`, type: 'buff' })); }
