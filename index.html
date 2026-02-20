@@ -229,6 +229,10 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="overlay-header"><h2>🎒 장비</h2><button class="close-btn" onclick="closeOverlay('inventory')">✕</button></div>
 <div class="overlay-body">
 <div id="item-detail-area"></div>
+<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+<button class="btn btn-sm btn-secondary" onclick="bulkSell('유니크')" style="font-size:11px">🗑️ 유니크 이하 일괄 판매</button>
+<button class="btn btn-sm btn-secondary" onclick="bulkSell('에픽')" style="font-size:11px">🗑️ 에픽 이하 일괄 판매</button>
+</div>
 <div class="inv-grid" id="inv-grid"></div>
 </div>
 </div>
@@ -292,7 +296,7 @@ gtag('config', 'G-XY7YKM0M37');
 <script src="js/content.js?v=10"></script>
 <script src="js/ai.js?v=37"></script>
 <script src="js/ui.js?v=32"></script>
-<script src="js/inventory.js?v=29"></script>
+<script src="js/inventory.js?v=30"></script>
 <script src="js/hunt.js?v=154"></script>
 <script src="js/game.js?v=36"></script>
 </body>

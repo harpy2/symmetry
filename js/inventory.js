@@ -231,6 +231,28 @@ toast('장비 해제');renderInventory();renderEquipRow();renderCharacter();save
 function repairItem(idx){const item=G.inventory[idx];if(!item)return;const cost=Math.floor((item.maxDurability-item.durability)*0.5);if(G.gold<cost){toast('골드가 부족합니다!');return}G.gold-=cost;item.durability=item.maxDurability;toast('수리 완료!');renderInventory();showItemDetail(idx);updateBars();saveGame()}
 function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));G.gold+=price;G.inventory.splice(idx,1);toast(`판매 완료! 💰+${price}`);document.getElementById('item-detail-area').innerHTML='';renderInventory();updateBars();saveGame()}
 
+function bulkSell(belowGrade){
+const gradeRank={일반:0,매직:1,레어:2,유니크:3,에픽:4};
+const threshold=gradeRank[belowGrade]||0;
+// 장착된 아이템 id 수집
+const equippedIds=new Set();
+if(G.party){G.party.forEach(p=>{if(p&&p.equipment){Object.values(p.equipment).forEach(e=>{if(e)equippedIds.add(e.id)})}})}
+const toSell=G.inventory.filter(item=>item&&(gradeRank[item.grade]??0)<threshold&&!equippedIds.has(item.id));
+if(toSell.length===0)return toast('판매할 장비가 없습니다');
+if(!confirm(`${belowGrade} 미만 장비 ${toSell.length}개를 판매할까요?`))return;
+let totalGold=0;
+for(const item of toSell){
+const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));
+totalGold+=price;
+const idx=G.inventory.indexOf(item);
+if(idx>=0)G.inventory.splice(idx,1);
+}
+G.gold+=totalGold;
+toast(`${toSell.length}개 판매! 💰+${totalGold}`);
+document.getElementById('item-detail-area').innerHTML='';
+renderInventory();updateBars();saveGame();
+}
+
 // ===== SHOP =====
 let currentShopTab='gold';
 
