@@ -362,7 +362,7 @@ body.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px">ð
 await checkPendingRewards();
 
 try{
-const res=await fetch(CPQ_API+'/api/cpq/campaigns?count=4');
+const res=await fetch(CPQ_API+'/api/cpq/campaigns?count=30');
 const data=await res.json();
 _cpqMissions=data.missions||[];
 }catch(e){_cpqMissions=[];}
