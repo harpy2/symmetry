@@ -431,44 +431,78 @@ footer.innerHTML=`<button class="btn" style="margin-top:8px" onclick="document.g
 }
 
 // ===== PVP =====
+let _pvpActive=false;
 function startPvP(){
-// AI 상대 생성 (비슷한 레벨의 랜덤 클래스)
+if(_pvpActive)return;
+_pvpActive=true;
+closeOverlay('challenge');
+openOverlay('hunt');
+const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
+
+setTimeout(async()=>{
+const log=document.getElementById('hunt-log');log.innerHTML='';
+showBgSprite(G.className,'idle');
+
+// AI 상대 생성
 const classes=Object.keys(CLASSES);
 const oppClass=classes[Math.floor(Math.random()*classes.length)];
 const oppData=CLASSES[oppClass];
-const lvl=Math.max(1,G.level+Math.floor(Math.random()*11)-5); // ±5 레벨
+const lvl=Math.max(1,G.level+Math.floor(Math.random()*11)-5);
 const oppAtk=oppData.baseATK+lvl*1;
 const oppDef=oppData.baseDEF+lvl*1;
 const oppHP=oppData.baseHP+lvl*8;
 
-// 내 스탯
 const myAtk=G.atk+getEquipStat('ATK');
 const myDef=G.def+getEquipStat('DEF');
 const myCrit=10+(G.critBonus||0)+getEquipStat('치명타');
+const myAtkSpd=Math.min(getEquipStat('공격속도')+(G.atkSpd||0),50);
 
-// 5라운드 시뮬레이션
+await addHuntLine(`🤺 PvP 대전!`,'story',log);
+await addHuntLine(`상대: ${oppData.weapon}${oppClass} Lv.${lvl}`,'story',log);
+await addHuntLine(`ATK ${oppAtk} / DEF ${oppDef} / HP ${oppHP}`,'story',log);
+await addHuntLine('⚔️ 전투 개시!','story',log);
+
 let myHP=G.hp,eHP=oppHP;
-let log=[];
-log.push({text:`⚔️ PvP! vs ${oppData.weapon}${oppClass} Lv.${lvl}`,type:'story'});
-log.push({text:`상대: ATK ${oppAtk} / DEF ${oppDef} / HP ${oppHP}`,type:'story'});
 
-for(let r=0;r<8&&myHP>0&&eHP>0;r++){
+for(let r=0;r<10&&myHP>0&&eHP>0;r++){
 // 내 공격
-const myDmg=Math.max(1,Math.floor(myAtk*(0.8+Math.random()*0.4)-oppDef*0.3));
+const skills=G.equippedSkills&&G.equippedSkills.length>0?G.equippedSkills:null;
+const skill=skills?skills[Math.floor(Math.random()*skills.length)]:{name:'평타',icon:CLASSES[G.className]?.weapon||'⚔️',dmg:10};
+const baseDmg=Math.max(1,Math.floor((skill.dmg||10)*(1+myAtk/30)*(0.8+Math.random()*0.4)-oppDef*0.3));
 const isCrit=Math.random()*100<myCrit;
-const finalMyDmg=isCrit?Math.floor(myDmg*1.5):myDmg;
-eHP-=finalMyDmg;
-log.push({text:`${G.className}: ${isCrit?'💥크리티컬! ':''}${finalMyDmg} 데미지!`,type:isCrit?'critical':'action',charClass:G.className});
-if(eHP<=0){log.push({text:`${oppClass} 쓰러졌다!`,type:'damage'});break}
-log.push({text:`${oppClass} 남은 HP: ${eHP}/${oppHP}`,type:'damage'});
+const finalDmg=isCrit?Math.floor(baseDmg*1.8):baseDmg;
+eHP-=finalDmg;
+
+showBgSprite(G.className,getActionType(skill.name,G.className),1,true);
+const critTag=isCrit?'💥크리티컬! ':'';
+await addHuntLine(`${skill.icon} ${skill.name} — ${critTag}${finalDmg} 데미지!`,isCrit?'critical':'action',log,1,G.className);
+
+if(eHP<=0){
+await addHuntLine(`${oppClass}에게 ${finalDmg} 피해! 쓰러졌다!`,'damage',log);
+break;
+}
+await addHuntLine(`${oppClass} HP: ${eHP}/${oppHP}`,'damage',log);
+
+// 공격속도 보너스
+if(myAtkSpd>0&&Math.random()*100<myAtkSpd){
+const bonusDmg=Math.max(1,Math.floor(myAtk*(0.8+Math.random()*0.4)-oppDef*0.3));
+eHP-=bonusDmg;
+showBgSprite(G.className,getActionType('',G.className),1,true);
+await addHuntLine(`⚡ 연속 공격! ${bonusDmg} 추가 데미지!`,'action',log,1,G.className);
+if(eHP<=0){await addHuntLine(`${oppClass} 쓰러졌다!`,'damage',log);break}
+}
 
 // 상대 공격
 const eDmg=Math.max(1,Math.floor(oppAtk*(0.8+Math.random()*0.4)-myDef*0.3));
 const eCrit=Math.random()*100<15;
 const finalEDmg=eCrit?Math.floor(eDmg*1.5):eDmg;
 myHP-=finalEDmg;
-log.push({text:`${oppClass}: ${eCrit?'💥크리티컬! ':''}${finalEDmg} 데미지!`,type:'enemy-atk',charClass:G.className});
-if(myHP<=0){log.push({text:`${G.className} 쓰러졌다!`,type:'defeat'});break}
+showBgSprite(G.className,'block',1);
+await addHuntLine(`${eCrit?'💥 ':''}${oppClass}의 공격 → -${finalEDmg} HP`,'enemy-atk',log,1,G.className);
+if(myHP<=0){
+await addHuntLine(`${G.className} 쓰러졌다...`,'defeat',log);
+break;
+}
 }
 
 const won=eHP<=0;
@@ -477,60 +511,20 @@ if(won){
 G.pvpWins=(G.pvpWins||0)+1;
 const reward=Math.floor(200+G.level*10);
 G.gold+=reward;G.points=(G.points||0)+5;
-log.push({text:`🏆 PvP 승리! 💰+${reward} 💎+5`,type:'victory'});
+showBgSprite(G.className,'idle');
+await addHuntLine(`🏆 PvP 승리! 💰+${reward} 💎+5`,'victory',log);
+await addHuntLine(`전적: ${G.pvpWins}승 ${G.pvpCount-G.pvpWins}패`,'loot',log);
 }else{
 const consolation=Math.floor(50+G.level*3);
 G.gold+=consolation;
-log.push({text:`패배... 위로금 💰+${consolation}`,type:'defeat'});
+await addHuntLine(`패배... 위로금 💰+${consolation}`,'defeat',log);
+await addHuntLine(`전적: ${G.pvpWins||0}승 ${(G.pvpCount||0)-(G.pvpWins||0)}패`,'loot',log);
 }
 G.hp=Math.max(1,myHP);
 updateBars();saveGame();checkAchievements();
-
-// 결과 표시
-showPvPResult(log,won,oppClass,lvl);
-}
-
-function showPvPResult(lines,won,oppClass,oppLvl){
-const overlay=document.createElement('div');
-overlay.id='pvp-overlay';
-overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;padding:20px';
-const header=document.createElement('div');
-header.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px';
-header.innerHTML=`<h2 style="color:var(--gold);margin:0">🤺 PvP 대전</h2><button class="close-btn" onclick="document.getElementById('pvp-overlay').remove()">✕</button>`;
-overlay.appendChild(header);
-const logDiv=document.createElement('div');
-logDiv.style.cssText='flex:1;overflow-y:auto;padding:8px';
-overlay.appendChild(logDiv);
-const footer=document.createElement('div');
-footer.style.cssText='text-align:center;padding-top:12px';
-overlay.appendChild(footer);
-document.body.appendChild(overlay);
-// 한줄씩 표시
-let idx=0;
-function showNext(){
-if(idx>=lines.length){
-footer.innerHTML=`<div style="font-size:18px;font-weight:700;color:${won?'var(--gold)':'var(--danger)'}">
-${won?'🏆 승리!':'💀 패배...'}</div>
-<div style="font-size:12px;color:var(--text2);margin-top:6px">전적: ${G.pvpWins||0}승 / ${(G.pvpCount||0)-(G.pvpWins||0)}패</div>
-<button class="btn" style="margin-top:12px" onclick="document.getElementById('pvp-overlay').remove()">닫기</button>`;
-return;
-}
-const l=lines[idx];idx++;
-let color='var(--text1)';
-if(l.type==='critical')color='var(--orange)';
-else if(l.type==='damage')color='var(--cyan)';
-else if(l.type==='enemy-atk')color='#ff6b6b';
-else if(l.type==='victory')color='var(--gold)';
-else if(l.type==='defeat')color='var(--danger)';
-else if(l.type==='story')color='var(--text2)';
-const div=document.createElement('div');
-div.style.cssText=`padding:4px 0;font-size:13px;color:${color};opacity:0;transition:opacity .3s`;
-div.textContent=l.text;
-logDiv.appendChild(div);logDiv.scrollTop=logDiv.scrollHeight;
-requestAnimationFrame(()=>div.style.opacity='1');
-setTimeout(showNext,l.type==='story'?600:400);
-}
-showNext();
+G.autoHunt=origAuto;updateAutoHuntUI();
+_pvpActive=false;
+},500);
 }
 
 // ===== CODEX (도감) =====
