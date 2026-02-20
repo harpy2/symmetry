@@ -357,7 +357,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       try {
       const healSkills = member.skills.filter(s => s.heal && !s.buff && !s.summon);
       const reviveSkill = member.skills.find(s => s.name && s.name.includes('부활'));
-      if (healSkills.length > 0 && partyMembers.length > 1 && Math.random() < 0.6) {
+      if (healSkills.length > 0 && partyMembers.length > 1) {
         // 1) 죽은 아군 부활
         const deadAlly = partyMembers.find(m => m._dead && m.slot !== member.slot);
         if (deadAlly && reviveSkill) {
