@@ -32,7 +32,7 @@ var mmo=document.getElementById('hm-mood');if(mmo)mmo.textContent=Math.floor(G.m
 // 오른쪽 장비효과 패널
 renderHuntMods();
 }
-function updateAutoHuntUI(){document.getElementById('auto-hunt-indicator').innerHTML=G.autoHunt?'<span class="auto-hunt-badge">자동</span>':'';if(typeof _challengeActive==='undefined'||!_challengeActive){document.getElementById('auto-hunt-btn').textContent=G.autoHunt?'⏹️ 자동 중지':'🔄 자동사냥'}}
+function updateAutoHuntUI(){document.getElementById('auto-hunt-indicator').innerHTML=G.autoHunt?`<span class="auto-hunt-badge">${t('자동')}</span>`:'';if(typeof _challengeActive==='undefined'||!_challengeActive){document.getElementById('auto-hunt-btn').textContent=G.autoHunt?t('⏹️ 자동 중지'):t('🔄 자동사냥')}}
 function toggleAutoHunt(){G.autoHunt=!G.autoHunt;updateAutoHuntUI();if(G.autoHunt&&!huntInProgress)startHunt()}
 
 function getMoodMultiplier(){
@@ -43,8 +43,8 @@ return{exp:0,gold:0,drop:0};
 }
 
 async function startHunt(forceBoss){
-if(huntInProgress)return;if(G.hp<=0){toast('HP가 부족합니다!');return}
-if(G.mood<20){toast('기분이 너무 안 좋아서 사냥할 수 없습니다...');G.autoHunt=false;updateAutoHuntUI();return}
+if(huntInProgress)return;if(G.hp<=0){toast(t('HP가 부족합니다!'));return}
+if(G.mood<20){toast(t('기분이 너무 안 좋아서 사냥할 수 없습니다...'));G.autoHunt=false;updateAutoHuntUI();return}
 huntInProgress=true;document.getElementById('hunt-btn').disabled=true;
 const log=document.getElementById('hunt-log');log.innerHTML='';
 showBgSprite(G.className,'walk');
@@ -73,13 +73,13 @@ await wait(loadingDelay);
 const story=isBoss?BOSS_STORIES[Math.floor(Math.random()*BOSS_STORIES.length)]:NORMAL_STORIES[Math.floor(Math.random()*NORMAL_STORIES.length)];
 await addHuntLine(story.intro.replace('{enemy}',enemy),'story',log);
 await wait(700);
-if(isBoss){await addHuntLine(`⚠️ 보스 출현! ${tmpl.bossEmoji} ${enemy}!`,'boss',log)}
-else{await addHuntLine(`${enemy} ${enemyCount}마리가 나타났다!`,'story',log)}
+if(isBoss){await addHuntLine(t('⚠️ 보스 출현! {0} {1}!',tmpl.bossEmoji,enemy),'boss',log)}
+else{await addHuntLine(t('{0} {1}마리가 나타났다!',enemy,enemyCount),'story',log)}
 await wait(600);
 
 // === Phase 3: AI 전투 생성 ===
 showBgSprite(G.className,'idle');
-await addHuntLine('⚔️ 전투 개시!','story',log);
+await addHuntLine(t('⚔️ 전투 개시!'),'story',log);
 
 let combat=generateCombatLocal(enemy,enemyCount,isBoss);
 
@@ -149,17 +149,17 @@ updateQuestProgress('dailyGoldEarned',goldReward);
 // 서브 캐릭도 동일 경험치
 for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){if(!G.party[_s].exp)G.party[_s].exp=0;G.party[_s].exp+=expReward;}}
 G.mood=Math.min(100,G.mood+(isBoss?15:5));
-await addHuntLine(`획득: 💰 +${goldReward}, 경험치 +${expReward}`,'loot',log);
+await addHuntLine(t('획득: 💰 +{0}, 경험치 +{1}',goldReward,expReward),'loot',log);
 
 // 아이템 드롭
 const baseDropRate=isBoss?0.5:0.1;
 const luckBonus=((G.luckBonus||0)+getEquipStat('드롭률')+getEquipStat('행운'))/100;
 const adjustedDropRate=Math.min(1,Math.max(0,baseDropRate+moodMult.drop+luckBonus));
 if(Math.random()<adjustedDropRate){
-await addHuntLine('✨ 뭔가 반짝이는 것이 보인다...','loot',log);
+await addHuntLine(t('✨ 뭔가 반짝이는 것이 보인다...'),'loot',log);
 const item=await generateItem();
 G.inventory.push(item);
-await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log);
+await addHuntLine(t('아이템 발견! [{0}] ({1})',item.name,t(item.grade)),'loot',log);
 addToCodex('item',item.name);G.stats.itemsFound++;updateQuestProgress('dailyItems',1);
 showItemDropPopup(item);
 if(item.skillMods&&item.skillMods.length){
@@ -169,7 +169,7 @@ await addHuntLine(`  ✦ ${m.mod}`,'loot',log);
 if(isBoss){G.floor++;
 if(!G.weeklyStats)G.weeklyStats={};G.weeklyStats.weeklyFloors=(G.weeklyStats.weeklyFloors||0)+1;
 trackEvent('floor_clear',{floor:G.floor,level:G.level,class:G.className});
-await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log);
+await addHuntLine(t('🏆 보스 클리어! {0}층으로 진출!',G.floor),'victory',log);
 }
 // 레벨업 처리
 const expToLevel=()=>Math.floor(100+G.level*5);
@@ -177,7 +177,7 @@ while(G.exp>=expToLevel()){G.exp-=expToLevel();G.level++;G.maxHP+=8;G.atk+=1;G.d
 trackEvent('level_up',{level:G.level,floor:G.floor,class:G.className});
 const lvlMsgs=['기분이 한결 좋아진 것 같다...','승리를 자축하는 중...','새로운 힘이 깨어나고 있다...','몸 속에서 에너지가 솟구친다...','한층 강해진 기분이다...','전투의 여운을 느끼는 중...','깊은 숨을 내쉬며 집중한다...','성장의 빛이 감싸고 있다...'];
 const lvlMsg=lvlMsgs[Math.floor(Math.random()*lvlMsgs.length)];
-await addHuntLine(`✨ ${lvlMsg}`,'loading',log);
+await addHuntLine(`✨ ${t(lvlMsg)}`,'loading',log);
 const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
 if(SKILL_LEVELS.includes(G.level)){await showSkillLearn('active',G.activeSlot);}
 else if(PASSIVE_LEVELS.includes(G.level)){await showSkillLearn('passive',G.activeSlot);}
@@ -189,7 +189,7 @@ const sub=G.party[_s];if(!sub.exp)sub.exp=0;
 const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
 const subExpToLevel=()=>Math.floor(100+(sub.level||1)*5);
 while(sub.exp>=subExpToLevel()){sub.exp-=subExpToLevel();sub.level=(sub.level||1)+1;sub.maxHP=(sub.maxHP||100)+8;sub.atk=(sub.atk||15)+1;sub.def=(sub.def||8)+1;sub.hp=sub.maxHP;
-await addHuntLine(`✨ ${sub.className}도 레벨 업! Lv.${sub.level}`,'loading',log);
+await addHuntLine(`✨ ${t(sub.className)} ${t('레벨 업!')} Lv.${sub.level}`,'loading',log);
 if(SKILL_LEVELS.includes(sub.level)){await showSkillLearn('active',_s);}
 else if(PASSIVE_LEVELS.includes(sub.level)){await showSkillLearn('passive',_s);}
 else{await showLevelUp(null,_s);}
@@ -199,7 +199,7 @@ else{await showLevelUp(null,_s);}
 let expReward=Math.floor((combat.expReward||15)*moodMult.exp);
 G.exp+=expReward;
 for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){if(!G.party[_s].exp)G.party[_s].exp=0;G.party[_s].exp+=expReward;}}
-await addHuntLine(`패배했지만 경험치 +${expReward} 획득`,'loot',log);
+await addHuntLine(t('패배했지만 경험치 +{0} 획득',expReward),'loot',log);
 G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className});
 // 패배 시에도 레벨업 처리
 const expToLevelD=()=>Math.floor(100+G.level*5);
@@ -225,7 +225,7 @@ if(!won){
 // 전멸(파티 전원 사망)일 때만 골드 패널티
 if(combat.allPartyDead){
 const penalty=Math.floor(G.gold*0.1);
-if(penalty>0){G.gold-=penalty;await addHuntLine(`전멸 패널티: 골드 -${penalty} 💸`,'defeat',log)}
+if(penalty>0){G.gold-=penalty;await addHuntLine(t('전멸 패널티: 골드')+` -${penalty} 💸`,'defeat',log)}
 }
 // HP 50% 회복
 G.hp=Math.max(1,Math.floor(G.maxHP*0.5));
@@ -249,7 +249,7 @@ return map[type]||'story';
 function renderHuntMods(){
 var list=document.getElementById('hunt-mods-list');if(!list)return;
 var html='';
-var slotNames={helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',weapon:'주무기',necklace:'목걸이',ring1:'반지1',ring2:'반지2',offhand:'보조무기'};
+var slotNames={helmet:t('투구'),chest:t('상의'),gloves:t('장갑'),pants:t('바지'),boots:t('신발'),weapon:t('주무기'),necklace:t('목걸이'),ring1:t('반지1'),ring2:t('반지2'),offhand:t('보조무기')};
 Object.keys(G.equipment).forEach(function(slot){
 var item=G.equipment[slot];if(!item)return;
 var statsArr=[];
@@ -266,7 +266,7 @@ html+='</div>';
 // 레벨업 버프 (같은 이름 합산)
 if(G._appliedBuffs&&G._appliedBuffs.length){
 html+='<div class="hm-divider"></div>';
-html+='<div class="hm-section-title">⭐ 레벨업 버프</div>';
+html+=`<div class="hm-section-title">⭐ ${t('레벨업 버프')}</div>`;
 var buffMap={};var buffOrder=[];
 G._appliedBuffs.forEach(function(b){
 var name=typeof b==='string'?b:b.name;
@@ -280,7 +280,7 @@ var countText=b.count>1?' x'+b.count:'';
 html+='<div class="hm-item"><div class="hm-item-mod">⭐ '+name+countText+(b.desc?' - '+b.desc:'')+'</div></div>';
 });
 }
-if(!html){list.innerHTML='<div class="hm-empty">장착된 장비 없음</div>';return}
+if(!html){list.innerHTML=`<div class="hm-empty">${t('장착된 장비 없음')}</div>`;return}
 list.innerHTML=html;
 }
 
@@ -290,8 +290,8 @@ const overlay=document.getElementById('mobile-popup-overlay');
 const title=document.getElementById('mobile-popup-title');
 const body=document.getElementById('mobile-popup-body');
 if(type==='stat'){
-title.textContent='📊 상태';
-const descs={'❤️ HP':'체력 — 0이 되면 전투 불능','⚔️ 공격력':'스킬/평타 데미지에 반영. 소환수도 ATK 기반','🛡️ 방어력':'받는 피해 감소','💥 치명타':'크리티컬 확률 — 발동 시 1.5~2.5배 데미지','⚡ 공격속도':'추가 공격 확률 — 턴당 2회 공격 (캡 50%)','🍖 배고픔':'낮으면 사냥 불가','😊 기분':'낮으면 사냥 불가, 패배 시 감소'};
+title.textContent=t('📊 상태');
+const descs={};descs['❤️ HP']=t('체력 — 0이 되면 전투 불능');descs['⚔️ '+t('공격력')]=t('스킬/평타 데미지에 반영. 소환수도 ATK 기반');descs['🛡️ '+t('방어력')]=t('받는 피해 감소');descs['💥 '+t('치명타')]=t('크리티컬 확률 — 발동 시 1.5~2.5배 데미지');descs['⚡ '+t('공격속도')]=t('추가 공격 확률 — 턴당 2회 공격 (캡 50%)');descs['🍖 '+t('배고픔')]=t('낮으면 사냥 불가');descs['😊 '+t('기분')]=t('낮으면 사냥 불가, 패배 시 감소');
 const el=document.getElementById('hunt-stat-list').cloneNode(true);
 el.querySelectorAll('.hs-row').forEach(row=>{const label=row.querySelector('.hs-label');if(!label)return;const d=descs[label.textContent.trim()];if(d){const desc=document.createElement('div');desc.style.cssText='font-size:10px;color:var(--text2);margin-top:1px;padding-left:2px';desc.textContent=d;row.appendChild(desc);row.style.flexWrap='wrap'}});
 let statHtml=el.innerHTML;
@@ -299,7 +299,7 @@ for(let s=0;s<3;s++){if(s===G.activeSlot||!G.slotUnlocked||!G.slotUnlocked[s]||!
 statHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${c.className} (Lv.${c.level})</div><div style="font-size:12px;line-height:1.8;color:var(--text1)">❤️ HP: ${Math.floor(c.hp)}/${c.maxHP}<br>⚔️ ATK: ${c.atk}<br>🛡️ DEF: ${c.def}<br>🎯 치명타: ${10+(c.critBonus||0)}%<br>📊 EXP: ${c.exp||0}%</div></div>`}
 body.innerHTML=statHtml;
 }else if(type==='skills'){
-title.textContent='🗡️ 스킬';
+title.textContent=t('🗡️ 스킬');
 let html='';
 for(let s=0;s<3;s++){
 let char,cls;
@@ -310,18 +310,18 @@ const actives=char.equippedSkills||[];const passives=char.equippedPassives||[];
 html+=`<div style="margin-bottom:10px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${char.className} (Lv.${char.level})</div>`;
 if(actives.length>0){actives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0">${sk.icon} <b>${sk.name}</b> <span style="color:var(--text2)">${sk.desc||''}</span></div>`})}
 if(passives.length>0){passives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0;color:var(--cyan)">${sk.icon} <b>${sk.name}</b> <span style="opacity:.7">${sk.desc||''}</span></div>`})}
-if(actives.length===0&&passives.length===0)html+='<div style="font-size:12px;color:var(--text2)">스킬 없음</div>';
+if(actives.length===0&&passives.length===0)html+=`<div style="font-size:12px;color:var(--text2)">${t('스킬 없음')}</div>`;
 html+='</div>';
 }
-body.innerHTML=html||'<div style="color:var(--text2)">스킬 없음</div>';
+body.innerHTML=html||`<div style="color:var(--text2)">${t('스킬 없음')}</div>`;
 }else if(type==='settings'){
-title.textContent='⚙️ 설정';
+title.textContent=t('⚙️ 설정');
 body.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
-<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoLevelUp?'checked':''} onchange="G.autoLevelUp=this.checked;saveGame()"> 🤖 레벨업 자동 선택</label>
-<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoHunt?'checked':''} onchange="G.autoHunt=this.checked;updateAutoHuntUI();saveGame()"> 🔄 자동 사냥</label>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoLevelUp?'checked':''} onchange="G.autoLevelUp=this.checked;saveGame()"> ${t('🤖 레벨업 자동 선택')}</label>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoHunt?'checked':''} onchange="G.autoHunt=this.checked;updateAutoHuntUI();saveGame()"> ${t('🔄 자동 사냥')}</label>
 </div>`;
 }else{
-title.textContent='✦ 장비 효과';
+title.textContent=t('✦ 장비 효과');
 body.innerHTML=document.getElementById('hunt-mods-list').innerHTML;
 }
 overlay.classList.add('active');
