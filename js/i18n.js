@@ -1153,6 +1153,26 @@ const I18N = {
   '패': { en: 'L' },
   '패배... 위로금': { en: 'Defeat... Consolation:' },
   'PvP 승리!': { en: 'PvP Victory!' },
+
+  // === AI Combat additional ===
+  '평타': { en: 'Basic Attack' },
+  '기본 공격': { en: 'Basic attack' },
+  '타': { en: ' hit' },
+  '망령': { en: 'Wraith' },
+  '데미지!': { en: 'damage!' },
+  '추가 데미지!': { en: 'bonus damage!' },
+  '연속 공격': { en: 'Combo attack' },
+  '힐': { en: 'heal' },
+  '총 획득': { en: 'Total earned' },
+  'PvP 대전': { en: 'PvP Arena' },
+  '도전 보스': { en: 'Challenge Boss' },
+  '탑의 수호신': { en: 'Tower Guardian' },
+  '탑의 수호자': { en: 'Tower Sentinel' },
+  '어둠의 대장': { en: 'Dark Commander' },
+  '어둠의 군단': { en: 'Dark Legion' },
+  '웨이브': { en: 'Wave' },
+  '마리': { en: '' },
+  '보스!': { en: 'BOSS!' },
 };
 
 /**
@@ -1178,5 +1198,5 @@ function toggleLang() {
 
 function initLangToggle() {
   const label = document.getElementById('lang-label');
-  if (label) label.textContent = LANG === 'ko' ? 'EN' : '한';
+  if (label) label.textContent = LANG === 'ko' ? 'EN' : 'KO';
 }
