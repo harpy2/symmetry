@@ -144,10 +144,13 @@ if(item.skillMods&&item.skillMods.length){
 for(const m of item.skillMods){
 await addHuntLine(`  ✦ ${m.mod}`,'loot',log);
 }}}
-if(isBoss){G.floor++;await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log);
+if(isBoss){G.floor++;
+trackEvent('floor_clear',{floor:G.floor,level:G.level,class:G.className});
+await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log);
 }
 // 레벨업 처리
 while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=8;G.atk+=1;G.def+=1;G.hp=G.maxHP;
+trackEvent('level_up',{level:G.level,floor:G.floor,class:G.className});
 const lvlMsgs=['기분이 한결 좋아진 것 같다...','승리를 자축하는 중...','새로운 힘이 깨어나고 있다...','몸 속에서 에너지가 솟구친다...','한층 강해진 기분이다...','전투의 여운을 느끼는 중...','깊은 숨을 내쉬며 집중한다...','성장의 빛이 감싸고 있다...'];
 const lvlMsg=lvlMsgs[Math.floor(Math.random()*lvlMsgs.length)];
 await addHuntLine(`✨ ${lvlMsg}`,'loading',log);
@@ -167,7 +170,7 @@ else if(PASSIVE_LEVELS.includes(sub.level)){await showSkillLearn('passive',_s);}
 else{await showLevelUp(null,_s);}
 }}
 }else{
-G.mood=Math.max(0,G.mood-10)}
+G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className})}
 
 updateBars();updateHuntStatus();renderCharacter();renderEquipRow();saveGame();
 huntInProgress=false;document.getElementById('hunt-btn').disabled=false;

@@ -1,3 +1,6 @@
+// ===== ANALYTICS =====
+function trackEvent(name,params){try{if(typeof gtag==='function')gtag('event',name,params)}catch(e){}}
+
 // ===== GAME STATE =====
 let G={};
 
@@ -17,6 +20,7 @@ autoHunt:false,autoLevelUp:false,missionCooldowns:{},lastTick:Date.now()
 }}
 
 function newGame(){
+trackEvent('game_start',{type:'new'});
 const g=createCharData({});
 // Party structure
 g.party=[null,null,null];
@@ -63,6 +67,7 @@ if(G.gold<cost){toast(`골드가 부족합니다! (${G.gold}/${cost})`);return}
 if(confirm(`💰 ${cost.toLocaleString()} 골드로 캐릭터 슬롯 ${slot+1}을 해제할까요?`)){
 G.gold-=cost;
 G.slotUnlocked[slot]=true;
+trackEvent('slot_unlock',{slot:slot+1,level:G.level});
 updateBars();saveGame();
 // 슬롯 해금은 즉시 클라우드 저장 (디바운스 무시)
 cloudSave(serializeState());
@@ -420,6 +425,7 @@ if(!chosen){toast('저장된 데이터가 없습니다');return}
 if(restoreState(chosen)){
 localStorage.setItem('symmetry_save',JSON.stringify(chosen));
 showScreen('main-screen');toast(cs>=ls&&cloudData?'☁️ 클라우드 세이브 로드 완료!':'게임 로드 완료!');
+trackEvent('game_start',{type:'continue',level:G.level,floor:G.floor,class:G.className});
 // 더 진행된 데이터를 클라우드에도 동기화
 if(ls>cs&&localData)cloudSave(localData);
 }else{toast('잘못된 세이브 데이터')}

@@ -47,11 +47,13 @@ hunger:100,mood:80,floor:1,
 equippedSkills:[],equippedPassives:[],allSkills:[...cls.skills],allPassives:[...cls.passives],
 equipment:{helmet:null,chest:null,gloves:null,pants:null,boots:null,weapon:null,necklace:null,ring1:null,ring2:null,offhand:null},
 critBonus:0,hpBonus:0,atkBonus:0,defBonus:0,expBonus:0,_appliedBuffs:[]};
+trackEvent('class_select',{class:selectedName,slot:slot});
 saveGame();cloudSave(serializeState());showScreen('main-screen');
 return;
 }
 // 첫 캐릭 생성 — G에 이미 반영되어 있음
 G.equippedSkills=[];G.equippedPassives=[];G.allSkills=[];G.allPassives=[];
+trackEvent('class_select',{class:selectedName,slot:0});
 saveGame();showScreen('main-screen')}
 
 // ===== SKILL SELECT =====
