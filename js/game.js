@@ -56,6 +56,7 @@ if(!G.slotUnlocked[slot]){unlockSlot(slot);return}
 if(!G.party[slot]){showScreen('class-screen');G._pendingSlot=slot;return}
 saveCharToSlot();
 loadSlotToG(slot);
+saveGame();
 renderMainScreen();
 updateSlotUI();
 }
