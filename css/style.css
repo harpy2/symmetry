@@ -511,3 +511,33 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .hunt-bg-sprite{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background-repeat:no-repeat;image-rendering:pixelated;opacity:0.15;pointer-events:none;z-index:0;overflow:hidden}
 .hunt-bg-sprite.active{opacity:0.25}
 .hunt-log .hunt-line{position:relative;z-index:1}
+
+/* ===== ACHIEVEMENT ===== */
+.achieve-card{display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:6px;border-radius:8px;background:var(--card);border:1px solid var(--border)}
+.achieve-card.done{opacity:.6;border-color:var(--success)}
+.achieve-icon{font-size:24px;min-width:32px;text-align:center}
+.achieve-info{flex:1}
+.achieve-name{font-size:13px;font-weight:700;color:var(--text1)}
+.achieve-desc{font-size:11px;color:var(--text2)}
+.achieve-reward{font-size:12px;font-weight:700;color:var(--gold);min-width:40px;text-align:right}
+
+/* ===== QUEST ===== */
+.quest-card{display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:6px;border-radius:8px;background:var(--card);border:1px solid var(--border)}
+.quest-card.done{opacity:.5;border-color:var(--success)}
+.quest-icon{font-size:20px;min-width:28px;text-align:center}
+.quest-info{flex:1}
+.quest-name{font-size:13px;font-weight:700;color:var(--text1)}
+.quest-desc{font-size:11px;color:var(--text2)}
+.quest-bar{height:4px;background:var(--border);border-radius:2px;margin-top:4px}
+.quest-bar-fill{height:100%;background:var(--cyan);border-radius:2px;transition:width .3s}
+.quest-progress{font-size:10px;color:var(--text2);margin-top:2px}
+.quest-reward{min-width:60px;text-align:right}
+
+/* ===== CHALLENGE ===== */
+.challenge-card{display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:8px;border-radius:10px;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:border-color .2s}
+.challenge-card:hover{border-color:var(--gold)}
+.challenge-icon{font-size:32px;min-width:40px;text-align:center}
+.challenge-info{flex:1}
+.challenge-name{font-size:14px;font-weight:700;color:var(--text1)}
+.challenge-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.challenge-reward{font-size:13px;font-weight:700;color:var(--gold);min-width:50px;text-align:right}

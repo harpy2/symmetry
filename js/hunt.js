@@ -41,17 +41,24 @@ if(G.mood>=20)return{exp:0.85,gold:0.85,drop:-0.1};
 return{exp:0,gold:0,drop:0};
 }
 
-async function startHunt(){
+async function startHunt(forceBoss){
 if(huntInProgress)return;if(G.hp<=0){toast('HP가 부족합니다!');return}
 if(G.mood<20){toast('기분이 너무 안 좋아서 사냥할 수 없습니다...');G.autoHunt=false;updateAutoHuntUI();return}
 huntInProgress=true;document.getElementById('hunt-btn').disabled=true;
 const log=document.getElementById('hunt-log');log.innerHTML='';
 showBgSprite(G.className,'walk');
-const isBoss=Math.random()<0.1;
+const isBoss=forceBoss||Math.random()<0.1;
 const moodMult=getMoodMultiplier();
+
+// 구간 스토리 체크
+initStats();
+const stage=getStageInfo(G.floor);
+if(!G._lastStage||G._lastStage!==stage.name){G._lastStage=stage.name;await showStageTransition(stage)}
 
 const tmpl=HUNT_TEMPLATES[Math.floor(Math.random()*HUNT_TEMPLATES.length)];
 const enemy=isBoss?tmpl.boss:tmpl.enemies[Math.floor(Math.random()*tmpl.enemies.length)];
+// 도감 등록
+addToCodex('monster',enemy);
 const maxByFloor=G.level<5?2:Math.min(20,Math.max(5,Math.floor(G.floor/10)+5));
 const enemyCount=isBoss?1:Math.floor(Math.random()*maxByFloor)+1;
 
@@ -149,6 +156,16 @@ if(won){
 let goldReward=Math.floor((combat.goldReward||10)*moodMult.gold);
 let expReward=Math.floor((combat.expReward||15)*moodMult.exp);
 G.gold+=goldReward;G.exp+=expReward;
+// 스탯 추적
+G.stats.kills+=enemyCount;G.stats.goldEarned+=goldReward;
+if(isBoss)G.stats.bossKills++;
+const critLines=combat.lines.filter(l=>l.type==='critical').length;
+G.stats.crits+=critLines;
+updateQuestProgress('dailyBattles',1);
+updateQuestProgress('dailyKills',enemyCount);
+if(isBoss)updateQuestProgress('dailyBossKills',1);
+updateQuestProgress('dailyCrits',critLines);
+updateQuestProgress('dailyGoldEarned',goldReward);
 // 서브 캐릭도 동일 경험치
 for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){if(!G.party[_s].exp)G.party[_s].exp=0;G.party[_s].exp+=expReward;}}
 G.mood=Math.min(100,G.mood+(isBoss?15:5));
@@ -163,12 +180,14 @@ await addHuntLine('✨ 뭔가 반짝이는 것이 보인다...','loot',log);
 const item=await generateItem();
 G.inventory.push(item);
 await addHuntLine(`아이템 발견! [${item.name}] (${item.grade})`,'loot',log);
+addToCodex('item',item.name);G.stats.itemsFound++;updateQuestProgress('dailyItems',1);
 showItemDropPopup(item);
 if(item.skillMods&&item.skillMods.length){
 for(const m of item.skillMods){
 await addHuntLine(`  ✦ ${m.mod}`,'loot',log);
 }}}
 if(isBoss){G.floor++;
+if(!G.weeklyStats)G.weeklyStats={};G.weeklyStats.weeklyFloors=(G.weeklyStats.weeklyFloors||0)+1;
 trackEvent('floor_clear',{floor:G.floor,level:G.level,class:G.className});
 await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log);
 }
@@ -218,6 +237,7 @@ if(G.party){for(let _s=0;_s<3;_s++){if(G.party[_s]&&G.party[_s].hp<=0)G.party[_s
 
 updateBars();updateHuntStatus();renderCharacter();renderEquipRow();saveGame();
 huntInProgress=false;document.getElementById('hunt-btn').disabled=false;
+checkAchievements();
 if(G.autoHunt){setTimeout(()=>{if(G.autoHunt)startHunt()},1500)}else{updateAutoHuntUI()}}
 
 // Map AI line types to CSS classes

@@ -386,6 +386,7 @@ G.allSkills=G.classData.skills;G.allPassives=G.classData.passives;
 G.equippedSkills=(G.equippedSkills||[]).map(es=>G.allSkills.find(s=>s.name===es.name)||es);
 G.equippedPassives=(G.equippedPassives||[]).map(ep=>G.allPassives.find(p=>p.name===ep.name)||ep);
 if(!G.missionCooldowns)G.missionCooldowns={};if(!G.critBonus)G.critBonus=0;
+initStats();
 if(!G._statUpgrades)G._statUpgrades={};
 if(!G.party)G.party=[null,null,null];
 if(G.activeSlot===undefined)G.activeSlot=0;

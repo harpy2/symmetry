@@ -129,6 +129,10 @@ gtag('config', 'G-XY7YKM0M37');
 <button class="menu-btn" onclick="openOverlay('mission')"><span class="icon">📋</span><span class="label">미션</span></button>
 <button class="menu-btn" onclick="openOverlay('shop')"><span class="icon">🏪</span><span class="label">상점</span></button>
 <button class="menu-btn" onclick="openOverlay('inventory')"><span class="icon">🎒</span><span class="label">장비</span></button>
+<button class="menu-btn" onclick="openOverlay('quest')"><span class="icon">📅</span><span class="label">퀘스트</span></button>
+<button class="menu-btn" onclick="openOverlay('achieve')"><span class="icon">🏆</span><span class="label">업적</span></button>
+<button class="menu-btn" onclick="openOverlay('challenge')"><span class="icon">⚡</span><span class="label">도전</span></button>
+<button class="menu-btn" onclick="openOverlay('codex')"><span class="icon">📖</span><span class="label">도감</span></button>
 <!-- skills menu removed -->
 </div>
 </div>
@@ -229,7 +233,44 @@ gtag('config', 'G-XY7YKM0M37');
 </div>
 </div>
 
-<!-- skills overlay removed -->
+<!-- 퀘스트 -->
+<div class="overlay" id="overlay-quest">
+<div class="overlay-header"><h2>📅 퀘스트</h2><button class="close-btn" onclick="closeOverlay('quest')">✕</button></div>
+<div class="overlay-body" id="quest-body"></div>
+</div>
+<!-- 업적 -->
+<div class="overlay" id="overlay-achieve">
+<div class="overlay-header"><h2>🏆 업적</h2><button class="close-btn" onclick="closeOverlay('achieve')">✕</button></div>
+<div class="overlay-body" id="achieve-body"></div>
+</div>
+<!-- 도전 -->
+<div class="overlay" id="overlay-challenge">
+<div class="overlay-header"><h2>⚡ 도전</h2><button class="close-btn" onclick="closeOverlay('challenge')">✕</button></div>
+<div class="overlay-body">
+<div class="challenge-card" onclick="startDailyBoss()">
+<div class="challenge-icon">👹</div>
+<div class="challenge-info"><div class="challenge-name">일일 도전 보스</div><div class="challenge-desc">하루 1회, 강력한 보스에 도전! (현재 층 x2 난이도)</div></div>
+<div class="challenge-reward">💎20</div>
+</div>
+<div class="challenge-card" onclick="startTower()">
+<div class="challenge-icon">🗼</div>
+<div class="challenge-info"><div class="challenge-name">무한의 탑</div><div class="challenge-desc">연속 전투! 몇 층까지 올라갈 수 있는가?</div>
+<div style="font-size:11px;color:var(--cyan)">최고 기록: <span id="tower-best">0</span>층</div></div>
+<div class="challenge-reward">💰골드</div>
+</div>
+<div class="challenge-card" onclick="startPvP()">
+<div class="challenge-icon">🤺</div>
+<div class="challenge-info"><div class="challenge-name">PvP 대전</div><div class="challenge-desc">비슷한 레벨의 상대와 1:1 대결!</div>
+<div style="font-size:11px;color:var(--cyan)">전적: <span id="pvp-record">0승 0패</span></div></div>
+<div class="challenge-reward">💎5 + 💰</div>
+</div>
+</div>
+</div>
+<!-- 도감 -->
+<div class="overlay" id="overlay-codex">
+<div class="overlay-header"><h2>📖 도감</h2><button class="close-btn" onclick="closeOverlay('codex')">✕</button></div>
+<div class="overlay-body" id="codex-body"></div>
+</div>
 </div>
 
 <!-- LEVEL UP -->
@@ -243,10 +284,11 @@ gtag('config', 'G-XY7YKM0M37');
 </div>
 
 <script src="js/data.js?v=29"></script>
+<script src="js/content.js?v=1"></script>
 <script src="js/ai.js?v=30"></script>
-<script src="js/ui.js?v=30"></script>
+<script src="js/ui.js?v=31"></script>
 <script src="js/inventory.js?v=27"></script>
-<script src="js/hunt.js?v=149"></script>
-<script src="js/game.js?v=35"></script>
+<script src="js/hunt.js?v=150"></script>
+<script src="js/game.js?v=36"></script>
 </body>
 </html>
