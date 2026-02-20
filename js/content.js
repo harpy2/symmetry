@@ -262,77 +262,68 @@ let _towerActive=false;
 function startTower(){
 if(_towerActive)return;
 _towerActive=true;_towerFloor=0;
-// 타워 전용 오버레이
-const overlay=document.createElement('div');
-overlay.id='tower-overlay';
-overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;padding:20px';
-overlay.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-<h2 style="color:var(--gold);margin:0">🗼 무한의 탑</h2>
-<button class="close-btn" onclick="_towerActive=false;document.getElementById('tower-overlay').remove()">✕</button></div>
-<div id="tower-floor-label" style="text-align:center;color:var(--cyan);font-size:14px;font-weight:700;margin-bottom:8px"></div>
-<div id="tower-log" style="flex:1;overflow-y:auto;padding:8px;font-size:13px"></div>
-<div id="tower-footer" style="text-align:center;padding-top:8px"></div>`;
-document.body.appendChild(overlay);
 closeOverlay('challenge');
-nextTowerFloor();
-}
+openOverlay('hunt');
+const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='none';
+document.getElementById('auto-hunt-btn').style.display='none';
 
-async function nextTowerFloor(){
-if(!_towerActive)return;
+setTimeout(async()=>{
+const log=document.getElementById('hunt-log');log.innerHTML='';
+showBgSprite(G.className,'idle');
+await addHuntLine('🗼 무한의 탑 도전 시작!','story',log);
+
+while(_towerActive){
 _towerFloor++;
-const logDiv=document.getElementById('tower-log');
-const floorLabel=document.getElementById('tower-floor-label');
-const footer=document.getElementById('tower-footer');
-if(!logDiv){_towerActive=false;return}
-floorLabel.textContent=`⚔️ ${_towerFloor}층 도전 중...`;
-footer.innerHTML='';
-
 const enemyCount=Math.min(5,1+Math.floor(_towerFloor/5));
 const isBoss=_towerFloor%10===0;
 const enemy=isBoss?`🏛️ 탑의 수호신 ${_towerFloor}층`:`탑의 수호자 ${_towerFloor}층`;
+
+await addHuntLine(`── 🗼 ${_towerFloor}층 ${isBoss?'⚠️ 보스!':''} ──`,'story',log);
+showBgSprite(G.className,'walk');
+
 const oldFloor=G.floor;
 G.floor=_towerFloor*2;
 const combat=generateCombatLocal(enemy,enemyCount,isBoss);
 G.floor=oldFloor;
 
-// 전투 로그 한줄씩 표시
-logDiv.innerHTML='';
-const addLine=(text,color)=>new Promise(r=>{
-const d=document.createElement('div');
-d.style.cssText=`padding:3px 0;color:${color};opacity:0;transition:opacity .2s`;
-d.textContent=text;logDiv.appendChild(d);logDiv.scrollTop=logDiv.scrollHeight;
-requestAnimationFrame(()=>d.style.opacity='1');
-setTimeout(r,250);
-});
-
-for(const line of combat.lines){
-let color='var(--text1)';
-if(line.type==='critical')color='var(--orange)';
-else if(line.type==='damage')color='var(--cyan)';
-else if(line.type==='enemy-atk')color='#ff6b6b';
-else if(line.type==='buff')color='var(--success)';
-await addLine(line.text,color);
+// 버프 묶기 + 전투 로그 표시
+const displayLines=[];
+for(let li=0;li<combat.lines.length;li++){
+const line=combat.lines[li];
+if(line.type==='buff'){
+const buffGroup=[line.text];
+while(li+1<combat.lines.length&&combat.lines[li+1].type==='buff'){li++;buffGroup.push(combat.lines[li].text)}
+displayLines.push({text:buffGroup.join(' | '),type:'buff',hits:null,charClass:null});
+}else{displayLines.push(line)}
 }
+for(const line of displayLines){
+const type=mapLineType(line.type);
+await addHuntLine(line.text,type,log,line.hits,line.charClass);
+}
+
+const taken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
 
 if(combat.won){
 const reward=Math.floor(100*_towerFloor);
 G.gold+=reward;
 if(_towerFloor>(G.towerBest||0))G.towerBest=_towerFloor;
-const taken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
 G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
-updateBars();saveGame();
-await addLine(`✨ ${_towerFloor}층 클리어! 💰+${reward}`,'var(--gold)');
-floorLabel.textContent=`🗼 ${_towerFloor}층 클리어! 최고: ${G.towerBest}층`;
-setTimeout(()=>nextTowerFloor(),800);
+showBgSprite(G.className,'idle');
+await addHuntLine(`✨ ${_towerFloor}층 클리어! 💰+${reward} (최고: ${G.towerBest}층)`,'victory',log);
+updateBars();updateHuntStatus();saveGame();
 }else{
-_towerActive=false;
-const taken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
 G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
-updateBars();saveGame();checkAchievements();
-await addLine(`💀 ${_towerFloor}층에서 패배...`,'var(--danger)');
-floorLabel.textContent=`🗼 ${_towerFloor}층에서 패배! 최고 기록: ${G.towerBest||0}층`;
-footer.innerHTML=`<button class="btn" style="margin-top:8px" onclick="document.getElementById('tower-overlay').remove()">닫기</button>`;
+await addHuntLine(`💀 ${_towerFloor}층에서 패배! 최고 기록: ${G.towerBest||0}층`,'defeat',log);
+_towerActive=false;
 }
+}
+
+updateBars();saveGame();checkAchievements();
+G.autoHunt=origAuto;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='';
+document.getElementById('auto-hunt-btn').style.display='';
+},500);
 }
 
 // ===== ENDLESS HORDE (무한의 적) =====
