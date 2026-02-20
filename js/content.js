@@ -244,10 +244,13 @@ const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
 if(hdr)hdr.innerHTML=title;
 }
 function exitChallengeMode(){
-_challengeActive=false;
-G.autoHunt=_challengeOrigAuto;updateAutoHuntUI();
+G.autoHunt=_challengeOrigAuto;
 // 버튼은 숨긴 채로 유지 — hunt overlay 닫을 때 복원
 updateBars();saveGame();checkAchievements();
+// checkAchievements 등에서 혹시 복원됐을 수 있으니 다시 숨김
+document.getElementById('hunt-btn').style.display='none';
+document.getElementById('auto-hunt-btn').style.display='none';
+_challengeActive=false;
 }
 function restoreHuntUI(){
 document.getElementById('hunt-btn').style.display='';
