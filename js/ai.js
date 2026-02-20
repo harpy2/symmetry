@@ -198,8 +198,11 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         const eCrit=(s===G.activeSlot?getEquipStat('치명타'):0)+(c.critBonus||0);
         const eEvade=(s===G.activeSlot?getEquipStat('회피율'):0);
         const ePen=(s===G.activeSlot?getEquipStat('관통'):0);
+        const eAtkSpd=(s===G.activeSlot?getEquipStat('공격속도'):0)+(c.atkSpd||0);
+        const eCooldown=(s===G.activeSlot?getEquipStat('쿨다운 감소'):0)+(c.cooldownReduce||0);
         const skills=c.equippedSkills||[];
         partyMembers.push({slot:s,name:c.className,atk:eAtk,def:eDef,critBonus:eCrit,evade:eEvade,penetrate:ePen,
+          atkSpd:Math.min(eAtkSpd,50),cooldownReduce:Math.min(eCooldown,100),
           skills:skills,skillDmgBonus:c.skillDmgBonus||0,hp:c.hp,maxHP:c.maxHP,weapon:cls.weapon});
         totalTaken[s]=0;
       }
@@ -209,6 +212,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     // 폴백: G 자체를 사용
     partyMembers.push({slot:0,name:G.className,atk:G.atk+getEquipStat('ATK'),def:G.def+getEquipStat('DEF'),
       critBonus:(G.critBonus||0)+getEquipStat('치명타'),evade:getEquipStat('회피율'),penetrate:getEquipStat('관통'),
+      atkSpd:Math.min(getEquipStat('공격속도')+(G.atkSpd||0),50),cooldownReduce:Math.min(getEquipStat('쿨다운 감소')+(G.cooldownReduce||0),100),
       skills:G.equippedSkills||[],skillDmgBonus:G.skillDmgBonus||0,hp:G.hp,maxHP:G.maxHP,weapon:'⚔️'});
     totalTaken[0]=0;
   }
@@ -315,7 +319,12 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const basicAtk = { name: '평타', icon: weaponIcon, dmg: 10, aoe: false };
       const nonSummonSkills = member.skills.filter(s => !s.summon && !s.buff);
       const hasSkills = nonSummonSkills.length > 0;
-      const skillPool = hasSkills ? [basicAtk, ...nonSummonSkills] : [basicAtk];
+      // 쿨다운 감소: 평타 선택 확률 감소 (100%면 평타 제거)
+      let skillPool;
+      if(!hasSkills){skillPool=[basicAtk]}
+      else if(member.cooldownReduce>=100){skillPool=[...nonSummonSkills]}
+      else if(member.cooldownReduce>0&&Math.random()*100<member.cooldownReduce){skillPool=[...nonSummonSkills]}
+      else{skillPool=[basicAtk,...nonSummonSkills]}
       const skill = skillPool[Math.floor(Math.random() * skillPool.length)];
       const skillDmgMult = 1 + member.skillDmgBonus / 100;
 
@@ -410,6 +419,21 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         if (fx.freeze) { enemies.filter(e=>e.alive).forEach(e=>{e.frozen=true}); lines.push({ text: `${memberLabel}🧊 ${enemy} 빙결! 다음 피해 1.5배!`, type: 'buff' }); }
         if (fx.fear > 0 && Math.random()*100 < fx.fear) { enemyFeared = true; lines.push({ text: `${memberLabel}😱 ${enemy} 공포! 공격력 -30%!`, type: 'buff' }); }
         if (fx.reflect > 0) { lines.push({ text: `${memberLabel}🪞 데미지 ${fx.reflect}% 반사 활성화!`, type: 'buff' }); }
+      }
+
+      // 공격속도: 추가 공격 확률
+      if(!isMiss && member.atkSpd > 0 && Math.random()*100 < member.atkSpd){
+        const bonusAlive = enemies.filter(e => e.alive);
+        if(bonusAlive.length > 0){
+          const bonusSkill = skillPool[Math.floor(Math.random() * skillPool.length)];
+          const bonusDmg = Math.floor((bonusSkill.dmg||10) * (1 + member.atk/30) * (0.8+Math.random()*0.4));
+          const bonusTarget = bonusAlive[0];
+          bonusTarget.hp -= bonusDmg; totalDmg += bonusDmg;
+          lines.push({ text: `${memberLabel}⚡ 연속 공격! ${bonusSkill.icon} ${bonusSkill.name}`, type: 'action', hits: 1, charClass: member.name });
+          if(bonusTarget.hp<=0){bonusTarget.alive=false;const rem=enemies.filter(e=>e.alive).length;
+          lines.push({ text: `${enemy}에게 ${bonusDmg} 피해! 처치!${rem>0?' 남은 적: '+rem:''}`, type: 'damage' })}
+          else{lines.push({ text: `${enemy}에게 ${bonusDmg} 추가 피해! (HP: ${bonusTarget.hp}/${singleHP})`, type: 'damage' })}
+        }
       }
 
       // 적 반격 → 이 멤버에게 피해
