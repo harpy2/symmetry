@@ -411,10 +411,13 @@ const data=await res.json();
 if(data.redirect_url){
 // 영구 참여 기록
 G.missionCooldowns['cpq_'+m.id]=true;
-saveGame();
+// 즉시 보상 지급
+const goldReward=80;const pointReward=15;
+G.gold+=goldReward;G.points+=pointReward;
+updateBars();saveGame();
 // 새 탭으로 광고 페이지 열기
 window.open(data.redirect_url,'_blank');
-toast('📋 미션 참여! 완료 후 보상이 자동 지급됩니다');
+toast(`🎁 미션 보상 수령! 💰+${goldReward} 💎+${pointReward}`);
 renderMissions();
 }else{
 toast('미션 참여 실패: '+(data.error||'알 수 없는 오류'));
