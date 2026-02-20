@@ -191,10 +191,14 @@ for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){i
 await addHuntLine(`패배했지만 경험치 +${expReward} 획득`,'loot',log);
 G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className})}
 
-// 패배 시: 골드 10% 패널티 + HP 50% 회복
+// 패배 시 처리
 if(!combat.won){
+// 전멸(파티 전원 사망)일 때만 골드 패널티
+if(combat.allPartyDead){
 const penalty=Math.floor(G.gold*0.1);
 if(penalty>0){G.gold-=penalty;await addHuntLine(`전멸 패널티: 골드 -${penalty} 💸`,'defeat',log)}
+}
+// HP 50% 회복
 G.hp=Math.max(1,Math.floor(G.maxHP*0.5));
 if(G.party){for(let _s=0;_s<3;_s++){if(G.party[_s]&&G.slotUnlocked[_s]){G.party[_s].hp=Math.max(1,Math.floor((G.party[_s].maxHP||G.party[_s].hp)*0.5))}}}
 }else{

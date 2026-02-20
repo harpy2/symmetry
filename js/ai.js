@@ -514,7 +514,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     lines.push({ text: '전투 패배... 💀', type: 'defeat' });
   }
 
-  return { lines, result: won ? 'win' : 'lose', totalDmg, totalTaken, goldReward, expReward, partyDead: partyMembers.filter(m=>m._dead).map(m=>m.slot) };
+  return { lines, result: won ? 'win' : 'lose', totalDmg, totalTaken, goldReward, expReward, partyDead: partyMembers.filter(m=>m._dead).map(m=>m.slot), allPartyDead };
 }
 
 // ===== AI SKILL GENERATION =====
