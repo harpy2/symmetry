@@ -184,7 +184,8 @@ grid.appendChild(d)}}
 function showItemDetail(idx){const item=G.inventory[idx];if(!item)return;
 const d=document.getElementById('item-detail-area');
 const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${k}: +${v}</div>`).join('');
-const modsHTML=(item.skillMods&&item.skillMods.length)?'<div class="item-mods"><div style="color:var(--gold);font-size:11px;margin-top:6px">✦ 스킬 옵션</div>'+item.skillMods.map(m=>`<div style="color:var(--cyan);font-size:12px">• ${m.mod}</div>`).join('')+'</div>':'';
+const modsHTML=(item.skillMods&&item.skillMods.length)?`<div class="item-mods"><div style="color:var(--gold);font-size:11px;margin-top:6px">${t('✦ 스킬 옵션')}</div>`+item.skillMods.map(m=>`<div style="color:var(--cyan);font-size:12px">• ${m.mod}</div>`).join('')+'</div>':'';
+const slotNameMap={weapon:t('주무기'),offhand:t('보조무기'),helmet:t('투구'),chest:t('상의'),gloves:t('장갑'),pants:t('바지'),boots:t('신발'),necklace:t('목걸이'),ring1:t('반지'),ring2:t('반지')};
 const isEquipped=Object.values(G.equipment).some(e=>e&&e.id===item.id);
 // 다른 캐릭에 장착되어있는지도 체크
 let equippedBy=-1;
@@ -197,12 +198,12 @@ if(!isEquipped&&equippedBy<0){
 for(let s=0;s<3;s++){
 if(G.slotUnlocked&&G.slotUnlocked[s]&&G.party&&G.party[s]){
 const cn=G.party[s].className||('캐릭'+(s+1));
-equipBtns+=`<button class="btn btn-sm" onclick="equipItemToChar(${idx},${s})">${cn}${s===G.activeSlot?' (현재)':''}</button> `;
+equipBtns+=`<button class="btn btn-sm" onclick="equipItemToChar(${idx},${s})">${t(cn)}${s===G.activeSlot?' '+t('(현재)'):''}</button> `;
 }}
 }else if(isEquipped){
-equipBtns=`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">해제</button>`;
+equipBtns=`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">${t('해제')}</button>`;
 }
-d.innerHTML=`<div class="item-detail">${detailIcon}<div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${item.grade} ${{weapon:'주무기',offhand:'보조무기',helmet:'투구',chest:'상의',gloves:'장갑',pants:'바지',boots:'신발',necklace:'목걸이',ring1:'반지',ring2:'반지'}[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">내구도: ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${equipBtns}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">수리 (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">판매 (💰${sellPrice})</button></div></div>`}
+d.innerHTML=`<div class="item-detail">${detailIcon}<div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${t(item.grade)} ${slotNameMap[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">${t('내구도:')} ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${equipBtns}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">${t('수리')} (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">${t('판매')} (💰${sellPrice})</button></div></div>`}
 
 function equipItem(idx){equipItemToChar(idx,G.activeSlot)}
 function equipItemToChar(idx,slot){
@@ -228,13 +229,13 @@ targetChar.equipment[eqSlot]=item;
 G.party[slot]=targetChar;
 if(slot===G.activeSlot)loadSlotToG(slot);
 const charName=targetChar.className||('캐릭'+(slot+1));
-toast(`${item.name} → ${charName} 장착!`);
+toast(`${item.name} → ${t(charName)} ${t('장착!')}`);
 renderInventory();renderEquipRow();renderCharacter();saveGame();
 }
 function unequipItem(type){if(!G.equipment[type])return;G.inventory.push(G.equipment[type]);G.equipment[type]=null;
-toast('장비 해제');renderInventory();renderEquipRow();renderCharacter();saveGame()}
-function repairItem(idx){const item=G.inventory[idx];if(!item)return;const cost=Math.floor((item.maxDurability-item.durability)*0.5);if(G.gold<cost){toast('골드가 부족합니다!');return}G.gold-=cost;item.durability=item.maxDurability;toast('수리 완료!');renderInventory();showItemDetail(idx);updateBars();saveGame()}
-function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));G.gold+=price;G.inventory.splice(idx,1);toast(`판매 완료! 💰+${price}`);document.getElementById('item-detail-area').innerHTML='';renderInventory();updateBars();saveGame()}
+toast(t('장비 해제'));renderInventory();renderEquipRow();renderCharacter();saveGame()}
+function repairItem(idx){const item=G.inventory[idx];if(!item)return;const cost=Math.floor((item.maxDurability-item.durability)*0.5);if(G.gold<cost){toast(t('골드가 부족합니다!'));return}G.gold-=cost;item.durability=item.maxDurability;toast(t('수리 완료!'));renderInventory();showItemDetail(idx);updateBars();saveGame()}
+function sellItem(idx){const item=G.inventory[idx];if(!item)return;const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));G.gold+=price;G.inventory.splice(idx,1);toast(t('판매 완료!')+` 💰+${price}`);document.getElementById('item-detail-area').innerHTML='';renderInventory();updateBars();saveGame()}
 
 function bulkSell(belowGrade){
 const gradeRank={일반:0,매직:1,레어:2,유니크:3,에픽:4};
@@ -243,8 +244,8 @@ const threshold=gradeRank[belowGrade]||0;
 const equippedIds=new Set();
 if(G.party){G.party.forEach(p=>{if(p&&p.equipment){Object.values(p.equipment).forEach(e=>{if(e)equippedIds.add(e.id)})}})}
 const toSell=G.inventory.filter(item=>item&&(gradeRank[item.grade]??0)<threshold&&!equippedIds.has(item.id));
-if(toSell.length===0)return toast('판매할 장비가 없습니다');
-if(!confirm(`${belowGrade} 미만 장비 ${toSell.length}개를 판매할까요?`))return;
+if(toSell.length===0)return toast(t('판매할 장비가 없습니다'));
+if(!confirm(t('{0} 미만 장비 {1}개를 판매할까요?',t(belowGrade),toSell.length)))return;
 let totalGold=0;
 for(const item of toSell){
 const price=Math.floor(({일반:5,매직:10,레어:15,유니크:40,에픽:100}[item.grade]||5)*(1+G.floor*0.1));
@@ -253,7 +254,7 @@ const idx=G.inventory.indexOf(item);
 if(idx>=0)G.inventory.splice(idx,1);
 }
 G.gold+=totalGold;
-toast(`${toSell.length}개 판매! 💰+${totalGold}`);
+toast(t('{0}개 판매! 💰+{1}',toSell.length,totalGold));
 document.getElementById('item-detail-area').innerHTML='';
 renderInventory();updateBars();saveGame();
 }
@@ -292,7 +293,7 @@ if(!G._statUpgrades)G._statUpgrades={};
 G._statUpgrades[u.stat]=(G._statUpgrades[u.stat]||0)+1;
 G[u.stat]=(G[u.stat]||0)+u.value;
 if(u.stat==='maxHP')G.hp=Math.min(G.hp+u.value,G.maxHP);
-toast(`${u.icon} ${u.name} 완료! (+${u.value})`);
+toast(`${u.icon} ${t(u.name)} ${t('완료')}! (+${u.value})`);
 updateBars();renderCharacter();saveGame();renderShop('gold');
 }
 
@@ -300,10 +301,10 @@ updateBars();renderCharacter();saveGame();renderShop('gold');
 async function buyRandomItem(grade){
 const prices={유니크:50,에픽:150};
 const price=prices[grade];
-if(G.points<price)return toast('💎가 부족합니다!');
-if(G.inventory.length>=30)return toast('인벤토리가 가득 찼습니다!');
+if(G.points<price)return toast(t('💎가 부족합니다!'));
+if(G.inventory.length>=30)return toast(t('인벤토리가 가득 찼습니다!'));
 G.points-=price;
-toast('아이템 생성 중...');
+toast(t('아이템 생성 중...'));
 // generateItem을 활용하되 등급 강제
 const item=await generateItemForGrade(grade);
 G.inventory.push(item);
@@ -335,34 +336,34 @@ document.querySelectorAll('.shop-tab').forEach((t,i)=>t.classList.toggle('active
 const container=document.getElementById('shop-items');
 if(tab==='gold'){
 // 소비 아이템
-let html='<div class="shop-section-title">🧪 소비 아이템</div>';
-html+=GOLD_CONSUMABLES.map((item,i)=>`<div class="shop-item" onclick="buyGoldConsumable(${i})"><div class="s-icon">${item.icon}</div><div class="s-info"><div class="s-name">${item.name}</div><div class="s-desc">${item.desc}</div></div><div class="s-price">💰 ${item.price}</div></div>`).join('');
+let html=`<div class="shop-section-title">🧪 ${t('소비 아이템')}</div>`;
+html+=GOLD_CONSUMABLES.map((item,i)=>`<div class="shop-item" onclick="buyGoldConsumable(${i})"><div class="s-icon">${item.icon}</div><div class="s-info"><div class="s-name">${t(item.name)}</div><div class="s-desc">${t(item.desc)}</div></div><div class="s-price">💰 ${item.price}</div></div>`).join('');
 // 스탯 업그레이드
-html+='<div class="shop-section-title" style="margin-top:16px">💪 스탯 강화</div>';
+html+=`<div class="shop-section-title" style="margin-top:16px">💪 ${t('스탯 강화')}</div>`;
 // 전직
 const changePrice=500+G.level*50;
-html+=`<div class="shop-item" onclick="startCharChange()"><div class="s-icon">🔄</div><div class="s-info"><div class="s-name">전직</div><div class="s-desc">캐릭터의 직업을 변경합니다 (레벨 유지)</div></div><div class="s-price">💰 ${changePrice.toLocaleString()}</div></div>`;
+html+=`<div class="shop-item" onclick="startCharChange()"><div class="s-icon">🔄</div><div class="s-info"><div class="s-name">${t('전직')}</div><div class="s-desc">${t('캐릭터의 직업을 변경합니다 (레벨 유지)')}</div></div><div class="s-price">💰 ${changePrice.toLocaleString()}</div></div>`;
 html+=STAT_UPGRADES.map((u,i)=>{
 const count=getStatUpgradeCount(u.stat);
 const price=getStatUpgradePrice(u.stat);
-return`<div class="shop-item" onclick="buyStatUpgrade(${i})"><div class="s-icon">${u.icon}</div><div class="s-info"><div class="s-name">${u.name} <span style="color:var(--cyan);font-size:11px">Lv.${count}</span></div><div class="s-desc">${u.desc}</div></div><div class="s-price">💰 ${price.toLocaleString()}</div></div>`}).join('');
+return`<div class="shop-item" onclick="buyStatUpgrade(${i})"><div class="s-icon">${u.icon}</div><div class="s-info"><div class="s-name">${t(u.name)} <span style="color:var(--cyan);font-size:11px">Lv.${count}</span></div><div class="s-desc">${t(u.desc)}</div></div><div class="s-price">💰 ${price.toLocaleString()}</div></div>`}).join('');
 container.innerHTML=html;
 }else{
 // 다이아 상점: 아이템 구매 + 스킬 리셋
-let html='<div class="shop-section-title">📦 아이템 구매</div>';
-html+=`<div class="shop-item" onclick="buyRandomItem('유니크')"><div class="s-icon" style="color:var(--purple)">💜</div><div class="s-info"><div class="s-name" style="color:var(--purple)">유니크 아이템 상자</div><div class="s-desc">랜덤 유니크 등급 장비 획득</div></div><div class="s-price">💎 50</div></div>`;
-html+=`<div class="shop-item" onclick="buyRandomItem('에픽')"><div class="s-icon" style="color:var(--orange)">🧡</div><div class="s-info"><div class="s-name" style="color:var(--orange)">에픽 아이템 상자</div><div class="s-desc">랜덤 에픽 등급 장비 획득</div></div><div class="s-price">💎 150</div></div>`;
-html+='<div class="shop-section-title" style="margin-top:16px">⚙️ 기타</div>';
-html+=`<div class="shop-item" onclick="buySkillReset()"><div class="s-icon">🔄</div><div class="s-info"><div class="s-name">스킬 리셋</div><div class="s-desc">장착된 스킬 초기화</div></div><div class="s-price">💎 30</div></div>`;
+let html=`<div class="shop-section-title">📦 ${t('아이템 구매')}</div>`;
+html+=`<div class="shop-item" onclick="buyRandomItem('유니크')"><div class="s-icon" style="color:var(--purple)">💜</div><div class="s-info"><div class="s-name" style="color:var(--purple)">${t('유니크 아이템 상자')}</div><div class="s-desc">${t('랜덤 유니크 등급 장비 획득')}</div></div><div class="s-price">💎 50</div></div>`;
+html+=`<div class="shop-item" onclick="buyRandomItem('에픽')"><div class="s-icon" style="color:var(--orange)">🧡</div><div class="s-info"><div class="s-name" style="color:var(--orange)">${t('에픽 아이템 상자')}</div><div class="s-desc">${t('랜덤 에픽 등급 장비 획득')}</div></div><div class="s-price">💎 150</div></div>`;
+html+=`<div class="shop-section-title" style="margin-top:16px">⚙️ ${t('기타')}</div>`;
+html+=`<div class="shop-item" onclick="buySkillReset()"><div class="s-icon">🔄</div><div class="s-info"><div class="s-name">${t('스킬 리셋')}</div><div class="s-desc">${t('장착된 스킬 초기화')}</div></div><div class="s-price">💎 30</div></div>`;
 container.innerHTML=html;
 }
 }
 function switchShopTab(tab,el){renderShop(tab)}
 function buyGoldConsumable(idx){const item=GOLD_CONSUMABLES[idx];
-if(G.gold<item.price)return toast('골드가 부족합니다!');
+if(G.gold<item.price)return toast(t('골드가 부족합니다!'));
 G.gold-=item.price;item.action();updateBars();renderCharacter();saveGame()}
 function buySkillReset(){
-if(G.points<30)return toast('💎가 부족합니다!');
+if(G.points<30)return toast(t('💎가 부족합니다!'));
 G.points-=30;G.equippedSkills=[];G.equippedPassives=[];
 toast('🔄 스킬이 초기화되었습니다!');updateBars();saveGame();renderShop('point');
 }
@@ -412,7 +413,7 @@ const totalGold=claimData.claimed*goldPer;
 const totalPoints=claimData.claimed*pointsPer;
 G.gold+=totalGold;G.points+=totalPoints;
 updateBars();saveGame();
-toast(`🎁 미션 보상 ${claimData.claimed}건 수령! 💰+${totalGold} 💎+${totalPoints}`);
+toast(t('🎁 미션 보상 {0}건 수령! 💰+{1} 💎+{2}',claimData.claimed,totalGold,totalPoints));
 }
 }
 }catch(e){console.warn('[CPQ] reward check error:',e.message)}
@@ -420,7 +421,7 @@ toast(`🎁 미션 보상 ${claimData.claimed}건 수령! 💰+${totalGold} 💎
 
 async function renderMissions(){
 const body=document.getElementById('mission-body');
-body.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px">📋 미션 불러오는 중...</div>';
+body.innerHTML=`<div style="text-align:center;color:var(--text2);padding:20px">${t('📋 미션 불러오는 중...')}</div>`;
 
 // 먼저 미수령 보상 체크
 await checkPendingRewards();
@@ -432,7 +433,7 @@ _cpqMissions=data.missions||[];
 }catch(e){_cpqMissions=[];}
 
 if(_cpqMissions.length===0){
-body.innerHTML='<div class="mission-empty">📋<br>현재 진행 가능한 미션이 없습니다.<br><span style="font-size:12px;opacity:.6">잠시 후 다시 확인해 주세요</span></div>';
+body.innerHTML=`<div class="mission-empty">📋<br>${t('현재 진행 가능한 미션이 없습니다.')}<br><span style="font-size:12px;opacity:.6">${t('잠시 후 다시 확인해 주세요')}</span></div>`;
 return;
 }
 
@@ -446,14 +447,14 @@ const pointReward=15;
 
 let actionHTML='';
 if(joined){
-actionHTML=`<div class="mc-action"><div class="cooldown">✅ 참여 완료</div></div>`;
+actionHTML=`<div class="mc-action"><div class="cooldown">${t('✅ 참여 완료')}</div></div>`;
 }else{
-actionHTML=`<div class="mc-action"><button class="btn cpq-link-btn" onclick="joinCPQ(${i})">⚔️ 의뢰 수행</button></div>`;
+actionHTML=`<div class="mc-action"><button class="btn cpq-link-btn" onclick="joinCPQ(${i})">${t('⚔️ 의뢰 수행')}</button></div>`;
 }
 
 cards.push(`<div class="mission-card${joined?' mission-done':''}">
 <div class="mc-header"><div class="npc-avatar" style="background:${npc.color}">${npc.avatar}</div>
-<div class="mc-header-info"><div class="npc-name">${npc.npc}</div><div class="mission-title">${m.name||'의뢰'}</div></div></div>
+<div class="mc-header-info"><div class="npc-name">${t(npc.npc)}</div><div class="mission-title">${m.name||t('의뢰')}</div></div></div>
 <div class="mc-body"><div class="mission-reward"><span class="reward-tag gold">💰 ${goldReward}</span><span class="reward-tag dia">💎 ${pointReward}</span></div></div>
 ${actionHTML}
 </div>`);
@@ -462,7 +463,7 @@ body.innerHTML=`<div class="mission-list">${cards.join('')}</div>`;
 }
 
 async function joinCPQ(idx){
-const m=_cpqMissions[idx];if(!m)return toast('미션 정보가 없습니다');
+const m=_cpqMissions[idx];if(!m)return toast(t('미션 정보가 없습니다'));
 const uid=getCPQUserId();
 try{
 const res=await fetch(CPQ_API+'/api/cpq/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,campaign_id:m.id})});
@@ -473,7 +474,7 @@ G.missionCooldowns['cpq_'+m.id]=true;
 saveGame();
 // 새 탭으로 광고 페이지 열기
 window.open(data.redirect_url,'_blank');
-toast('의뢰 수행 중... 완료되면 보상이 자동 지급됩니다!');
+toast(t('의뢰 수행 중... 완료되면 보상이 자동 지급됩니다!'));
 // 탭 복귀 시 포스트백 보상 체크
 const onReturn=()=>{
 if(document.visibilityState==='visible'){
@@ -483,7 +484,7 @@ checkPendingRewards().then(()=>renderMissions());
 };
 document.addEventListener('visibilitychange',onReturn);
 }else{
-toast('미션 참여 실패: '+(data.error||'알 수 없는 오류'));
+toast(t('미션 참여 실패:')+' '+(data.error||''));
 }
-}catch(e){toast('미션 참여 실패: '+e.message)}
+}catch(e){toast(t('미션 참여 실패:')+' '+e.message)}
 }
