@@ -48,7 +48,7 @@ if(G.mood<20){toast('기분이 너무 안 좋아서 사냥할 수 없습니다..
 huntInProgress=true;document.getElementById('hunt-btn').disabled=true;
 const log=document.getElementById('hunt-log');log.innerHTML='';
 showBgSprite(G.className,'walk');
-const isBoss=forceBoss||Math.random()<0.1;
+const isBoss=forceBoss||G.floor%10===0||Math.random()<0.15;
 const moodMult=getMoodMultiplier();
 
 // 구간 스토리 체크
