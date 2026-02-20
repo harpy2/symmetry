@@ -315,8 +315,13 @@ let _cpqMissions=[];
 // 유저 UUID (localStorage 영구 저장)
 function getCPQUserId(){
 let uid=localStorage.getItem('sym_uid');
-if(uid)return uid;
-uid=crypto.randomUUID();
+if(uid){
+// 기존 소문자 UUID → 대문자 IDFA 형식으로 마이그레이션
+const upper=uid.toUpperCase();
+if(uid!==upper){localStorage.setItem('sym_uid',upper);uid=upper}
+return uid;
+}
+uid=crypto.randomUUID().toUpperCase();
 localStorage.setItem('sym_uid',uid);
 return uid;
 }
