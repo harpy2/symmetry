@@ -280,7 +280,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     }
   }
 
-  const maxRounds = isBoss ? 8 : 3 + enemyCount + Math.floor(Math.random() * 2);
+  const maxRounds = isBoss ? 10 : 5 + enemyCount + Math.floor(Math.random() * 3);
 
   for (let r = 0; r < maxRounds; r++) {
     const aliveEnemies = enemies.filter(e => e.alive);
@@ -527,7 +527,18 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
   const allEnemiesDead = enemies.every(e => !e.alive);
   const allPartyDead = partyMembers.every(m => m._dead);
-  const won = allEnemiesDead && !allPartyDead;
+  // 라운드 소진 시: 적도 살아있고 나도 살아있으면 → 남은 HP 비율로 판정
+  let won;
+  if (allPartyDead) { won = false; }
+  else if (allEnemiesDead) { won = true; }
+  else {
+    // 시간 초과 — 적 총 HP% vs 아군 총 HP% 비교
+    const enemyHpPct = enemies.filter(e=>e.alive).reduce((s,e)=>s+e.hp,0) / enemies.reduce((s,e)=>s+singleHP,0);
+    const partyHpPct = partyMembers.filter(m=>!m._dead).reduce((s,m)=>s+(m.hp-(totalTaken[m.slot]||0)),0) / partyMembers.reduce((s,m)=>s+m.maxHP,0);
+    won = partyHpPct >= enemyHpPct;
+    if (won) { lines.push({ text: '⏱️ 시간 초과 — 판정승!', type: 'victory' }); }
+    else { lines.push({ text: '⏱️ 시간 초과 — 판정패...', type: 'defeat' }); }
+  }
   const goldMult = 1 + (G.goldBonus || 0) / 100 + getEquipStat('골드 획득') / 100;
   const expMult = 1 + (G.expBonus || 0) / 100 + getEquipStat('경험치 보너스') / 100;
   const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * enemyCount * (0.8 + Math.random() * 0.4) * goldMult) : 0;
