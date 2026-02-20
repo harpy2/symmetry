@@ -129,7 +129,7 @@ if(isActive&&(char.className==='소환사'||char.className==='엔지니어')){
   candidates=shuffled.slice(0,3);
 }
 if(candidates.length===0){resolve();ol.classList.remove('active');return}
-const slotLabel=slot===0?'':'['+char.className+'] ';
+const slotLabel=slot===0?'':'['+t(char.className)+'] ';
 document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${char.level} — ${isActive?t('⚔️ 액티브 스킬'):t('🛡️ 패시브 스킬')} ${LANG==='ko'?'습득!':'learned!'}`;
 document.getElementById('levelup-choices').innerHTML=candidates.map((c,i)=>`<div class="levelup-choice" onclick="pickSkillLearn(${i})"><div class="lc-name">${c.icon} ${t(c.name)}</div><div class="lc-desc">${t(c.desc)}${c.dmg?' | DMG: '+c.dmg:''}${c.aoe?' | '+(LANG==='ko'?'광역':'AoE'):''}${c.dot?' | '+(LANG==='ko'?'지속뎀':'DoT'):''}${c.hits>1?' | '+c.hits+(LANG==='ko'?'회타':' hits'):''}</div></div>`).join('');
 window._skillCandidates=candidates;window._skillType=type;window._skillSlot=slot;window._skillResolve=resolve;
@@ -150,7 +150,7 @@ if(window._skillResolve){window._skillResolve();window._skillResolve=null}
 async function showLevelUp(preloadedChoices,slot){return new Promise(resolve=>{const ol=document.getElementById('levelup-overlay');ol.classList.add('active');
 window._levelSlot=slot!==undefined?slot:G.activeSlot;
 const _char=window._levelSlot===G.activeSlot?G:(G.party&&G.party[window._levelSlot]?G.party[window._levelSlot]:G);
-const slotLabel=window._levelSlot===0?'':'['+_char.className+'] ';
+const slotLabel=window._levelSlot===0?'':'['+t(_char.className)+'] ';
 document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${_char.level} ${LANG==='ko'?'달성!':'reached!'} HP+8, ATK+1, DEF+1`;
 
 let choices = preloadedChoices;
@@ -303,13 +303,13 @@ else{if(!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;char
 if(!cls)continue;
 const actives=char.equippedSkills||[];
 const passives=char.equippedPassives||[];
-html+=`<div class="sp-section"><div class="sp-section-title">${cls.weapon} ${char.className} (Lv.${char.level})</div>`;
-if(actives.length>0){actives.forEach(sk=>{html+=`<div class="sp-row"><span class="sp-name">${sk.icon} ${sk.name}</span><span class="sp-desc">${sk.desc||''}</span></div>`})}
-if(passives.length>0){passives.forEach(sk=>{html+=`<div class="sp-row"><span class="sp-name" style="color:var(--cyan)">${sk.icon} ${sk.name}</span><span class="sp-desc">${sk.desc||''}</span></div>`})}
-if(actives.length===0&&passives.length===0)html+='<div class="sp-row"><span class="sp-desc">스킬 없음</span></div>';
+html+=`<div class="sp-section"><div class="sp-section-title">${cls.weapon} ${t(char.className)} (Lv.${char.level})</div>`;
+if(actives.length>0){actives.forEach(sk=>{html+=`<div class="sp-row"><span class="sp-name">${sk.icon} ${t(sk.name)}</span><span class="sp-desc">${t(sk.desc||'')}</span></div>`})}
+if(passives.length>0){passives.forEach(sk=>{html+=`<div class="sp-row"><span class="sp-name" style="color:var(--cyan)">${sk.icon} ${t(sk.name)}</span><span class="sp-desc">${t(sk.desc||'')}</span></div>`})}
+if(actives.length===0&&passives.length===0)html+='<div class="sp-row"><span class="sp-desc">'+t('스킬 없음')+'</span></div>';
 html+='</div>';
 }
-if(!html)html='<div class="sp-row"><span class="sp-desc">스킬 없음</span></div>';
+if(!html)html='<div class="sp-row"><span class="sp-desc">'+t('스킬 없음')+'</span></div>';
 body.innerHTML=html;
 document.getElementById('skill-popup').classList.add('active');
 }
