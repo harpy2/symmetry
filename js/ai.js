@@ -301,8 +301,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
         } else {
           const eCrit = eRoll > 0.9;
-          const lvlScaleP = 1 + (G.level || 1) * 0.02;
-          const rawDmg = (isBoss ? (12 + G.floor * 3) : (12 + G.floor * 1.5)) * floorScaleE * lvlScaleP * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5));
+          const lvlScaleP = 1 + Math.max(0, (G.level||1) - 30) * 0.02;
+          const rawDmg = (isBoss ? (10 + G.floor * 2) : (8 + G.floor * 1)) * floorScaleE * lvlScaleP * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5));
           const defReduceP = member.def / (member.def + 100);
           let eDmg = Math.max(1, Math.floor(rawDmg * (1 - defReduceP)));
           totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
@@ -534,8 +534,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
             lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
           } else {
             const eCrit = eRoll > 0.9;
-            const lvlScale = 1 + (G.level || 1) * 0.02;
-            const rawDmg = (isBoss ? (12 + G.floor * 3) : (12 + G.floor * 1.5)) * floorScale * lvlScale * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5)) * fearMult;
+            const lvlScale = 1 + Math.max(0, (G.level||1) - 30) * 0.02;
+            const rawDmg = (isBoss ? (10 + G.floor * 2) : (8 + G.floor * 1)) * floorScale * lvlScale * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5)) * fearMult;
             const defReduce = member.def / (member.def + 100);
             let eDmg = Math.max(1, Math.floor(rawDmg * (1 - defReduce)));
             totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
