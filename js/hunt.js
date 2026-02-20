@@ -288,8 +288,8 @@ const CLASS_SKILL_ACTION={거너:'shot',궁수:'shot',마법사:'cast',드루이
 
 function getActionType(text,charClass){
 const n=text||'';
-// 평타 → 항상 slash
-if(n.includes('평타'))return 'slash';
+// 평타 → 클래스 기본 액션
+if(n.includes('평타'))return CLASS_SKILL_ACTION[charClass||G.className]||'slash';
 // 원거리 공격 → shot
 if(n.includes('사격')||n.includes('저격')||n.includes('샷건')||n.includes('기관총')||n.includes('관통탄')||n.includes('화살')||n.includes('관통')||n.includes('터렛')||n.includes('드론')||n.includes('폭발'))return 'shot';
 // 마법/주문 → cast

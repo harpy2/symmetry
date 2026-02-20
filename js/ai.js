@@ -311,7 +311,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
       const isMain = member.slot === G.activeSlot;
       const memberLabel = partyMembers.length > 1 ? `[${member.weapon}${member.name}] ` : '';
-      const basicAtk = { name: '평타', icon: '👊', dmg: 10, aoe: false };
+      const weaponIcon = member.weapon||'⚔️';
+      const basicAtk = { name: '평타', icon: weaponIcon, dmg: 10, aoe: false };
       const nonSummonSkills = member.skills.filter(s => !s.summon && !s.buff);
       const hasSkills = nonSummonSkills.length > 0;
       const skillPool = hasSkills ? [basicAtk, ...nonSummonSkills] : [basicAtk];
