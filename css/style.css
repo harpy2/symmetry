@@ -237,7 +237,9 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .hunt-panel-title{font-size:13px;font-weight:800;color:var(--gold);margin-bottom:10px;text-align:center;letter-spacing:1px}
 /* 왼쪽 상태 패널 */
 .hunt-stat-list{display:flex;flex-direction:column;gap:6px}
-.hs-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 6px;border-radius:6px;background:rgba(255,255,255,.03)}
+.hs-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 6px;border-radius:6px;background:rgba(255,255,255,.03);position:relative;cursor:default}
+.hs-row:hover .hs-tooltip{opacity:1;visibility:visible;transform:translateY(0)}
+.hs-tooltip{position:absolute;left:0;top:100%;z-index:100;background:rgba(20,20,30,.95);color:var(--text1);font-size:11px;padding:6px 10px;border-radius:6px;border:1px solid var(--gold);white-space:nowrap;opacity:0;visibility:hidden;transform:translateY(-4px);transition:all .2s;pointer-events:none;margin-top:2px;box-shadow:0 4px 12px rgba(0,0,0,.5)}
 .hs-label{color:var(--text2);font-weight:600}
 .hs-val{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
 /* 오른쪽 장비효과 패널 */
