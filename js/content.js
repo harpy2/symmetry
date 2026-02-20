@@ -256,7 +256,7 @@ function restoreHuntUI(){
 document.getElementById('hunt-btn').style.display='';
 document.getElementById('auto-hunt-btn').style.display='';
 const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
-if(hdr)hdr.innerHTML='⚔️ 사냥 — <span id="hunt-floor">'+G.floor+'</span>층';
+if(hdr)hdr.innerHTML='⚔️ <span id="hunt-label">'+t('사냥')+'</span> — <span id="hunt-floor-prefix">'+(LANG==='ko'?'':'Fl.')+'</span><span id="hunt-floor">'+G.floor+'</span><span id="hunt-floor-suffix">'+(LANG==='ko'?'층':'')+'</span>';
 }
 
 // ===== CHALLENGE BOSS =====

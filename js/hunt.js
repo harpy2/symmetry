@@ -1,6 +1,6 @@
 // ===== HUNTING =====
 let huntInProgress=false;
-function renderHunt(){document.getElementById('hunt-floor').textContent=G.floor;updateAutoHuntUI();updateHuntStatus();
+function renderHunt(){document.getElementById('hunt-floor').textContent=G.floor;var hl=document.getElementById('hunt-label');if(hl)hl.textContent=t('사냥');var hfp=document.getElementById('hunt-floor-prefix');if(hfp)hfp.textContent=LANG==='ko'?'':'Fl.';var hfs=document.getElementById('hunt-floor-suffix');if(hfs)hfs.textContent=LANG==='ko'?'층':'';updateAutoHuntUI();updateHuntStatus();
 if(G.autoHunt&&!huntInProgress){setTimeout(()=>{if(G.autoHunt&&!huntInProgress)startHunt()},500)}}
 function updateHuntStatus(){
 // 왼쪽 상태 패널
