@@ -231,25 +231,29 @@ body.innerHTML=html;
 
 // ===== CHALLENGE MODE HELPERS =====
 let _challengeOrigAuto=false;
+let _challengeActive=false;
 function enterChallengeMode(title){
 closeOverlay('challenge');
 openOverlay('hunt');
+_challengeActive=true;
 _challengeOrigAuto=G.autoHunt;
 G.autoHunt=false;updateAutoHuntUI();
 document.getElementById('hunt-btn').style.display='none';
 document.getElementById('auto-hunt-btn').style.display='none';
-// 헤더 변경
 const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
 if(hdr)hdr.innerHTML=title;
 }
 function exitChallengeMode(){
+_challengeActive=false;
 G.autoHunt=_challengeOrigAuto;updateAutoHuntUI();
+// 버튼은 숨긴 채로 유지 — hunt overlay 닫을 때 복원
+updateBars();saveGame();checkAchievements();
+}
+function restoreHuntUI(){
 document.getElementById('hunt-btn').style.display='';
 document.getElementById('auto-hunt-btn').style.display='';
-// 헤더 복원
 const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
 if(hdr)hdr.innerHTML='⚔️ 사냥 — <span id="hunt-floor">'+G.floor+'</span>층';
-updateBars();saveGame();checkAchievements();
 }
 
 // ===== CHALLENGE BOSS =====

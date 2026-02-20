@@ -86,7 +86,7 @@ if(name==='challenge'){
 const tb=document.getElementById('tower-best');if(tb)tb.textContent=G.towerBest||0;
 const pr=document.getElementById('pvp-record');if(pr)pr.textContent=`${G.pvpWins||0}승 ${((G.pvpCount||0)-(G.pvpWins||0))}패`;
 }}
-function closeOverlay(name){document.getElementById('overlay-'+name).classList.remove('active');if(name==='hunt'){G.autoHunt=false;updateAutoHuntUI()}}
+function closeOverlay(name){document.getElementById('overlay-'+name).classList.remove('active');if(name==='hunt'){G.autoHunt=false;updateAutoHuntUI();if(typeof restoreHuntUI==='function')restoreHuntUI()}}
 
 // ===== SKILL MANAGE =====
 function renderSkillManage(){const body=document.getElementById('skills-body');body.innerHTML='<h3 style="color:var(--gold);margin-bottom:12px;font-size:15px">🗡️ 액티브 스킬</h3>';
