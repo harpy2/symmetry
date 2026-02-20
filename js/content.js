@@ -201,24 +201,26 @@ let html=`<div style="color:var(--gold);font-weight:700;margin-bottom:8px">📅 
 G.dailyQuests.quests.forEach((q,i)=>{
 const done=G.dailyQuests.completed.includes(q.id);
 const pct=Math.min(100,Math.floor(q.progress/q.target*100));
+const rwdText=`${q.reward.gold?'💰'+q.reward.gold+' ':''}${q.reward.dia?'💎'+q.reward.dia:''}`;
 html+=`<div class="quest-card ${done?'done':''}">
 <div class="quest-icon">${q.icon}</div>
 <div class="quest-info"><div class="quest-name">${q.name}</div><div class="quest-desc">${q.desc}</div>
 <div class="quest-bar"><div class="quest-bar-fill" style="width:${pct}%"></div></div>
 <div class="quest-progress">${Math.min(q.progress,q.target)}/${q.target}</div></div>
-<div class="quest-reward">${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('daily',${i})" ${q.progress>=q.target?'':'disabled'}>수령</button>`}</div>
+<div class="quest-reward"><div style="font-size:11px;color:var(--gold);margin-bottom:4px">${rwdText}</div>${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('daily',${i})" ${q.progress>=q.target?'':'disabled'}>수령</button>`}</div>
 </div>`;
 });
 html+=`<div style="color:var(--cyan);font-weight:700;margin:16px 0 8px">📋 주간 퀘스트</div>`;
 G.weeklyQuests.quests.forEach((q,i)=>{
 const done=G.weeklyQuests.completed.includes(q.id);
 const pct=Math.min(100,Math.floor(q.progress/q.target*100));
+const rwdText=`${q.reward.gold?'💰'+q.reward.gold+' ':''}${q.reward.dia?'💎'+q.reward.dia:''}`;
 html+=`<div class="quest-card ${done?'done':''}">
 <div class="quest-icon">${q.icon}</div>
 <div class="quest-info"><div class="quest-name">${q.name}</div><div class="quest-desc">${q.desc}</div>
 <div class="quest-bar"><div class="quest-bar-fill" style="width:${pct}%"></div></div>
 <div class="quest-progress">${Math.min(q.progress,q.target)}/${q.target}</div></div>
-<div class="quest-reward">${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('weekly',${i})" ${q.progress>=q.target?'':'disabled'}>수령</button>`}</div>
+<div class="quest-reward"><div style="font-size:11px;color:var(--gold);margin-bottom:4px">${rwdText}</div>${done?'✅':`<button class="btn btn-sm" onclick="claimQuest('weekly',${i})" ${q.progress>=q.target?'':'disabled'}>수령</button>`}</div>
 </div>`;
 });
 body.innerHTML=html;
@@ -228,14 +230,26 @@ body.innerHTML=html;
 function startDailyBoss(){
 if(G.dailyBossUsed)return toast('오늘의 도전 보스는 이미 도전했습니다!');
 G.dailyBossUsed=true;saveGame();
-// 강력한 보스 생성 (현재 층의 2배 스케일)
+// 사냥 오버레이 열고 보스전 시작
+closeOverlay('challenge');
+openOverlay('hunt');
+const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
 const bossFloor=Math.max(G.floor*2,20);
-const oldFloor=G.floor;G.floor=bossFloor;
-toast('⚠️ 도전 보스 출현!');
-// startHunt가 보스전 실행
-const origAuto=G.autoHunt;G.autoHunt=false;
-startHunt(true);// forceBoss=true
-G.floor=oldFloor;G.autoHunt=origAuto;
+G._challengeFloor=bossFloor;
+G._challengeRestore=G.floor;
+G.floor=bossFloor;
+setTimeout(()=>{startHunt(true)},500);
+// 전투 끝나면 층 복원 (huntInProgress watch)
+const _checkRestore=setInterval(()=>{
+if(!huntInProgress&&G._challengeRestore){
+G.floor=G._challengeRestore;delete G._challengeRestore;delete G._challengeFloor;
+G.autoHunt=origAuto;updateAutoHuntUI();
+G.points=(G.points||0)+20;
+toast('💎 도전 보스 보상 +20!');
+updateBars();saveGame();checkAchievements();
+clearInterval(_checkRestore);
+}
+},500);
 }
 
 // ===== INFINITE TOWER =====
@@ -245,38 +259,76 @@ let _towerActive=false;
 function startTower(){
 if(_towerActive)return;
 _towerActive=true;_towerFloor=0;
-toast('🗼 무한의 탑 도전 시작!');
+// 타워 전용 오버레이
+const overlay=document.createElement('div');
+overlay.id='tower-overlay';
+overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;padding:20px';
+overlay.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h2 style="color:var(--gold);margin:0">🗼 무한의 탑</h2>
+<button class="close-btn" onclick="_towerActive=false;document.getElementById('tower-overlay').remove()">✕</button></div>
+<div id="tower-floor-label" style="text-align:center;color:var(--cyan);font-size:14px;font-weight:700;margin-bottom:8px"></div>
+<div id="tower-log" style="flex:1;overflow-y:auto;padding:8px;font-size:13px"></div>
+<div id="tower-footer" style="text-align:center;padding-top:8px"></div>`;
+document.body.appendChild(overlay);
+closeOverlay('challenge');
 nextTowerFloor();
 }
 
 async function nextTowerFloor(){
 if(!_towerActive)return;
 _towerFloor++;
-const scale=1+_towerFloor*0.05;
-const baseHP=Math.floor(50*scale*_towerFloor);
-const baseDMG=Math.floor(10+_towerFloor*2);
+const logDiv=document.getElementById('tower-log');
+const floorLabel=document.getElementById('tower-floor-label');
+const footer=document.getElementById('tower-footer');
+if(!logDiv){_towerActive=false;return}
+floorLabel.textContent=`⚔️ ${_towerFloor}층 도전 중...`;
+footer.innerHTML='';
+
 const enemyCount=Math.min(5,1+Math.floor(_towerFloor/5));
-const enemy='탑의 수호자 '+_towerFloor+'층';
-// 간이 전투 (generateCombatLocal 활용)
+const isBoss=_towerFloor%10===0;
+const enemy=isBoss?`🏛️ 탑의 수호신 ${_towerFloor}층`:`탑의 수호자 ${_towerFloor}층`;
 const oldFloor=G.floor;
-G.floor=_towerFloor*2; // 스케일링용
-const combat=generateCombatLocal(enemy,enemyCount,_towerFloor%10===0);
+G.floor=_towerFloor*2;
+const combat=generateCombatLocal(enemy,enemyCount,isBoss);
 G.floor=oldFloor;
-// 결과만 표시
+
+// 전투 로그 한줄씩 표시
+logDiv.innerHTML='';
+const addLine=(text,color)=>new Promise(r=>{
+const d=document.createElement('div');
+d.style.cssText=`padding:3px 0;color:${color};opacity:0;transition:opacity .2s`;
+d.textContent=text;logDiv.appendChild(d);logDiv.scrollTop=logDiv.scrollHeight;
+requestAnimationFrame(()=>d.style.opacity='1');
+setTimeout(r,250);
+});
+
+for(const line of combat.lines){
+let color='var(--text1)';
+if(line.type==='critical')color='var(--orange)';
+else if(line.type==='damage')color='var(--cyan)';
+else if(line.type==='enemy-atk')color='#ff6b6b';
+else if(line.type==='buff')color='var(--success)';
+await addLine(line.text,color);
+}
+
 if(combat.won){
 const reward=Math.floor(100*_towerFloor);
 G.gold+=reward;
-toast(`🗼 탑 ${_towerFloor}층 클리어! 💰+${reward}`);
-if(_towerFloor>(G.towerBest||0)){G.towerBest=_towerFloor;saveGame()}
-// HP 소모 반영
+if(_towerFloor>(G.towerBest||0))G.towerBest=_towerFloor;
 const taken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
 G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
-updateBars();
-setTimeout(()=>nextTowerFloor(),500);
+updateBars();saveGame();
+await addLine(`✨ ${_towerFloor}층 클리어! 💰+${reward}`,'var(--gold)');
+floorLabel.textContent=`🗼 ${_towerFloor}층 클리어! 최고: ${G.towerBest}층`;
+setTimeout(()=>nextTowerFloor(),800);
 }else{
 _towerActive=false;
-toast(`🗼 무한의 탑 ${_towerFloor}층에서 패배! 최고 기록: ${G.towerBest||0}층`);
-checkAchievements();saveGame();updateBars();
+const taken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
+G.hp=Math.max(1,G.hp-Math.floor(taken*0.5));
+updateBars();saveGame();checkAchievements();
+await addLine(`💀 ${_towerFloor}층에서 패배...`,'var(--danger)');
+floorLabel.textContent=`🗼 ${_towerFloor}층에서 패배! 최고 기록: ${G.towerBest||0}층`;
+footer.innerHTML=`<button class="btn" style="margin-top:8px" onclick="document.getElementById('tower-overlay').remove()">닫기</button>`;
 }
 }
 
@@ -340,28 +392,47 @@ updateBars();saveGame();checkAchievements();
 showPvPResult(log,won,oppClass,lvl);
 }
 
-function showPvPResult(log,won,oppClass,oppLvl){
+function showPvPResult(lines,won,oppClass,oppLvl){
 const overlay=document.createElement('div');
-overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;padding:20px;overflow-y:auto';
-let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-<h2 style="color:var(--gold);margin:0">🤺 PvP 결과</h2>
-<button class="close-btn" onclick="this.closest('div').remove()">✕</button></div>`;
-html+='<div style="flex:1;overflow-y:auto">';
-log.forEach(l=>{
+overlay.id='pvp-overlay';
+overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;padding:20px';
+const header=document.createElement('div');
+header.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px';
+header.innerHTML=`<h2 style="color:var(--gold);margin:0">🤺 PvP 대전</h2><button class="close-btn" onclick="document.getElementById('pvp-overlay').remove()">✕</button>`;
+overlay.appendChild(header);
+const logDiv=document.createElement('div');
+logDiv.style.cssText='flex:1;overflow-y:auto;padding:8px';
+overlay.appendChild(logDiv);
+const footer=document.createElement('div');
+footer.style.cssText='text-align:center;padding-top:12px';
+overlay.appendChild(footer);
+document.body.appendChild(overlay);
+// 한줄씩 표시
+let idx=0;
+function showNext(){
+if(idx>=lines.length){
+footer.innerHTML=`<div style="font-size:18px;font-weight:700;color:${won?'var(--gold)':'var(--danger)'}">
+${won?'🏆 승리!':'💀 패배...'}</div>
+<div style="font-size:12px;color:var(--text2);margin-top:6px">전적: ${G.pvpWins||0}승 / ${(G.pvpCount||0)-(G.pvpWins||0)}패</div>
+<button class="btn" style="margin-top:12px" onclick="document.getElementById('pvp-overlay').remove()">닫기</button>`;
+return;
+}
+const l=lines[idx];idx++;
 let color='var(--text1)';
 if(l.type==='critical')color='var(--orange)';
 else if(l.type==='damage')color='var(--cyan)';
 else if(l.type==='enemy-atk')color='#ff6b6b';
 else if(l.type==='victory')color='var(--gold)';
 else if(l.type==='defeat')color='var(--danger)';
-html+=`<div style="padding:4px 0;font-size:13px;color:${color}">${l.text}</div>`;
-});
-html+='</div>';
-html+=`<div style="text-align:center;margin-top:12px;font-size:18px;font-weight:700;color:${won?'var(--gold)':'var(--danger)'}">
-${won?'🏆 승리!':'💀 패배...'}</div>`;
-html+=`<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--text2)">전적: ${G.pvpWins||0}승 / ${(G.pvpCount||0)-(G.pvpWins||0)}패</div>`;
-overlay.innerHTML=html;
-document.body.appendChild(overlay);
+else if(l.type==='story')color='var(--text2)';
+const div=document.createElement('div');
+div.style.cssText=`padding:4px 0;font-size:13px;color:${color};opacity:0;transition:opacity .3s`;
+div.textContent=l.text;
+logDiv.appendChild(div);logDiv.scrollTop=logDiv.scrollHeight;
+requestAnimationFrame(()=>div.style.opacity='1');
+setTimeout(showNext,l.type==='story'?600:400);
+}
+showNext();
 }
 
 // ===== CODEX (도감) =====
