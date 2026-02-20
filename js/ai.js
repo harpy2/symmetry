@@ -6,7 +6,7 @@ async function aiGenerate(type, context, fallback) {
     const res = await fetch(AI_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, context })
+      body: JSON.stringify({ type, context, lang: typeof LANG !== 'undefined' ? LANG : 'ko' })
     });
     if (!res.ok) throw new Error('API ' + res.status);
     const data = await res.json();

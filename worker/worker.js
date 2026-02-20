@@ -301,10 +301,23 @@ export default {
 
     try {
       const body = await request.json();
-      const { type, context } = body;
+      const { type, context, lang } = body;
 
       if (!SYSTEM_PROMPTS[type]) {
         return new Response(JSON.stringify({ error: 'Invalid type' }), { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } });
+      }
+
+      // Localize system prompt based on client language
+      let systemPrompt = SYSTEM_PROMPTS[type];
+      if (lang === 'en') {
+        systemPrompt = systemPrompt
+          .replace(/for a Korean dungeon crawler/g, 'for an English dungeon crawler')
+          .replace(/in Korean/g, 'in English')
+          .replace(/All strings in Korean/g, 'All strings in English')
+          .replace(/All text in Korean/g, 'All text in English')
+          .replace(/string in Korean/g, 'string in English');
+        // IMPORTANT: grade keys (일반/매직/레어/유니크/에픽) must stay in Korean — they are internal data keys
+        systemPrompt += '\nIMPORTANT: Grade values in JSON must remain in Korean (일반/매직/레어/유니크/에픽) — these are internal keys. Only names, descriptions, and text should be in English.';
       }
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -317,7 +330,7 @@ export default {
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: MAX_TOKENS[type] || 300,
-          system: SYSTEM_PROMPTS[type],
+          system: systemPrompt,
           messages: [{ role: 'user', content: JSON.stringify(context) }],
         }),
       });
