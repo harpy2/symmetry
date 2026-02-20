@@ -345,17 +345,26 @@ return s;
 }
 function saveGame(){
 const s=serializeState();
+// 로컬은 오프라인 백업용
 localStorage.setItem('symmetry_save',JSON.stringify(s));
-// 클라우드 세이브 (디바운스 5초)
+// 서버 저장 (디바운스 2초)
 if(_cloudSaveTimer)clearTimeout(_cloudSaveTimer);
-_cloudSaveTimer=setTimeout(()=>{cloudSave(s)},5000);
+_cloudSaveTimer=setTimeout(()=>{cloudSave(s)},2000);
 }
 async function cloudSave(s){
 try{
 const uid=getCPQUserId();
-await fetch(CPQ_API+'/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,data:s})});
-}catch(e){console.warn('[CloudSave] error:',e.message)}
+const res=await fetch(CPQ_API+'/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,data:s})});
+if(!res.ok)throw new Error('status '+res.status);
+}catch(e){console.warn('[CloudSave] error:',e.message);localStorage.setItem('symmetry_save',JSON.stringify(s))}
 }
+// 페이지 나갈 때 즉시 서버 저장
+window.addEventListener('beforeunload',()=>{
+if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);const s=serializeState();const uid=getCPQUserId();navigator.sendBeacon(CPQ_API+'/api/save',JSON.stringify({user_id:uid,data:s}))}
+});
+window.addEventListener('visibilitychange',()=>{
+if(document.visibilityState==='hidden'){const s=serializeState();const uid=getCPQUserId();navigator.sendBeacon(CPQ_API+'/api/save',JSON.stringify({user_id:uid,data:s}))}
+});
 
 function restoreState(s){
 G=s;G.className=s.className_;G.classData=CLASSES[G.className];
@@ -406,32 +415,34 @@ return false;
 }
 
 // 세이브 데이터 점수 (높을수록 진행도 높음)
-// 이어하기: 타임스탬프 우선, 없으면 진행도 비교
+// 이어하기: 서버 우선, 실패 시 로컬 폴백
 async function continueGame(){
-toast('데이터 불러오는 중...');
+toast('서버에서 데이터 불러오는 중...');
 let cloudData=null;
 try{
 const uid=getCPQUserId();
 const res=await fetch(CPQ_API+'/api/save?user_id='+uid);
 const json=await res.json();
 cloudData=json.data||null;
-}catch(e){}
+}catch(e){console.warn('[Load] cloud fetch failed:',e.message)}
 const localRaw=localStorage.getItem('symmetry_save');
 let localData=null;
 try{if(localRaw)localData=JSON.parse(localRaw)}catch(e){}
 if(!cloudData&&!localData){toast('저장된 데이터가 없습니다');return}
-// 둘 다 타임스탬프 있으면 최신 우선, 없으면 있는 쪽 우선
+// 서버 데이터 우선, 없으면 로컬 폴백
 let chosen,isCloud=false;
-const ct=cloudData&&cloudData.savedAt?cloudData.savedAt:0;
+if(cloudData){
+const ct=cloudData.savedAt||0;
 const lt=localData&&localData.savedAt?localData.savedAt:0;
-if(ct||lt){chosen=ct>=lt?cloudData:localData;isCloud=ct>=lt&&!!cloudData}
-else{chosen=cloudData||localData;isCloud=!!cloudData&&!localData}
+// 로컬이 더 최신이면 로컬 사용 후 서버 동기화
+if(lt>ct&&localData){chosen=localData;isCloud=false}
+else{chosen=cloudData;isCloud=true}
+}else{chosen=localData;isCloud=false}
 if(!chosen){toast('저장된 데이터가 없습니다');return}
 if(restoreState(chosen)){
 localStorage.setItem('symmetry_save',JSON.stringify(chosen));
-showScreen('main-screen');toast(isCloud?'☁️ 클라우드 세이브 로드 완료!':'게임 로드 완료!');
+showScreen('main-screen');toast(isCloud?'☁️ 서버 세이브 로드 완료!':'📱 로컬 세이브 로드 완료!');
 trackEvent('game_start',{type:'continue',level:G.level,floor:G.floor,class:G.className});
-// 최신 데이터를 클라우드에도 동기화
 if(!isCloud&&localData)cloudSave(localData);
 }else{toast('잘못된 세이브 데이터')}
 }
