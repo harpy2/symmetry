@@ -76,32 +76,11 @@ if(isBoss){await addHuntLine(`⚠️ 보스 출현! ${tmpl.bossEmoji} ${enemy}!`
 else{await addHuntLine(`${enemy} ${enemyCount}마리가 나타났다!`,'story',log)}
 await wait(600);
 
-// === Phase 3: 보스 스킬체크 (수동만) ===
-let skillCheckResults=null;
-if(isBoss&&!G.autoHunt){
-const rounds=5;
-skillCheckResults=await bossSkillCheckPopup(rounds);
-}
-
-// === Phase 4: AI 전투 생성 (한번에) ===
+// === Phase 3: AI 전투 생성 ===
 showBgSprite(G.className,'idle');
 await addHuntLine('⚔️ 전투 개시!','story',log);
 
-// 전투 생성 (항상 로컬 — 스킬은 로컬이 제어)
 let combat=generateCombatLocal(enemy,enemyCount,isBoss);
-
-// 보스 스킬체크 결과 반영
-if(skillCheckResults){
-// 스킬체크에 따라 보상 보정
-let scBonus=0;
-skillCheckResults.rounds.forEach(r=>{
-if(r.type==='critical')scBonus+=0.3;
-else if(r.type==='hit')scBonus+=0.1;
-else scBonus-=0.1;
-});
-combat.goldReward=Math.floor((combat.goldReward||0)*(1+scBonus));
-combat.expReward=Math.floor((combat.expReward||0)*(1+scBonus));
-}
 
 // === Phase 5: 한줄씩 표시 (HP 실시간 반영, buff는 묶어서 표시) ===
 let _liveTaken={};
@@ -425,69 +404,4 @@ else{d.textContent=text;d.style.textAlign='center';d.style.margin='0 auto'}
 log.appendChild(d);log.scrollTop=log.scrollHeight;updateHuntStatus();const spd=['buff','miss'].includes(cls)?250:500;setTimeout(r,spd)})}
 
 // ===== BOSS SKILL CHECK POPUP =====
-function bossSkillCheckPopup(totalRounds){
-return new Promise(resolve=>{
-const results=[];let round=0;
-const speed=2.5+G.floor*0.15;
-const normalZone=18;const critZone=5;
-
-const overlay=document.createElement('div');
-overlay.className='sc-popup-overlay';
-overlay.innerHTML='<div class="sc-popup"><div class="sc-popup-title">⚡ 스킬 체크</div><div class="sc-popup-content" id="sc-popup-content"></div></div>';
-document.body.appendChild(overlay);
-requestAnimationFrame(()=>overlay.classList.add('active'));
-const content=overlay.querySelector('#sc-popup-content');
-
-function runRound(){
-if(round>=totalRounds){
-overlay.classList.remove('active');
-setTimeout(()=>overlay.remove(),300);
-resolve({rounds:results});return}
-
-const critStart=Math.floor(Math.random()*360);
-const normalStart=(critStart-normalZone+360)%360;
-const critEnd=(critStart+critZone)%360;
-const skill=G.equippedSkills[round%G.equippedSkills.length]||{icon:'👊',name:'평타'};
-
-content.innerHTML=`
-<div class="sc-round-info">${skill.icon} ${skill.name} — 라운드 ${round+1}/${totalRounds}</div>
-<div class="sc-gauge"><svg viewBox="0 0 200 200">
-<circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="14"/>
-<path d="${descArc(100,100,85,normalStart,(normalStart+normalZone*2+critZone)%360)}" fill="none" stroke="rgba(0,232,143,.3)" stroke-width="14" stroke-linecap="round"/>
-<path d="${descArc(100,100,85,critStart,critEnd)}" fill="none" stroke="rgba(255,68,102,.5)" stroke-width="14" stroke-linecap="round"/>
-<line id="sc-needle" x1="100" y1="100" x2="100" y2="20" stroke="var(--gold)" stroke-width="3" stroke-linecap="round"/>
-</svg></div>
-<div class="sc-info"><span>🟢 일반</span><span>🔴 크리티컬</span></div>
-<button class="btn sc-popup-btn" id="sc-popup-btn">⚡ 공격!</button>
-<div class="sc-result" id="sc-popup-result"></div>`;
-
-let angle=0,running=true,anim;
-const needle=()=>content.querySelector('#sc-needle');
-function tick(){if(!running)return;angle=(angle+speed)%360;const n=needle();if(n)n.setAttribute('transform','rotate('+angle+',100,100)');anim=requestAnimationFrame(tick)}
-tick();
-
-const btn=content.querySelector('#sc-popup-btn');
-function doCheck(){
-if(!running)return;
-running=false;if(anim)cancelAnimationFrame(anim);btn.disabled=true;btn.style.opacity='.4';
-const a=angle;
-const inCrit=isInArc(a,critStart,critEnd);
-const inNormal=isInArc(a,normalStart,(normalStart+normalZone*2+critZone)%360);
-const res=content.querySelector('#sc-popup-result');
-let type='miss';
-if(inCrit){type='critical';res.innerHTML='<span style="color:var(--danger);font-size:20px;font-weight:700">💥 크리티컬!!!</span>'}
-else if(inNormal){type='hit';res.innerHTML='<span style="color:var(--success);font-size:18px;font-weight:700">✅ 적중!</span>'}
-else{res.innerHTML='<span style="color:var(--text2);font-size:16px">❌ 빗나감...</span>'}
-results.push({skillIdx:round,type});round++;
-setTimeout(runRound,800);
-}
-
-btn.addEventListener('touchstart',function(e){e.preventDefault();doCheck()},{passive:false,once:true});
-btn.addEventListener('mousedown',function(e){e.preventDefault();doCheck()},{once:true});
-}
-runRound();
-})}
-
-function descArc(cx,cy,r,s,e){s=s-90;e=e-90;const sr=s*Math.PI/180,er=e*Math.PI/180;const x1=cx+r*Math.cos(sr),y1=cy+r*Math.sin(sr),x2=cx+r*Math.cos(er),y2=cy+r*Math.sin(er);const large=((e-s+360)%360>180)?1:0;return`M${x1},${y1}A${r},${r},0,${large},1,${x2},${y2}`}
-function isInArc(a,s,e){if(e>s)return a>=s&&a<=e;return a>=s||a<=e}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
