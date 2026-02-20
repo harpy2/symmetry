@@ -301,11 +301,11 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .inv-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .inv-slot{aspect-ratio:1;background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:12px;border:2px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;position:relative;transition:all .2s cubic-bezier(.4,0,.2,1);overflow:hidden}
 .inv-slot:active{transform:scale(.92)}
-.inv-slot.grade-일반{border-color:rgba(150,150,150,.3);box-shadow:0 0 8px rgba(150,150,150,.1)}
-.inv-slot.grade-매직{border-color:rgba(74,222,128,.35);box-shadow:0 0 12px rgba(74,222,128,.15)}
-.inv-slot.grade-레어{border-color:rgba(74,158,255,.35);box-shadow:0 0 12px rgba(74,158,255,.15)}
-.inv-slot.grade-유니크{border-color:rgba(168,85,247,.35);box-shadow:0 0 12px rgba(168,85,247,.2)}
-.inv-slot.grade-에픽{border-color:rgba(249,115,22,.4);box-shadow:0 0 16px rgba(249,115,22,.25)}
+.inv-slot.grade-일반{border-color:rgba(170,170,170,.6);box-shadow:0 0 6px rgba(170,170,170,.2)}
+.inv-slot.grade-매직{border-color:rgba(34,238,102,.7);box-shadow:0 0 10px rgba(34,238,102,.3)}
+.inv-slot.grade-레어{border-color:rgba(68,153,255,.8);box-shadow:0 0 14px rgba(68,153,255,.4)}
+.inv-slot.grade-유니크{border-color:rgba(187,85,255,.8);box-shadow:0 0 16px rgba(187,85,255,.45)}
+.inv-slot.grade-에픽{border-color:rgba(255,136,0,.85);box-shadow:0 0 20px rgba(255,136,0,.5)}
 .inv-slot .dur-bar{position:absolute;bottom:3px;left:5px;right:5px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;z-index:2}
 .inv-slot .dur-fill{height:100%;background:var(--success);border-radius:2px;transition:width .3s}
 /* PC 확장형 인벤토리 */
@@ -330,10 +330,11 @@ html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg1);color:v
 .item-detail .item-stats div{font-size:13px;color:var(--text2);padding:3px 0;display:flex;align-items:center;gap:6px}
 .item-detail .item-desc{font-size:12px;color:var(--text2);font-style:italic;border-top:1px solid var(--glass-border);padding-top:10px;margin-top:10px;line-height:1.6}
 .item-detail .item-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.grade-일반-text{color:#999}
-.grade-레어-text{color:var(--blue)}
-.grade-유니크-text{color:var(--purple)}
-.grade-에픽-text{color:var(--orange)}
+.grade-일반-text{color:#aaa}
+.grade-매직-text{color:#22ee66}
+.grade-레어-text{color:#4499ff}
+.grade-유니크-text{color:#bb55ff}
+.grade-에픽-text{color:#ff8800}
 
 /* ============ SHOP ============ */
 .shop-tabs{display:flex;gap:0;padding:0 16px 14px;position:relative}
