@@ -200,7 +200,7 @@ await addHuntLine(`패배했지만 경험치 +${expReward} 획득`,'loot',log);
 G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className})}
 
 // 패배 시 처리
-if(!combat.won){
+if(!won){
 // 전멸(파티 전원 사망)일 때만 골드 패널티
 if(combat.allPartyDead){
 const penalty=Math.floor(G.gold*0.1);
