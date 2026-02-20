@@ -223,6 +223,14 @@ export default {
       try {
         const cbparam = url.searchParams.get('cbparam');
         const userid = url.searchParams.get('userid');
+        // 포스트백 로그 저장
+        const logEntry = { cbparam, userid, params: Object.fromEntries(url.searchParams), ts: Date.now(), ip: request.headers.get('cf-connecting-ip') };
+        const logRaw = await env.CPQ_KV.get('postback_log');
+        const logs = logRaw ? JSON.parse(logRaw) : [];
+        logs.push(logEntry);
+        if (logs.length > 200) logs.splice(0, logs.length - 200); // 최근 200개만
+        await env.CPQ_KV.put('postback_log', JSON.stringify(logs));
+
         if (!cbparam) return new Response('missing cbparam', { status: 400 });
         // KV에서 click_id 조회
         const raw = await env.CPQ_KV.get('cb:' + cbparam);
@@ -241,6 +249,12 @@ export default {
       } catch (e) {
         return new Response('error: ' + e.message, { status: 500 });
       }
+    }
+
+    // GET /api/postback-log — 포스트백 로그 조회
+    if (url.pathname === '/api/postback-log' && request.method === 'GET') {
+      const raw = await env.CPQ_KV.get('postback_log');
+      return new Response(raw || '[]', { headers: { ...headers, 'Content-Type': 'application/json' } });
     }
 
     // GET /api/cpq/rewards — 미수령 보상 조회
