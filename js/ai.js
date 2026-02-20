@@ -232,7 +232,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     }
   }
   if (summons.length > 0) {
-    lines.push({ text: `🔮 소환수 ${summons.length}마리 전투 참여! (${[...new Set(summons.map(s=>s.icon+s.name))].join(', ')})`, type: 'buff' });
+    lines.push({ text: t('🔮 소환수 {0}마리 전투 참여!',summons.length)+` (${[...new Set(summons.map(s=>s.icon+t(s.name)))].join(', ')})`, type: 'buff' });
   }
 
   // === 패시브 스킬 적용 ===
@@ -258,7 +258,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     // 적용된 패시브 라인 출력 (패시브가 있을 때만)
     if (passives.length > 0) {
       const memberLabel = partyMembers.length > 1 ? `[${member.weapon}${member.name}] ` : '';
-      lines.push({ text: `${memberLabel}패시브 발동: ${passives.map(p => p.icon + p.name).join(', ')}`, type: 'buff' });
+      lines.push({ text: `${memberLabel}${t('패시브 발동:')} ${passives.map(p => p.icon + t(p.name)).join(', ')}`, type: 'buff' });
     }
   }
 
@@ -268,16 +268,16 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     const buffSkills = member.skills.filter(s => s.buff && !s.summon);
     for (const bs of buffSkills) {
       // 버프 효과 적용
-      if (/ATK|공격|공속|딜러/.test(bs.desc)) { member.atk = Math.floor(member.atk * 1.3); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! ATK 강화!`, type: 'buff' }); }
-      else if (/DEF|방어|보호|방패/.test(bs.desc)) { member.def = Math.floor(member.def * 1.5); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! DEF 강화!`, type: 'buff' }); }
-      else if (/무적|회피/.test(bs.desc)) { member._invincible = true; lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! 무적 상태!`, type: 'buff' }); }
-      else if (/치명타|집중/.test(bs.desc)) { member.critBonus += 50; lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! 치명타 대폭 강화!`, type: 'buff' }); }
-      else if (/힐|회복|정화/.test(bs.desc)) { member.hp = Math.min(member.maxHP, member.hp + Math.floor(member.maxHP * 0.3)); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전! HP 회복!`, type: 'buff' }); }
+      if (/ATK|공격|공속|딜러/.test(bs.desc)) { member.atk = Math.floor(member.atk * 1.3); lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)} ${t('시전')}! ATK ${t('강화')}!`, type: 'buff' }); }
+      else if (/DEF|방어|보호|방패/.test(bs.desc)) { member.def = Math.floor(member.def * 1.5); lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)} ${t('시전')}! DEF ${t('강화')}!`, type: 'buff' }); }
+      else if (/무적|회피/.test(bs.desc)) { member._invincible = true; lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)} ${t('시전')}! ${t('무적 상태')}!`, type: 'buff' }); }
+      else if (/치명타|집중/.test(bs.desc)) { member.critBonus += 50; lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)} ${t('시전')}! ${t('치명타 대폭 강화')}!`, type: 'buff' }); }
+      else if (/힐|회복|정화/.test(bs.desc)) { member.hp = Math.min(member.maxHP, member.hp + Math.floor(member.maxHP * 0.3)); lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)} ${t('시전')}! HP ${t('회복')}!`, type: 'buff' }); }
       else if (/변신/.test(bs.desc)) {
-        if (/ATK|딜러|늑대/.test(bs.desc)) { member.atk = Math.floor(member.atk * 2); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name}! ATK 2배!`, type: 'buff' }); }
-        else { member.def = Math.floor(member.def * 2); lines.push({ text: `${memberLabel}${bs.icon} ${bs.name}! DEF 2배!`, type: 'buff' }); }
+        if (/ATK|딜러|늑대/.test(bs.desc)) { member.atk = Math.floor(member.atk * 2); lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)}! ATK 2${t('배')}!`, type: 'buff' }); }
+        else { member.def = Math.floor(member.def * 2); lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)}! DEF 2${t('배')}!`, type: 'buff' }); }
       }
-      else { lines.push({ text: `${memberLabel}${bs.icon} ${bs.name} 시전!`, type: 'buff' }); }
+      else { lines.push({ text: `${memberLabel}${bs.icon} ${t(bs.name)} ${t('시전')}!`, type: 'buff' }); }
     }
   }
 
@@ -286,7 +286,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
   // 선공 판정: 50% 확률로 적이 먼저 공격
   const enemyFirst = Math.random() < 0.5;
   if (enemyFirst) {
-    lines.push({ text: '⚠️ 적의 선제공격!', type: 'enemy-atk' });
+    lines.push({ text: t('⚠️ 적의 선제공격!'), type: 'enemy-atk' });
     const floorScaleE = floorScale;
     for (const member of partyMembers) {
       if (member._dead) continue;
@@ -298,7 +298,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         const eRoll = Math.random();
         const evadeChance = 0.15 + member.evade / 100;
         if (eRoll < evadeChance) {
-          lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
+          lines.push({ text: `${enemy} ${t('공격')} → ${memberLabel}${t('빗나감!')}`, type: 'enemy-atk', dmg: 0, charClass: member.name });
         } else {
           const eCrit = eRoll > 0.9;
           const lvlScaleP = 1 + Math.max(0, (G.level||1) - 30) * 0.02;
@@ -306,15 +306,15 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           const defReduceP = member.def / (member.def + 100);
           let eDmg = Math.max(1, Math.floor(rawDmg * (1 - defReduceP)));
           totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
-          lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
+          lines.push({ text: `${eCrit ? t('💥크리티컬! ') : ''}${enemy} ${t('공격')} → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
         }
       }
       const memberHP = member.hp - (totalTaken[member.slot]||0);
-      if (memberHP <= 0 && !member._dead) { member._dead = true; lines.push({ text: `💀 ${memberLabel}쓰러졌다!`, type: 'defeat', charClass: member.name }); }
+      if (memberHP <= 0 && !member._dead) { member._dead = true; lines.push({ text: `💀 ${memberLabel}${t('쓰러졌다!')}`, type: 'defeat', charClass: member.name }); }
     }
-    if (partyMembers.every(m => m._dead)) { lines.push({ text: '💀 파티가 전멸했다...', type: 'defeat' }); }
+    if (partyMembers.every(m => m._dead)) { lines.push({ text: t('💀 파티가 전멸했다...'), type: 'defeat' }); }
   } else {
-    lines.push({ text: '⚡ 아군의 선제공격!', type: 'action' });
+    lines.push({ text: t('⚡ 아군의 선제공격!'), type: 'action' });
   }
 
   for (let r = 0; r < maxRounds; r++) {
@@ -327,8 +327,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       if (e.dot > 0) {
         const dotDmg = e.dot;
         e.hp -= dotDmg; totalDmg += dotDmg;
-        lines.push({ text: `🔥 ${enemy} 지속 피해! -${dotDmg}`, type: 'damage' });
-        if (e.hp <= 0) { e.alive = false; lines.push({ text: `${enemy} 지속 피해로 쓰러졌다!`, type: 'damage' }); }
+        lines.push({ text: `🔥 ${enemy} ${t('지속 피해')}! -${dotDmg}`, type: 'damage' });
+        if (e.hp <= 0) { e.alive = false; lines.push({ text: `${enemy} ${t('지속 피해로 쓰러졌다!')}`, type: 'damage' }); }
       }
     }
     if (enemies.filter(e => e.alive).length === 0) break;
@@ -339,7 +339,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         const healAmt = Math.floor(member.maxHP * member._regen / 100);
         totalTaken[member.slot] = Math.max(0, (totalTaken[member.slot]||0) - healAmt);
         const memberLabel = partyMembers.length > 1 ? `[${member.weapon}${member.name}] ` : '';
-        lines.push({ text: `💚 ${memberLabel}재생! +${healAmt} HP`, type: 'buff' });
+        lines.push({ text: `💚 ${memberLabel}${t('재생')}! +${healAmt} HP`, type: 'buff' });
       }
     }
 
@@ -366,7 +366,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           const reviveHP = Math.floor(deadAlly.maxHP * 0.3);
           totalTaken[deadAlly.slot] = Math.max(0, (totalTaken[deadAlly.slot]||0) - reviveHP);
           const allyLabel = `[${deadAlly.weapon}${deadAlly.name}]`;
-          lines.push({ text: `${memberLabel}💛 ${reviveSkill.name} → ${allyLabel} 부활! HP ${reviveHP} 회복!`, type: 'buff', charClass: member.name });
+          lines.push({ text: `${memberLabel}💛 ${t(reviveSkill.name)} → ${allyLabel} ${t('부활')}! HP ${reviveHP} ${t('회복')}!`, type: 'buff', charClass: member.name });
           didHealAction = true;
         }
         // 2) HP 50% 이하 아군 힐
@@ -378,8 +378,8 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
             const healPct = /(\d+)%/.test(hSkill.desc) ? parseInt(hSkill.desc.match(/(\d+)%/)[1]) : 15;
             const healAmt = Math.floor(target.maxHP * healPct / 100);
             totalTaken[target.slot] = Math.max(0, (totalTaken[target.slot]||0) - healAmt);
-            const targetLabel = target.slot === member.slot ? '자신' : `[${target.weapon}${target.name}]`;
-            lines.push({ text: `${memberLabel}${hSkill.icon} ${hSkill.name} → ${targetLabel} HP +${healAmt} 회복!`, type: 'buff', charClass: member.name });
+            const targetLabel = target.slot === member.slot ? t('자신') : `[${target.weapon}${t(target.name)}]`;
+            lines.push({ text: `${memberLabel}${hSkill.icon} ${t(hSkill.name)} → ${targetLabel} HP +${healAmt} ${t('회복')}!`, type: 'buff', charClass: member.name });
             didHealAction = true;
           }
         }
@@ -440,68 +440,68 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         let dmgRaw = Math.floor(baseDmg * dmgMult);
         if (fx.lowHpDmg > 0 && member.hp <= member.maxHP * 0.3) dmgRaw = Math.floor(dmgRaw * fx.lowHpDmg);
         const dmg = dmgRaw + member.penetrate;
-        if (isMiss && hit === 0) { lines.push({ text: `${memberLabel}${skill.icon} ${skill.name} 시전! — ${tag.trim()}`, type: 'miss' }); break; }
+        if (isMiss && hit === 0) { lines.push({ text: `${memberLabel}${skill.icon} ${t(skill.name)} ${t('시전')}! — ${tag.trim()}`, type: 'miss' }); break; }
         if (isAoe) {
           let killed = 0;
           alive2.forEach(e => { e.hp -= dmg; if(e.hp<=0){e.alive=false;killed++} });
           totalDmg += dmg * alive2.length;
           const remaining = enemies.filter(e => e.alive).length;
           const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}타]` : '';
-          lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} — ${tag}전체 공격!`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
+          lines.push({ text: `${memberLabel}${skill.icon} ${t(skill.name)}${hitLabel} — ${tag}${t('전체 공격')}!`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           const avgHp=remaining>0?Math.floor(enemies.filter(e=>e.alive).reduce((s,e)=>s+e.hp,0)/remaining):0;
-          lines.push({ text: `${enemy} ${alive2.length}마리에게 각 ${dmg} 피해!${killed>0?` ${killed}마리 처치!`:''}${remaining>0?` 남은 적: ${remaining} (평균 HP: ${avgHp}/${singleHP})`:''}`, type: 'damage' });
+          lines.push({ text: `${enemy} ${alive2.length}${t('마리에게 각')} ${dmg} ${t('피해!')}${killed>0?` ${killed}${t('마리 처치!')}`:''}${remaining>0?` ${t('남은 적')}: ${remaining} (HP: ${avgHp}/${singleHP})`:''}`, type: 'damage' });
           // 네크로맨서: AoE 처치 시 망령 소환
           if(killed>0){const hasNecro=member.skills.some(s=>s.necro);
           if(hasNecro){for(let nk=0;nk<killed;nk++){const necroHP=Math.floor(singleHP*0.5);summons.push({name:'망령 '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});}
-          lines.push({text:`${memberLabel}💀 네크로맨서! ${killed}구의 시체가 아군 망령으로 부활!`,type:'buff'});}}
+          lines.push({text:`${memberLabel}💀 ${t('네크로맨서')}! ${killed}${t('구의 시체가 아군 망령으로 부활!')}`,type:'buff'});}}
         } else {
           const target = alive2[0];
           let finalDmg = dmg;
-          if (fx.execute && target.hp <= singleHP * 0.3) { finalDmg = dmg * 3; if (hit === 0) lines.push({ text: `${memberLabel}⚰️ 처형 발동! 데미지 3배!`, type: 'buff' }); }
+          if (fx.execute && target.hp <= singleHP * 0.3) { finalDmg = dmg * 3; if (hit === 0) lines.push({ text: `${memberLabel}⚰️ ${t('처형 발동! 데미지 3배!')}`, type: 'buff' }); }
           if (target.frozen) { finalDmg = Math.floor(finalDmg * 1.5); target.frozen = false; }
           target.hp -= finalDmg; totalDmg += finalDmg;
           const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}타]` : '';
-          lines.push({ text: `${memberLabel}${skill.icon} ${skill.name}${hitLabel} 시전!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
+          lines.push({ text: `${memberLabel}${skill.icon} ${t(skill.name)}${hitLabel} ${t('시전')}!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           if(target.hp<=0){target.alive=false;const remaining=enemies.filter(e=>e.alive).length;
-          lines.push({ text: `${enemy}에게 ${finalDmg} 피해! 처치!${enemyCount>1&&remaining>0?' 남은 적: '+remaining:''}`, type: 'damage' });
+          lines.push({ text: `${enemy}${t('에게')} ${finalDmg} ${t('피해!')} ${t('처치!')}${enemyCount>1&&remaining>0?' '+t('남은 적')+': '+remaining:''}`, type: 'damage' });
           // 네크로맨서: 처치한 적을 아군 소환수로 부활
           const hasNecro=member.skills.some(s=>s.necro);
           if(hasNecro){const necroHP=Math.floor(singleHP*0.5);summons.push({name:'망령 '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});
-          lines.push({text:`${memberLabel}💀 네크로맨서! ${enemy}의 시체가 아군 망령으로 부활!`,type:'buff'});}}
-          else{lines.push({ text: `${enemy}에게 ${finalDmg} 피해! (HP: ${target.hp}/${singleHP})`, type: 'damage' });}
+          lines.push({text:`${memberLabel}💀 ${t('네크로맨서')}! ${enemy}${t('의 시체가 아군 망령으로 부활!')}`,type:'buff'});}}
+          else{lines.push({ text: `${enemy}${t('에게')} ${finalDmg} ${t('피해!')} (HP: ${target.hp}/${singleHP})`, type: 'damage' });}
         }
         // 지속 피해 적용 (장비옵션 dot + 스킬 dot + dotBoost 패시브)
         const skillDot = skill.dot ? Math.floor(skill.dot * (1 + member.atk / 50)) : 0;
         const dotBoostMult = member._dotBoost > 0 ? (1 + member._dotBoost / 100) : 1;
         const totalDot = Math.floor(((fx.dot || 0) + skillDot) * dotBoostMult);
-        if (totalDot > 0) { enemies.filter(e => e.alive).forEach(e => { e.dot = Math.max(e.dot, totalDot); }); if (hit === 0) lines.push({ text: `${memberLabel}✦ ${skill.name} — 지속 피해 부여! (매 턴 ${totalDot})`, type: 'buff' }); }
+        if (totalDot > 0) { enemies.filter(e => e.alive).forEach(e => { e.dot = Math.max(e.dot, totalDot); }); if (hit === 0) lines.push({ text: `${memberLabel}✦ ${t(skill.name)} — ${t('지속 피해 부여!')} (${t('매 턴')} ${totalDot})`, type: 'buff' }); }
       }
 
-      if (modTexts.length > 0 && !isMiss) { modTexts.forEach(m => lines.push({ text: `${memberLabel}⚡ 장비 효과 발동! [${m}]`, type: 'buff' })); }
+      if (modTexts.length > 0 && !isMiss) { modTexts.forEach(m => lines.push({ text: `${memberLabel}⚡ ${t('장비 효과 발동!')} [${m}]`, type: 'buff' })); }
 
       // 힐 스킬: 공격하면서 HP 회복
       if (!isMiss && skill.heal) {
         const healPct = /(\d+)%.*회복/.test(skill.desc) ? parseInt(skill.desc.match(/(\d+)%.*회복/)[1]) : 15;
         const healAmt = Math.floor(member.maxHP * healPct / 100);
         totalTaken[member.slot] = Math.max(0, (totalTaken[member.slot]||0) - healAmt);
-        lines.push({ text: `💚 ${memberLabel}${skill.name} — HP +${healAmt} 회복!`, type: 'buff' });
+        lines.push({ text: `💚 ${memberLabel}${t(skill.name)} — HP +${healAmt} ${t('회복')}!`, type: 'buff' });
       }
 
       // 패시브: 흡혈
       const _totalLifesteal = member._lifesteal + (typeof fx!=='undefined' && fx.lifesteal || 0);
       if (!isMiss && _totalLifesteal > 0 && totalDmg > 0) {
         const stealAmt = Math.floor(totalDmg * _totalLifesteal / 100);
-        if (stealAmt > 0) { totalTaken[member.slot] = Math.max(0, (totalTaken[member.slot]||0) - stealAmt); lines.push({ text: `🩸 ${memberLabel}흡혈! +${stealAmt} HP`, type: 'buff' }); }
+        if (stealAmt > 0) { totalTaken[member.slot] = Math.max(0, (totalTaken[member.slot]||0) - stealAmt); lines.push({ text: `🩸 ${memberLabel}${t('흡혈')}! +${stealAmt} HP`, type: 'buff' }); }
       }
 
       // 상태이상
       if (!isMiss) {
         const desc = skill.desc || '';
-        if (desc.includes('스턴') || desc.includes('행동 불가') || (fx.stun > 0 && Math.random()*100 < fx.stun)) { enemyStunned = true; lines.push({ text: `${memberLabel}💫 ${enemy} 스턴! 행동 불가!`, type: 'buff' }); }
-        if (desc.includes('무적') || desc.includes('방어 스킬')) { lines.push({ text: `${memberLabel}🧊 ${skill.name} — 무적 상태!`, type: 'buff' }); enemyStunned = true; }
-        if (fx.freeze) { enemies.filter(e=>e.alive).forEach(e=>{e.frozen=true}); lines.push({ text: `${memberLabel}🧊 ${enemy} 빙결! 다음 피해 1.5배!`, type: 'buff' }); }
-        if (fx.fear > 0 && Math.random()*100 < fx.fear) { enemyFeared = true; lines.push({ text: `${memberLabel}😱 ${enemy} 공포! 공격력 -30%!`, type: 'buff' }); }
-        if (fx.reflect > 0) { lines.push({ text: `${memberLabel}🪞 데미지 ${fx.reflect}% 반사 활성화!`, type: 'buff' }); }
+        if (desc.includes('스턴') || desc.includes('행동 불가') || (fx.stun > 0 && Math.random()*100 < fx.stun)) { enemyStunned = true; lines.push({ text: `${memberLabel}💫 ${enemy} ${t('스턴! 행동 불가!')}`, type: 'buff' }); }
+        if (desc.includes('무적') || desc.includes('방어 스킬')) { lines.push({ text: `${memberLabel}🧊 ${t(skill.name)} — ${t('무적 상태')}!`, type: 'buff' }); enemyStunned = true; }
+        if (fx.freeze) { enemies.filter(e=>e.alive).forEach(e=>{e.frozen=true}); lines.push({ text: `${memberLabel}🧊 ${enemy} ${t('빙결! 다음 피해 1.5배!')}`, type: 'buff' }); }
+        if (fx.fear > 0 && Math.random()*100 < fx.fear) { enemyFeared = true; lines.push({ text: `${memberLabel}😱 ${enemy} ${t('공포! 공격력 -30%!')}`, type: 'buff' }); }
+        if (fx.reflect > 0) { lines.push({ text: `${memberLabel}🪞 ${t('데미지 {0}% 반사 활성화!',fx.reflect)}`, type: 'buff' }); }
       }
 
       // 공격속도: 추가 공격 확률
@@ -512,10 +512,10 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           const bonusDmg = Math.floor((bonusSkill.dmg||10) * (1 + member.atk/30) * (0.8+Math.random()*0.4));
           const bonusTarget = bonusAlive[0];
           bonusTarget.hp -= bonusDmg; totalDmg += bonusDmg;
-          lines.push({ text: `${memberLabel}⚡ 연속 공격! ${bonusSkill.icon} ${bonusSkill.name}`, type: 'action', hits: 1, charClass: member.name });
+          lines.push({ text: `${memberLabel}⚡ ${t('연속 공격')}! ${bonusSkill.icon} ${t(bonusSkill.name)}`, type: 'action', hits: 1, charClass: member.name });
           if(bonusTarget.hp<=0){bonusTarget.alive=false;const rem=enemies.filter(e=>e.alive).length;
-          lines.push({ text: `${enemy}에게 ${bonusDmg} 피해! 처치!${rem>0?' 남은 적: '+rem:''}`, type: 'damage' })}
-          else{lines.push({ text: `${enemy}에게 ${bonusDmg} 추가 피해! (HP: ${bonusTarget.hp}/${singleHP})`, type: 'damage' })}
+          lines.push({ text: `${enemy}${t('에게')} ${bonusDmg} ${t('피해!')} ${t('처치!')}${rem>0?' '+t('남은 적')+': '+rem:''}`, type: 'damage' })}
+          else{lines.push({ text: `${enemy}${t('에게')} ${bonusDmg} ${t('추가 피해!')} (HP: ${bonusTarget.hp}/${singleHP})`, type: 'damage' })}
         }
       }
 
@@ -531,7 +531,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           const eRoll = Math.random();
           const evadeChance = 0.15 + member.evade / 100;
           if (eRoll < evadeChance) {
-            lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
+            lines.push({ text: `${enemy} ${t('공격')} → ${memberLabel}${t('빗나감!')}`, type: 'enemy-atk', dmg: 0, charClass: member.name });
           } else {
             const eCrit = eRoll > 0.9;
             const lvlScale = 1 + Math.max(0, (G.level||1) - 30) * 0.02;
@@ -539,19 +539,19 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
             const defReduce = member.def / (member.def + 100);
             let eDmg = Math.max(1, Math.floor(rawDmg * (1 - defReduce)));
             totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
-            lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
+            lines.push({ text: `${eCrit ? t('💥크리티컬! ') : ''}${enemy} ${t('공격')} → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
             const totalReflect = (typeof fx!=='undefined' && fx.reflect || 0) + (member._reflect || 0);
             if (totalReflect > 0) {
               const reflDmg = Math.floor(eDmg * totalReflect / 100);
               attacker.hp -= reflDmg; totalDmg += reflDmg;
-              lines.push({ text: `🪞 반사 데미지! ${enemy}에게 ${reflDmg} 피해!${attacker.hp<=0?' 처치!':''}`, type: 'buff' });
+              lines.push({ text: `🪞 ${t('반사 데미지!')} ${enemy}${t('에게')} ${reflDmg} ${t('피해!')}${attacker.hp<=0?' '+t('처치!'):''}`, type: 'buff' });
               if(attacker.hp<=0)attacker.alive=false;
             }
             // 패시브: 피격 시 힐
             if (member._autoHeal && Math.random() < 0.1) {
               const healAmt = Math.floor(member.maxHP * 0.1);
               totalTaken[member.slot] = Math.max(0, (totalTaken[member.slot]||0) - healAmt);
-              lines.push({ text: `💚 ${memberLabel}피격 시 힐 발동! +${healAmt} HP`, type: 'buff' });
+              lines.push({ text: `💚 ${memberLabel}${t('피격 시 힐 발동!')} +${healAmt} HP`, type: 'buff' });
             }
           }
         }
@@ -560,14 +560,14 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const memberHP = member.hp - (totalTaken[member.slot]||0);
       if (memberHP <= 0 && !member._dead) {
         member._dead = true;
-        lines.push({ text: `💀 ${memberLabel}쓰러졌다!`, type: 'defeat', charClass: member.name });
+        lines.push({ text: `💀 ${memberLabel}${t('쓰러졌다!')}`, type: 'defeat', charClass: member.name });
       }
     } // end party member loop
 
     // 전멸 체크 — 살아있는 파티원이 없으면 패배
     const aliveMembers = partyMembers.filter(m => !m._dead);
     if (aliveMembers.length === 0) {
-      lines.push({ text: '💀 파티가 전멸했다...', type: 'defeat' });
+      lines.push({ text: t('💀 파티가 전멸했다...'), type: 'defeat' });
       break;
     }
 
@@ -581,9 +581,9 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       target.hp -= dmg; totalDmg += dmg;
       if (target.hp <= 0) {
         target.alive = false;
-        lines.push({ text: `${sm.icon} ${sm.name} → ${enemy}에게 ${dmg} 피해! 처치!`, type: 'action' });
+        lines.push({ text: `${sm.icon} ${t(sm.name)} → ${enemy}${t('에게')} ${dmg} ${t('피해!')} ${t('처치!')}`, type: 'action' });
       } else {
-        lines.push({ text: `${sm.icon} ${sm.name} → ${enemy}에게 ${dmg} 피해!`, type: 'action' });
+        lines.push({ text: `${sm.icon} ${t(sm.name)} → ${enemy}${t('에게')} ${dmg} ${t('피해!')}`, type: 'action' });
       }
     }
 
@@ -598,9 +598,9 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
             const eDmg = Math.max(1, Math.floor((isBoss ? (10 + G.floor * 2) : (6 + G.floor * 1)) * floorScale * (0.6 + Math.random() * 0.4)));
             targetSm.hp -= eDmg;
             if (targetSm.hp <= 0) {
-              lines.push({ text: `${enemy} → ${targetSm.icon} ${targetSm.name} -${eDmg} HP — 소환수 소멸!`, type: 'enemy-atk' });
+              lines.push({ text: `${enemy} → ${targetSm.icon} ${t(targetSm.name)} -${eDmg} HP — ${t('소환수 소멸!')}`, type: 'enemy-atk' });
             } else {
-              lines.push({ text: `${enemy} → ${targetSm.icon} ${targetSm.name} -${eDmg} HP`, type: 'enemy-atk' });
+              lines.push({ text: `${enemy} → ${targetSm.icon} ${t(targetSm.name)} -${eDmg} HP`, type: 'enemy-atk' });
             }
           }
         }
@@ -618,7 +618,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     const eHpPct = enemies.filter(e=>e.alive).reduce((s,e)=>s+e.hp,0) / (singleHP * enemyCount);
     const pHpPct = partyMembers.filter(m=>!m._dead).reduce((s,m)=>s+(m.hp-(totalTaken[m.slot]||0)),0) / partyMembers.reduce((s,m)=>s+m.maxHP,0);
     won = pHpPct >= eHpPct;
-    lines.push({ text: won ? '⏱️ 시간 초과 — 판정승!' : '⏱️ 시간 초과 — 판정패...', type: won ? 'victory' : 'defeat' });
+    lines.push({ text: won ? t('⏱️ 시간 초과 — 판정승!') : t('⏱️ 시간 초과 — 판정패...'), type: won ? 'victory' : 'defeat' });
   }
   const goldMult = 1 + (G.goldBonus || 0) / 100 + getEquipStat('골드 획득') / 100;
   const expMult = 1 + (G.expBonus || 0) / 100 + getEquipStat('경험치 보너스') / 100;
@@ -628,10 +628,10 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
   if (won) {
     const deadNames = partyMembers.filter(m => m._dead).map(m => m.name);
-    if (deadNames.length > 0) lines.push({ text: `⚠️ ${deadNames.join(', ')} 전사했지만 전투 승리! 🎉`, type: 'victory' });
-    else lines.push({ text: '전투 승리! 🎉', type: 'victory' });
+    if (deadNames.length > 0) lines.push({ text: `⚠️ ${deadNames.map(n=>t(n)).join(', ')} ${t('전사했지만 전투 승리! 🎉')}`, type: 'victory' });
+    else lines.push({ text: t('전투 승리! 🎉'), type: 'victory' });
   } else {
-    lines.push({ text: '전투 패배... 💀', type: 'defeat' });
+    lines.push({ text: t('전투 패배... 💀'), type: 'defeat' });
   }
 
   return { lines, result: won ? 'win' : 'lose', won, totalDmg, totalTaken, goldReward, expReward, partyDead: partyMembers.filter(m=>m._dead).map(m=>m.slot), allPartyDead };
