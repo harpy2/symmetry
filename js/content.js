@@ -438,6 +438,8 @@ _pvpActive=true;
 closeOverlay('challenge');
 openOverlay('hunt');
 const origAuto=G.autoHunt;G.autoHunt=false;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='none';
+document.getElementById('auto-hunt-btn').style.display='none';
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -523,6 +525,8 @@ await addHuntLine(`전적: ${G.pvpWins||0}승 ${(G.pvpCount||0)-(G.pvpWins||0)}�
 G.hp=Math.max(1,myHP);
 updateBars();saveGame();checkAchievements();
 G.autoHunt=origAuto;updateAutoHuntUI();
+document.getElementById('hunt-btn').style.display='';
+document.getElementById('auto-hunt-btn').style.display='';
 _pvpActive=false;
 },500);
 }
