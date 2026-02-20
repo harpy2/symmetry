@@ -26,7 +26,7 @@ avatarHTML=`<div class="class-avatar"><div class="char-sprite" style="background
 }else{
 avatarHTML=`<div class="class-avatar" style="background:${cls.bodyColor}"><span style="font-size:36px">${cls.weapon}</span></div>`;
 }
-d.innerHTML=`${avatarHTML}<div class="class-info"><h3>${cls.weapon} ${name}</h3><p>${cls.desc}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
+d.innerHTML=`${avatarHTML}<div class="class-info"><h3>${cls.weapon} ${t(name)}</h3><p>${t(cls.desc)}</p><div class="class-stats"><span>❤️${cls.baseHP}</span><span>⚔️${cls.baseATK}</span><span>🛡️${cls.baseDEF}</span></div></div>`;
 c.appendChild(d)})}
 function confirmClass(){if(!_pendingClassName)return;
 const selectedName=_pendingClassName;
@@ -60,16 +60,16 @@ saveGame();showScreen('main-screen')}
 let selectedActive=new Set(),selectedPassive=new Set(),hoveredSkill=null;
 function renderSkillSelect(){selectedActive.clear();selectedPassive.clear();
 const ag=document.getElementById('active-skill-grid');ag.innerHTML='';
-G.allSkills.forEach((s,i)=>{const d=document.createElement('div');d.className='skill-item';d.onclick=()=>{if(selectedActive.has(i))selectedActive.delete(i);else if(selectedActive.size<3)selectedActive.add(i);renderSkillHighlights();showSkillDesc(s)};d.innerHTML=`<span class="icon">${s.icon}</span><span class="name">${s.name}</span>`;d.id='askill-'+i;ag.appendChild(d)});
+G.allSkills.forEach((s,i)=>{const d=document.createElement('div');d.className='skill-item';d.onclick=()=>{if(selectedActive.has(i))selectedActive.delete(i);else if(selectedActive.size<3)selectedActive.add(i);renderSkillHighlights();showSkillDesc(s)};d.innerHTML=`<span class="icon">${s.icon}</span><span class="name">${t(s.name)}</span>`;d.id='askill-'+i;ag.appendChild(d)});
 const pg=document.getElementById('passive-skill-grid');pg.innerHTML='';
-G.allPassives.forEach((s,i)=>{const d=document.createElement('div');d.className='skill-item';d.onclick=()=>{if(selectedPassive.has(i))selectedPassive.delete(i);else if(selectedPassive.size<2)selectedPassive.add(i);renderSkillHighlights();showSkillDesc(s)};d.innerHTML=`<span class="icon">${s.icon}</span><span class="name">${s.name}</span>`;d.id='pskill-'+i;pg.appendChild(d)});
+G.allPassives.forEach((s,i)=>{const d=document.createElement('div');d.className='skill-item';d.onclick=()=>{if(selectedPassive.has(i))selectedPassive.delete(i);else if(selectedPassive.size<2)selectedPassive.add(i);renderSkillHighlights();showSkillDesc(s)};d.innerHTML=`<span class="icon">${s.icon}</span><span class="name">${t(s.name)}</span>`;d.id='pskill-'+i;pg.appendChild(d)});
 renderSkillHighlights()}
 function renderSkillHighlights(){G.allSkills.forEach((_,i)=>{const el=document.getElementById('askill-'+i);if(el)el.className='skill-item'+(selectedActive.has(i)?' selected':'')});
 G.allPassives.forEach((_,i)=>{const el=document.getElementById('pskill-'+i);if(el)el.className='skill-item'+(selectedPassive.has(i)?' selected':'')});
-document.getElementById('active-count').textContent=`선택: ${selectedActive.size}/3`;
-document.getElementById('passive-count').textContent=`선택: ${selectedPassive.size}/2`;
+document.getElementById('active-count').textContent=`${LANG==='ko'?'선택':'Selected'}: ${selectedActive.size}/3`;
+document.getElementById('passive-count').textContent=`${LANG==='ko'?'선택':'Selected'}: ${selectedPassive.size}/2`;
 document.getElementById('skill-confirm-btn').disabled=!(selectedActive.size===3&&selectedPassive.size===2)}
-function showSkillDesc(s){document.getElementById('skill-desc-box').innerHTML=`<div class="title">${s.icon} ${s.name}</div><div class="desc">${s.desc}</div>`}
+function showSkillDesc(s){document.getElementById('skill-desc-box').innerHTML=`<div class="title">${s.icon} ${t(s.name)}</div><div class="desc">${t(s.desc)}</div>`}
 function confirmSkills(){G.equippedSkills=[...selectedActive].map(i=>G.allSkills[i]);G.equippedPassives=[...selectedPassive].map(i=>G.allPassives[i]);saveGame();showScreen('main-screen')}
 
 // ===== OVERLAYS =====
@@ -89,17 +89,17 @@ const pr=document.getElementById('pvp-record');if(pr)pr.textContent=`${G.pvpWins
 function closeOverlay(name){document.getElementById('overlay-'+name).classList.remove('active');if(name==='hunt'){G.autoHunt=false;updateAutoHuntUI();if(typeof restoreHuntUI==='function')restoreHuntUI()}}
 
 // ===== SKILL MANAGE =====
-function renderSkillManage(){const body=document.getElementById('skills-body');body.innerHTML='<h3 style="color:var(--gold);margin-bottom:12px;font-size:15px">🗡️ 액티브 스킬</h3>';
+function renderSkillManage(){const body=document.getElementById('skills-body');body.innerHTML='<h3 style="color:var(--gold);margin-bottom:12px;font-size:15px">'+t('⚔️ 액티브 스킬')+'</h3>';
 G.allSkills.forEach((s,i)=>{const equipped=G.equippedSkills.some(e=>e.name===s.name);
-body.innerHTML+=`<div class="skill-manage-item ${equipped?'equipped':''}" onclick="toggleSkillEquip(${i},'active')"><div class="sk-icon">${s.icon}</div><div class="sk-info"><div class="sk-name">${s.name} ${equipped?'✅':''}</div><div class="sk-desc">${s.desc}</div></div></div>`});
-body.innerHTML+='<h3 style="color:var(--gold);margin:18px 0 12px;font-size:15px">🛡️ 패시브 스킬</h3>';
+body.innerHTML+=`<div class="skill-manage-item ${equipped?'equipped':''}" onclick="toggleSkillEquip(${i},'active')"><div class="sk-icon">${s.icon}</div><div class="sk-info"><div class="sk-name">${t(s.name)} ${equipped?'✅':''}</div><div class="sk-desc">${t(s.desc)}</div></div></div>`});
+body.innerHTML+='<h3 style="color:var(--gold);margin:18px 0 12px;font-size:15px">'+t('🛡️ 패시브 스킬')+'</h3>';
 G.allPassives.forEach((s,i)=>{const equipped=G.equippedPassives.some(e=>e.name===s.name);
-body.innerHTML+=`<div class="skill-manage-item ${equipped?'equipped':''}" onclick="toggleSkillEquip(${i},'passive')"><div class="sk-icon">${s.icon}</div><div class="sk-info"><div class="sk-name">${s.name} ${equipped?'✅':''}</div><div class="sk-desc">${s.desc}</div></div></div>`})}
+body.innerHTML+=`<div class="skill-manage-item ${equipped?'equipped':''}" onclick="toggleSkillEquip(${i},'passive')"><div class="sk-icon">${s.icon}</div><div class="sk-info"><div class="sk-name">${t(s.name)} ${equipped?'✅':''}</div><div class="sk-desc">${t(s.desc)}</div></div></div>`})}
 function toggleSkillEquip(idx,type){
 if(type==='active'){const s=G.allSkills[idx];const ei=G.equippedSkills.findIndex(e=>e.name===s.name);
-if(ei>=0)G.equippedSkills.splice(ei,1);else if(G.equippedSkills.length<3)G.equippedSkills.push(s);else{toast('최대 3개까지 장착 가능합니다');return}}
+if(ei>=0)G.equippedSkills.splice(ei,1);else if(G.equippedSkills.length<3)G.equippedSkills.push(s);else{toast(t('최대 3개까지 장착 가능합니다'));return}}
 else{const s=G.allPassives[idx];const ei=G.equippedPassives.findIndex(e=>e.name===s.name);
-if(ei>=0)G.equippedPassives.splice(ei,1);else if(G.equippedPassives.length<2)G.equippedPassives.push(s);else{toast('최대 2개까지 장착 가능합니다');return}}
+if(ei>=0)G.equippedPassives.splice(ei,1);else if(G.equippedPassives.length<2)G.equippedPassives.push(s);else{toast(t('최대 2개까지 장착 가능합니다'));return}}
 renderSkillManage();renderSkillRow();saveGame()}
 
 // ===== LEVEL UP =====
@@ -130,8 +130,8 @@ if(isActive&&(char.className==='소환사'||char.className==='엔지니어')){
 }
 if(candidates.length===0){resolve();ol.classList.remove('active');return}
 const slotLabel=slot===0?'':'['+char.className+'] ';
-document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${char.level} — ${isActive?'⚔️ 액티브 스킬':'🛡️ 패시브 스킬'} 습득!`;
-document.getElementById('levelup-choices').innerHTML=candidates.map((c,i)=>`<div class="levelup-choice" onclick="pickSkillLearn(${i})"><div class="lc-name">${c.icon} ${c.name}</div><div class="lc-desc">${c.desc}${c.dmg?' | DMG: '+c.dmg:''}${c.aoe?' | 광역':''}${c.dot?' | 지속뎀':''}${c.hits>1?' | '+c.hits+'회타':''}</div></div>`).join('');
+document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${char.level} — ${isActive?t('⚔️ 액티브 스킬'):t('🛡️ 패시브 스킬')} ${LANG==='ko'?'습득!':'learned!'}`;
+document.getElementById('levelup-choices').innerHTML=candidates.map((c,i)=>`<div class="levelup-choice" onclick="pickSkillLearn(${i})"><div class="lc-name">${c.icon} ${t(c.name)}</div><div class="lc-desc">${t(c.desc)}${c.dmg?' | DMG: '+c.dmg:''}${c.aoe?' | '+(LANG==='ko'?'광역':'AoE'):''}${c.dot?' | '+(LANG==='ko'?'지속뎀':'DoT'):''}${c.hits>1?' | '+c.hits+(LANG==='ko'?'회타':' hits'):''}</div></div>`).join('');
 window._skillCandidates=candidates;window._skillType=type;window._skillSlot=slot;window._skillResolve=resolve;
 })}
 function pickSkillLearn(i){
@@ -140,7 +140,7 @@ const slot=window._skillSlot;
 const char=slot===G.activeSlot?G:(G.party&&G.party[slot]?G.party[slot]:G);
 if(window._skillType==='active'){if(!char.equippedSkills)char.equippedSkills=[];char.equippedSkills.push(s);}
 else{if(!char.equippedPassives)char.equippedPassives=[];char.equippedPassives.push(s);}
-toast(`${s.icon} ${s.name} 습득!${slot!==G.activeSlot?' ('+char.className+')':''}`);
+toast(`${s.icon} ${t(s.name)} ${LANG==='ko'?'습득!':'learned!'}${slot!==G.activeSlot?' ('+t(char.className)+')':''}`);
 document.getElementById('levelup-overlay').classList.remove('active');
 saveGame();
 if(window._skillResolve){window._skillResolve();window._skillResolve=null}
@@ -151,7 +151,7 @@ async function showLevelUp(preloadedChoices,slot){return new Promise(resolve=>{c
 window._levelSlot=slot!==undefined?slot:G.activeSlot;
 const _char=window._levelSlot===G.activeSlot?G:(G.party&&G.party[window._levelSlot]?G.party[window._levelSlot]:G);
 const slotLabel=window._levelSlot===0?'':'['+_char.className+'] ';
-document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${_char.level} 달성! HP+8, ATK+1, DEF+1`;
+document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${_char.level} ${LANG==='ko'?'달성!':'reached!'} HP+8, ATK+1, DEF+1`;
 
 let choices = preloadedChoices;
 if(!choices){
@@ -159,7 +159,7 @@ const pool=[...LEVELUP_BUFFS];choices=[];
 for(let i=0;i<3;i++){const idx=Math.floor(Math.random()*pool.length);choices.push(pool.splice(idx,1)[0])}
 }
 
-document.getElementById('levelup-choices').innerHTML=choices.map((c,i)=>`<div class="levelup-choice" onclick="pickLevelBuff(${i})"><div class="lc-name">${c.name}</div><div class="lc-desc">${c.desc}</div></div>`).join('');
+document.getElementById('levelup-choices').innerHTML=choices.map((c,i)=>`<div class="levelup-choice" onclick="pickLevelBuff(${i})"><div class="lc-name">${t(c.name)}</div><div class="lc-desc">${t(c.desc)}</div></div>`).join('');
 // 골드 파티클 — body에 fixed로 붙임
 document.querySelectorAll('.lvl-p').forEach(p=>p.remove());
 const _types=['spark','spark','spark','orb','orb','flare','big'];
@@ -218,7 +218,7 @@ window._levelChoices[i].apply(char);
 if(!char._appliedBuffs)char._appliedBuffs=[];
 char._appliedBuffs.push({name:window._levelChoices[i].name,desc:window._levelChoices[i].desc});
 document.getElementById('levelup-overlay').classList.remove('active');
-toast(`${window._levelChoices[i].name} 획득!`);updateBars();renderCharacter();saveGame();
+toast(`${t(window._levelChoices[i].name)} ${LANG==='ko'?'획득!':'acquired!'}`);updateBars();renderCharacter();saveGame();
 if(window._levelResolve){window._levelResolve();window._levelResolve=null}}
 
 // ===== SIDE PANEL RENDERING =====
@@ -286,8 +286,8 @@ const actives=char.equippedSkills||[];
 const passives=char.equippedPassives||[];
 if(actives.length===0&&passives.length===0){panel.innerHTML='';return}
 let html='';
-if(actives.length>0){html+='<div class="sp-title">⚔️ 액티브</div>';actives.forEach(s=>{html+=`<div class="sp-item"><span class="sp-icon">${s.icon}</span><span>${s.name}</span> <span class="sp-desc">${s.desc||''}</span></div>`})}
-if(passives.length>0){html+='<div class="sp-title sp-passive">🛡️ 패시브</div>';passives.forEach(s=>{html+=`<div class="sp-item sp-passive"><span class="sp-icon">${s.icon}</span><span>${s.name}</span> <span class="sp-desc">${s.desc||''}</span></div>`})}
+if(actives.length>0){html+='<div class="sp-title">'+(LANG==='ko'?'⚔️ 액티브':'⚔️ Active')+'</div>';actives.forEach(s=>{html+=`<div class="sp-item"><span class="sp-icon">${s.icon}</span><span>${t(s.name)}</span> <span class="sp-desc">${t(s.desc||'')}</span></div>`})}
+if(passives.length>0){html+='<div class="sp-title sp-passive">'+(LANG==='ko'?'🛡️ 패시브':'🛡️ Passive')+'</div>';passives.forEach(s=>{html+=`<div class="sp-item sp-passive"><span class="sp-icon">${s.icon}</span><span>${t(s.name)}</span> <span class="sp-desc">${t(s.desc||'')}</span></div>`})}
 panel.innerHTML=html;
 }
 
