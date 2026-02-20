@@ -343,10 +343,14 @@ s.savedAt=Date.now();
 if(s.party){s.party=s.party.map(slot=>{if(!slot)return null;const c={...slot};delete c.classData;return c})}
 return s;
 }
+// 로컬 저장 인코딩/디코딩
+function _encLocal(s){return btoa(unescape(encodeURIComponent(JSON.stringify(s))))}
+function _decLocal(str){try{return JSON.parse(decodeURIComponent(escape(atob(str))))}catch(e){return null}}
+
 function saveGame(){
 const s=serializeState();
-// 로컬은 오프라인 백업용
-localStorage.setItem('symmetry_save',JSON.stringify(s));
+// 로컬은 오프라인 백업용 (인코딩)
+localStorage.setItem('symmetry_save',_encLocal(s));
 // 서버 저장 (디바운스 2초)
 if(_cloudSaveTimer)clearTimeout(_cloudSaveTimer);
 _cloudSaveTimer=setTimeout(()=>{cloudSave(s)},2000);
@@ -356,7 +360,7 @@ try{
 const uid=getCPQUserId();
 const res=await fetch(CPQ_API+'/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,data:s})});
 if(!res.ok)throw new Error('status '+res.status);
-}catch(e){console.warn('[CloudSave] error:',e.message);localStorage.setItem('symmetry_save',JSON.stringify(s))}
+}catch(e){console.warn('[CloudSave] error:',e.message);localStorage.setItem('symmetry_save',_encLocal(s))}
 }
 // 페이지 나갈 때 즉시 서버 저장
 window.addEventListener('beforeunload',()=>{
@@ -388,11 +392,18 @@ if(G.equipment.accessory&&!G.equipment.necklace){G.equipment.necklace=G.equipmen
 return true;
 }
 
-function loadGame(){
+function _readLocal(){
 const raw=localStorage.getItem('symmetry_save');
-if(!raw){toast('저장된 데이터가 없습니다');return}
+if(!raw)return null;
+// 인코딩된 데이터 시도 → 구버전 평문 JSON 폴백
+const dec=_decLocal(raw);
+if(dec)return dec;
+try{return JSON.parse(raw)}catch(e){return null}
+}
+function loadGame(){
+const s=_readLocal();
+if(!s){toast('저장된 데이터가 없습니다');return}
 try{
-const s=JSON.parse(raw);
 if(!restoreState(s)){toast('잘못된 세이브 데이터');return}
 showScreen('main-screen');toast('게임 로드 완료!');
 }catch(e){toast('로드 실패: '+e.message)}
@@ -406,7 +417,7 @@ const res=await fetch(CPQ_API+'/api/save?user_id='+uid);
 const json=await res.json();
 if(json.data){
 if(restoreState(json.data)){
-localStorage.setItem('symmetry_save',JSON.stringify(json.data));
+localStorage.setItem('symmetry_save',_encLocal(json.data));
 showScreen('main-screen');toast('☁️ 클라우드 세이브 로드 완료!');return true;
 }
 }
@@ -425,9 +436,7 @@ const res=await fetch(CPQ_API+'/api/save?user_id='+uid);
 const json=await res.json();
 cloudData=json.data||null;
 }catch(e){console.warn('[Load] cloud fetch failed:',e.message)}
-const localRaw=localStorage.getItem('symmetry_save');
-let localData=null;
-try{if(localRaw)localData=JSON.parse(localRaw)}catch(e){}
+let localData=_readLocal();
 if(!cloudData&&!localData){toast('저장된 데이터가 없습니다');return}
 // 서버 데이터 우선, 없으면 로컬 폴백
 let chosen,isCloud=false;
@@ -440,7 +449,7 @@ else{chosen=cloudData;isCloud=true}
 }else{chosen=localData;isCloud=false}
 if(!chosen){toast('저장된 데이터가 없습니다');return}
 if(restoreState(chosen)){
-localStorage.setItem('symmetry_save',JSON.stringify(chosen));
+localStorage.setItem('symmetry_save',_encLocal(chosen));
 showScreen('main-screen');toast(isCloud?'☁️ 서버 세이브 로드 완료!':'📱 로컬 세이브 로드 완료!');
 trackEvent('game_start',{type:'continue',level:G.level,floor:G.floor,class:G.className});
 if(!isCloud&&localData)cloudSave(localData);
