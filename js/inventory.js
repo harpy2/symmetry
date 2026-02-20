@@ -183,14 +183,22 @@ function equipItemToChar(idx,slot){
 const item=G.inventory[idx];if(!item)return;
 saveCharToSlot(); // 현재 상태 저장
 const targetChar=G.party[slot];if(!targetChar)return;
+// 반지는 빈 슬롯 우선, 없으면 같은 타입 교체
+let eqSlot=item.type;
+if(item.type==='ring1'||item.type==='ring2'){
+if(!targetChar.equipment)targetChar.equipment={};
+if(!targetChar.equipment.ring1)eqSlot='ring1';
+else if(!targetChar.equipment.ring2)eqSlot='ring2';
+else eqSlot=item.type; // 둘 다 차있으면 같은 타입 교체
+}
 // 대상 캐릭 기존 장비 → 공용 인벤토리
-if(targetChar.equipment&&targetChar.equipment[item.type]){
-G.inventory.push(targetChar.equipment[item.type]);
+if(targetChar.equipment&&targetChar.equipment[eqSlot]){
+G.inventory.push(targetChar.equipment[eqSlot]);
 }
 // 인벤토리에서 제거 후 장착
 G.inventory.splice(idx,1);
 if(!targetChar.equipment)targetChar.equipment={};
-targetChar.equipment[item.type]=item;
+targetChar.equipment[eqSlot]=item;
 G.party[slot]=targetChar;
 if(slot===G.activeSlot)loadSlotToG(slot);
 const charName=targetChar.className||('캐릭'+(slot+1));

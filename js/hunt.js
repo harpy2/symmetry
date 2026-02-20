@@ -96,9 +96,19 @@ combat.goldReward=Math.floor((combat.goldReward||0)*(1+scBonus));
 combat.expReward=Math.floor((combat.expReward||0)*(1+scBonus));
 }
 
-// === Phase 5: 한줄씩 표시 (HP 실시간 반영) ===
+// === Phase 5: 한줄씩 표시 (HP 실시간 반영, buff는 묶어서 표시) ===
 let _liveTaken={};
-for(const line of combat.lines){
+// buff 라인 묶기: 연속된 buff를 하나로 합침
+const displayLines=[];
+for(let li=0;li<combat.lines.length;li++){
+const line=combat.lines[li];
+if(line.type==='buff'){
+const buffGroup=[line.text];
+while(li+1<combat.lines.length&&combat.lines[li+1].type==='buff'){li++;buffGroup.push(combat.lines[li].text)}
+displayLines.push({text:buffGroup.join(' | '),type:'buff',hits:null,charClass:null,_grouped:true});
+}else{displayLines.push(line)}
+}
+for(const line of displayLines){
 const type=mapLineType(line.type);
 await addHuntLine(line.text,type,log,line.hits,line.charClass);
 // enemy-atk 시 HP 실시간 차감 표시
@@ -261,7 +271,10 @@ const title=document.getElementById('mobile-popup-title');
 const body=document.getElementById('mobile-popup-body');
 if(type==='stat'){
 title.textContent='📊 상태';
-body.innerHTML=document.getElementById('hunt-stat-list').innerHTML;
+let statHtml=document.getElementById('hunt-stat-list').innerHTML;
+for(let s=0;s<3;s++){if(s===G.activeSlot||!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;const c=G.party[s];const cls=CLASSES[c.className];if(!cls)continue;
+statHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${c.className} (Lv.${c.level})</div><div style="font-size:12px;line-height:1.8;color:var(--text1)">❤️ HP: ${Math.floor(c.hp)}/${c.maxHP}<br>⚔️ ATK: ${c.atk}<br>🛡️ DEF: ${c.def}<br>🎯 치명타: ${10+(c.critBonus||0)}%<br>📊 EXP: ${c.exp||0}%</div></div>`}
+body.innerHTML=statHtml;
 }else if(type==='skills'){
 title.textContent='🗡️ 스킬';
 let html='';
@@ -278,6 +291,24 @@ if(actives.length===0&&passives.length===0)html+='<div style="font-size:12px;col
 html+='</div>';
 }
 body.innerHTML=html||'<div style="color:var(--text2)">스킬 없음</div>';
+}else if(type==='settings'){
+title.textContent='⚙️ 설정';
+body.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoLevelUp?'checked':''} onchange="G.autoLevelUp=this.checked;saveGame()"> 🤖 레벨업 자동 선택</label>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" ${G.autoHunt?'checked':''} onchange="G.autoHunt=this.checked;updateAutoHuntUI();saveGame()"> 🔄 자동 사냥</label>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">📊 스탯 설명</div>
+<div style="font-size:11px;color:var(--text2);line-height:1.6">
+⚔️ ATK — 공격력 (스킬/평타 데미지에 반영)<br>
+🛡️ DEF — 방어력 (받는 피해 감소)<br>
+❤️ HP — 체력 (0이 되면 전투 불능)<br>
+🎯 치명타 — 크리티컬 확률 (발동 시 1.5~2.5배 데미지)<br>
+⚡ 공격속도 — 추가 공격 확률 (턴당 2회 공격, 캡 50%)<br>
+⏱️ 쿨다운 감소 — 스킬 사용 우선 확률 (평타 대신 스킬, 캡 100%)<br>
+🗡️ 관통 — 적 방어력 무시 고정 데미지<br>
+💨 회피율 — 적 공격 회피 확률<br>
+📜 소환수는 소환자의 ATK 기반으로 공격력 결정
+</div>
+</div>`;
 }else{
 title.textContent='✦ 장비 효과';
 body.innerHTML=document.getElementById('hunt-mods-list').innerHTML;
