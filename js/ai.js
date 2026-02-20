@@ -180,7 +180,7 @@ function parseCustomMod(mod,skillName){
 function generateCombatLocal(enemy, enemyCount, isBoss) {
   const lines = [];
   const floorScale = 1 + G.floor * 0.03; // 층수당 3% 강화 (50층=2.5x, 100층=4x, 200층=7x)
-  const singleHP = Math.floor((isBoss ? (40 + G.floor * 6) : (12 + G.floor * 2)) * floorScale);
+  const singleHP = Math.floor((isBoss ? (60 + G.floor * 8) : (20 + G.floor * 3)) * floorScale);
   let enemies = [];
   for (let i = 0; i < enemyCount; i++) enemies.push({ hp: singleHP, alive: true, dot: 0 });
   let totalDmg = 0, totalTaken = {};
@@ -423,7 +423,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
             lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
           } else {
             const eCrit = eRoll > 0.9;
-            const rawDmg = (isBoss ? (8 + G.floor * 2) : (10 + G.floor * 1)) * floorScale * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5)) * fearMult;
+            const rawDmg = (isBoss ? (12 + G.floor * 3) : (12 + G.floor * 1.5)) * floorScale * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5)) * fearMult;
             let eDmg = Math.max(1, Math.floor(rawDmg - member.def / 3));
             totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
             lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
@@ -469,7 +469,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           const tauntSummons = aliveSummons.filter(s => s.taunt && s.hp > 0);
           const targetSm = tauntSummons.length > 0 ? tauntSummons[0] : aliveSummons[Math.floor(Math.random() * aliveSummons.length)];
           if (targetSm && targetSm.hp > 0) {
-            const eDmg = Math.max(1, Math.floor((isBoss ? (6 + G.floor * 1.5) : (3 + G.floor * 0.8)) * floorScale * (0.6 + Math.random() * 0.4)));
+            const eDmg = Math.max(1, Math.floor((isBoss ? (10 + G.floor * 2) : (6 + G.floor * 1)) * floorScale * (0.6 + Math.random() * 0.4)));
             targetSm.hp -= eDmg;
             if (targetSm.hp <= 0) {
               lines.push({ text: `${enemy} → ${targetSm.icon} ${targetSm.name} -${eDmg} HP — 소환수 소멸!`, type: 'enemy-atk' });

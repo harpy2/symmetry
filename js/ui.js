@@ -142,7 +142,7 @@ async function showLevelUp(preloadedChoices,slot){return new Promise(resolve=>{c
 window._levelSlot=slot!==undefined?slot:G.activeSlot;
 const _char=window._levelSlot===G.activeSlot?G:(G.party&&G.party[window._levelSlot]?G.party[window._levelSlot]:G);
 const slotLabel=window._levelSlot===0?'':'['+_char.className+'] ';
-document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${_char.level} 달성! HP+20, ATK+3, DEF+2`;
+document.getElementById('levelup-sub').textContent=`${slotLabel}Lv.${_char.level} 달성! HP+8, ATK+1, DEF+1`;
 
 let choices = preloadedChoices;
 if(!choices){
