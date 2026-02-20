@@ -565,7 +565,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
   const expMult = 1 + (G.expBonus || 0) / 100 + getEquipStat('경험치 보너스') / 100;
   const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * enemyCount * (0.8 + Math.random() * 0.4) * goldMult) : 0;
   // 패배해도 경험치는 획득 (승리의 50%)
-  const expReward = Math.floor((15 + G.floor * 3) * (isBoss ? 2.5 : 1) * enemyCount * expMult * (won ? 1 : 0.5));
+  const expReward = Math.floor((15 + G.floor * 2) * (isBoss ? 2.5 : 1) * Math.min(enemyCount, 3) * expMult * (won ? 1 : 0.5));
 
   if (won) {
     const deadNames = partyMembers.filter(m => m._dead).map(m => m.name);

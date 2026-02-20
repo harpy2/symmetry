@@ -19,8 +19,9 @@ document.getElementById('hs-gold').textContent=G.gold;
 document.getElementById('hs-floor').textContent=G.floor;
 var hf=document.getElementById('hunt-floor');if(hf)hf.textContent=G.floor;
 // 경험치 바
-var expBar=document.getElementById('hunt-exp-bar');if(expBar){expBar.style.width=Math.min(100,G.exp)+'%'}
-var expText=document.getElementById('hunt-exp-text');if(expText){expText.textContent=G.exp+'%'}
+var _etl=Math.floor(100+(G.level||1)*5);
+var expBar=document.getElementById('hunt-exp-bar');if(expBar){expBar.style.width=Math.min(100,G.exp/_etl*100)+'%'}
+var expText=document.getElementById('hunt-exp-text');if(expText){expText.textContent=G.exp+'/'+_etl}
 // HP 색상
 hp.style.color=G.hp/G.maxHP>0.5?'var(--success)':G.hp/G.maxHP>0.25?'var(--hunger)':'var(--danger)';
 // 모바일 미니 상태
@@ -171,7 +172,8 @@ trackEvent('floor_clear',{floor:G.floor,level:G.level,class:G.className});
 await addHuntLine(`🏆 보스 클리어! ${G.floor}층으로 진출!`,'victory',log);
 }
 // 레벨업 처리
-while(G.exp>=100){G.exp-=100;G.level++;G.maxHP+=8;G.atk+=1;G.def+=1;G.hp=G.maxHP;
+const expToLevel=()=>Math.floor(100+G.level*5);
+while(G.exp>=expToLevel()){G.exp-=expToLevel();G.level++;G.maxHP+=8;G.atk+=1;G.def+=1;G.hp=G.maxHP;
 trackEvent('level_up',{level:G.level,floor:G.floor,class:G.className});
 const lvlMsgs=['기분이 한결 좋아진 것 같다...','승리를 자축하는 중...','새로운 힘이 깨어나고 있다...','몸 속에서 에너지가 솟구친다...','한층 강해진 기분이다...','전투의 여운을 느끼는 중...','깊은 숨을 내쉬며 집중한다...','성장의 빛이 감싸고 있다...'];
 const lvlMsg=lvlMsgs[Math.floor(Math.random()*lvlMsgs.length)];
@@ -185,7 +187,8 @@ for(let _s=0;_s<3;_s++){
 if(_s===G.activeSlot||!G.slotUnlocked[_s]||!G.party[_s])continue;
 const sub=G.party[_s];if(!sub.exp)sub.exp=0;
 const SKILL_LEVELS=[5,10,20,25];const PASSIVE_LEVELS=[15,30];
-while(sub.exp>=100){sub.exp-=100;sub.level=(sub.level||1)+1;sub.maxHP=(sub.maxHP||100)+8;sub.atk=(sub.atk||15)+1;sub.def=(sub.def||8)+1;sub.hp=sub.maxHP;
+const subExpToLevel=()=>Math.floor(100+(sub.level||1)*5);
+while(sub.exp>=subExpToLevel()){sub.exp-=subExpToLevel();sub.level=(sub.level||1)+1;sub.maxHP=(sub.maxHP||100)+8;sub.atk=(sub.atk||15)+1;sub.def=(sub.def||8)+1;sub.hp=sub.maxHP;
 await addHuntLine(`✨ ${sub.className}도 레벨 업! Lv.${sub.level}`,'loading',log);
 if(SKILL_LEVELS.includes(sub.level)){await showSkillLearn('active',_s);}
 else if(PASSIVE_LEVELS.includes(sub.level)){await showSkillLearn('passive',_s);}
