@@ -490,6 +490,10 @@ const LEVELUP_BUFFS=[
 {name:'🔄 쿨감 +1%',desc:'쿨타임 감소 1% 증가',apply:p=>{p.cooldownReduce=(p.cooldownReduce||0)+1}},
 {name:'🔄 쿨감 +2%',desc:'쿨타임 감소 2% 증가',apply:p=>{p.cooldownReduce=(p.cooldownReduce||0)+2}},
 {name:'🔄 신속',desc:'쿨타임 감소 3% 증가',apply:p=>{p.cooldownReduce=(p.cooldownReduce||0)+3}},
+// 피흡
+{name:'🩸 흡혈 +2%',desc:'피흡 2% 증가',apply:p=>{p.lifesteal=(p.lifesteal||0)+2}},
+{name:'🩸 흡혈 +3%',desc:'피흡 3% 증가',apply:p=>{p.lifesteal=(p.lifesteal||0)+3}},
+{name:'🩸 흡혈귀',desc:'피흡 5% 증가',apply:p=>{p.lifesteal=(p.lifesteal||0)+5}},
 // 행운/골드
 {name:'🍀 행운 +3%',desc:'아이템 드롭률 3% 증가',apply:p=>{p.luckBonus=(p.luckBonus||0)+3}},
 {name:'💰 골드 수집 +5%',desc:'골드 획득량 5% 증가',apply:p=>{p.goldBonus=(p.goldBonus||0)+5}},

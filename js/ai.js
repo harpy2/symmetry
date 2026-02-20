@@ -140,7 +140,7 @@ function getSkillMods(skillName){
 // 커스텀 옵션 파싱
 function parseCustomMod(mod,skillName){
   const r={hits:1,dmgBonus:0,aoe:false,multiTarget:1,healPct:0,extraCast:0,critDmgBonus:0,defBuff:0,penetrate:false,atkSpdBuff:0,dot:0,
-    stun:0,silence:false,freeze:false,fear:0,execute:false,reflect:0,defIgnore:false,killHeal:0,lowHpDmg:0,goldDrop:false,coolReset:0,burstEvery:0,killCrit:false,atkSteal:0};
+    stun:0,silence:false,freeze:false,fear:0,execute:false,reflect:0,defIgnore:false,killHeal:0,lowHpDmg:0,goldDrop:false,coolReset:0,burstEvery:0,killCrit:false,atkSteal:0,lifesteal:0};
   const s=mod.replace(skillName+' ','');
   // 연속/멀티
   if(s.includes('2연속'))r.hits=2;
@@ -174,6 +174,7 @@ function parseCustomMod(mod,skillName){
   if(s.match(/(\d+)회 시전마다/))r.burstEvery=parseInt(RegExp.$1);
   if(s.includes('반드시 크리티컬'))r.killCrit=true;
   if(s.match(/공격력 흡수 \(\+(\d+)\)/))r.atkSteal=parseInt(RegExp.$1);
+  if(s.match(/(\d+)%.*피흡/))r.lifesteal=parseInt(RegExp.$1);
   return r;
 }
 
@@ -238,7 +239,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
   for (const member of partyMembers) {
     const char = member.slot === G.activeSlot ? G : (G.party && G.party[member.slot] ? G.party[member.slot] : G);
     const passives = char.equippedPassives || [];
-    member._reflect = 0; member._lifesteal = 0; member._regen = 0; member._dotBoost = 0;
+    member._reflect = 0; member._lifesteal = (member.slot===G.activeSlot ? (G.lifesteal||0) : (G.party&&G.party[member.slot]&&G.party[member.slot].lifesteal||0)); member._regen = 0; member._dotBoost = 0;
     member._doubleCast = 0; member._killAtk = 0; member._killAtkMax = 0; member._autoHeal = false;
     for (const p of passives) {
       const d = p.desc || '';
@@ -415,7 +416,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
         if(p.execute) fx.execute = true; fx.reflect += p.reflect;
         if(p.defIgnore) fx.defIgnore = true; fx.killHeal = Math.max(fx.killHeal, p.killHeal);
         fx.lowHpDmg = Math.max(fx.lowHpDmg, p.lowHpDmg); if(p.goldDrop) fx.goldDrop = true;
-        if(p.killCrit) fx.killCrit = true; fx.atkSteal += p.atkSteal;
+        if(p.killCrit) fx.killCrit = true; fx.atkSteal += p.atkSteal; fx.lifesteal = (fx.lifesteal||0) + (p.lifesteal||0);
         modTexts.push(m);
       });
 
@@ -487,8 +488,9 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       }
 
       // 패시브: 흡혈
-      if (!isMiss && member._lifesteal > 0 && totalDmg > 0) {
-        const stealAmt = Math.floor(totalDmg * member._lifesteal / 100);
+      const _totalLifesteal = member._lifesteal + (typeof fx!=='undefined' && fx.lifesteal || 0);
+      if (!isMiss && _totalLifesteal > 0 && totalDmg > 0) {
+        const stealAmt = Math.floor(totalDmg * _totalLifesteal / 100);
         if (stealAmt > 0) { totalTaken[member.slot] = Math.max(0, (totalTaken[member.slot]||0) - stealAmt); lines.push({ text: `🩸 ${memberLabel}흡혈! +${stealAmt} HP`, type: 'buff' }); }
       }
 

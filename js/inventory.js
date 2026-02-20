@@ -35,6 +35,7 @@ const generic=[
 {mod:'5타마다 추가 공격 발동'},
 {mod:'치명타 시 적 1초 스턴'},
 {mod:'피격 시 20% 확률 무적 1턴'},
+{mod:'공격 시 데미지의 8% 피흡'},
 ];
 return generic[Math.floor(Math.random()*generic.length)];
 }
@@ -66,6 +67,10 @@ const templates=[
 `${sk.name} 시전 시 방어력 +30% (1턴)`,
 `${sk.name} 처치 시 HP 15% 회복`,
 `${sk.name} HP 30% 이하에서 데미지 2배`,
+// 🩸 흡혈
+`${sk.name} 시전 시 데미지의 5% 피흡`,
+`${sk.name} 시전 시 데미지의 10% 피흡`,
+`${sk.name} 시전 시 데미지의 15% 피흡`,
 // ⚡ 특수 효과
 `${sk.name} 데미지의 20% 반사`,
 `${sk.name} 적중 시 골드 2배 드롭`,
