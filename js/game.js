@@ -281,13 +281,22 @@ el._item=item;
 // 자동사냥: 3초 후 자동 닫힘 → 인벤토리에 보관
 let autoTimer=null;
 if(isAuto){
-autoTimer=setTimeout(()=>{if(el.parentNode){el.classList.add('closing');setTimeout(()=>el.remove(),300)}},3000);
+const cdEl=document.createElement('div');
+cdEl.className='idp-countdown';
+cdEl.style.cssText='text-align:center;color:var(--text2);font-size:11px;margin-top:6px';
+let sec=5;
+cdEl.textContent=`${sec}초 후 자동으로 닫힙니다`;
+el.appendChild(cdEl);
+const cdInterval=setInterval(()=>{sec--;if(sec>0)cdEl.textContent=`${sec}초 후 자동으로 닫힙니다`;else clearInterval(cdInterval)},1000);
+autoTimer=setTimeout(()=>{clearInterval(cdInterval);if(el.parentNode){el.classList.add('closing');setTimeout(()=>el.remove(),300)}},5000);
+el._cdInterval=cdInterval;
 }
 
 // 팝업 배경 클릭으로 닫기 (버튼 영역 제외)
 el.onclick=(e)=>{
 if(e.target.closest('.idp-char-btn')||e.target.closest('.idp-action-btn'))return;
 if(autoTimer)clearTimeout(autoTimer);
+if(el._cdInterval)clearInterval(el._cdInterval);
 el.classList.add('closing');setTimeout(()=>el.remove(),300);
 };
 }
