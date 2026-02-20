@@ -148,11 +148,17 @@ return{id:Date.now()+Math.random(),name,type,grade,emoji:emoji||'📦',svgData,s
 
 // ===== INVENTORY =====
 let invFilter=null;
+const GRADE_ORDER={에픽:0,유니크:1,레어:2,매직:3,일반:4};
 function renderInventory(filter){invFilter=filter||null;
 const detail=document.getElementById('item-detail-area');detail.innerHTML='';
 const grid=document.getElementById('inv-grid');grid.innerHTML='';
 const isPC=window.innerWidth>=769;
-for(let i=0;i<30;i++){const item=G.inventory[i];const d=document.createElement('div');d.className='inv-slot'+(item?' grade-'+item.grade:'');
+// 등급순 정렬 (원본 인덱스 유지)
+const sorted=G.inventory.map((item,i)=>({item,idx:i})).sort((a,b)=>{
+if(!a.item&&!b.item)return 0;if(!a.item)return 1;if(!b.item)return -1;
+return (GRADE_ORDER[a.item.grade]??5)-(GRADE_ORDER[b.item.grade]??5);
+});
+for(let i=0;i<30;i++){const entry=sorted[i];const item=entry?entry.item:null;const origIdx=entry?entry.idx:i;const d=document.createElement('div');d.className='inv-slot'+(item?' grade-'+item.grade:'');
 if(item){
 if(isPC){
 // PC: 셀 안에 이름+스탯+옵션 + 배경 아이콘
@@ -167,7 +173,7 @@ d.innerHTML=`${bgIcon}<div class="inv-item-header">${iconSmall}<span class="inv-
 const icon=item.svgData?`<div class="item-svg">${item.svgData}</div>`:`<span>${item.emoji}</span>`;
 d.innerHTML=`${icon}<div class="dur-bar"><div class="dur-fill" style="width:${item.durability/item.maxDurability*100}%"></div></div>`;
 }
-d.onclick=()=>showItemDetail(i)}
+d.onclick=()=>showItemDetail(origIdx)}
 grid.appendChild(d)}}
 
 function showItemDetail(idx){const item=G.inventory[idx];if(!item)return;
