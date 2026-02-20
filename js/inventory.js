@@ -114,7 +114,7 @@ const cw=CLASS_WEAPONS[G.className];suffixes=cw.names;emojis=cw.emojis;
 const si=Math.floor(Math.random()*suffixes.length);
 const prefix=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];
 const material=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];
-name=`${prefix} ${material}의 ${suffixes[si]}`;
+name=LANG==='ko'?`${prefix} ${material}의 ${suffixes[si]}`:`${t(prefix)} ${t(material)} ${t(suffixes[si])}`;
 emoji=emojis[si];svgData=null;
 }
 
@@ -203,7 +203,7 @@ equipBtns+=`<button class="btn btn-sm" onclick="equipItemToChar(${idx},${s})">${
 }else if(isEquipped){
 equipBtns=`<button class="btn btn-sm btn-secondary" onclick="unequipItem('${item.type}')">${t('해제')}</button>`;
 }
-d.innerHTML=`<div class="item-detail">${detailIcon}<div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${t(item.grade)} ${slotNameMap[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">${t('내구도:')} ${item.durability}/${item.maxDurability}</div><div class="item-desc">${item.desc}</div><div class="item-actions">${equipBtns}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">${t('수리')} (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">${t('판매')} (💰${sellPrice})</button></div></div>`}
+d.innerHTML=`<div class="item-detail">${detailIcon}<div class="item-name grade-${item.grade}-text" style="color:${GRADE_COLORS[item.grade]}">${item.name}</div><div class="item-grade" style="color:${GRADE_COLORS[item.grade]}">${t(item.grade)} ${slotNameMap[item.type]||item.type}</div><div class="item-stats">${statsHTML}</div>${modsHTML}<div style="font-size:12px;color:var(--text2)">${t('내구도:')} ${item.durability}/${item.maxDurability}</div><div class="item-desc">${t(item.desc)}</div><div class="item-actions">${equipBtns}<button class="btn btn-sm btn-secondary" onclick="repairItem(${idx})">${t('수리')} (💰${Math.floor((item.maxDurability-item.durability)*0.5)})</button><button class="btn btn-sm btn-secondary" onclick="sellItem(${idx})">${t('판매')} (💰${sellPrice})</button></div></div>`}
 
 function equipItem(idx){equipItemToChar(idx,G.activeSlot)}
 function equipItemToChar(idx,slot){
@@ -270,11 +270,11 @@ return Math.floor(100*(1.3**count)); // 130% 씩 증가
 function getStatUpgradeCount(stat){return G._statUpgrades?G._statUpgrades[stat]||0:0}
 
 const GOLD_CONSUMABLES=[
-{name:'빵',icon:'🍞',desc:'배고픔 30 회복',price:20,action:()=>{G.hunger=Math.min(100,G.hunger+30);toast('빵을 먹었다! 🍞')}},
-{name:'스테이크',icon:'🥩',desc:'배고픔 70 회복',price:50,action:()=>{G.hunger=Math.min(100,G.hunger+70);toast('스테이크를 먹었다! 🥩')}},
-{name:'HP 포션',icon:'🧪',desc:'HP 50 회복',price:30,action:()=>{G.hp=Math.min(G.maxHP,G.hp+50);toast('HP 회복! 🧪')}},
-{name:'고급 HP 포션',icon:'⚗️',desc:'HP 완전 회복',price:80,action:()=>{G.hp=G.maxHP;toast('HP 완전 회복! ⚗️')}},
-{name:'기분전환 맥주',icon:'🍺',desc:'기분 40 회복',price:25,action:()=>{G.mood=Math.min(100,G.mood+40);toast('기분이 좋아졌다! 🍺')}},
+{name:'빵',icon:'🍞',desc:'배고픔 30 회복',price:20,action:()=>{G.hunger=Math.min(100,G.hunger+30);toast(t('빵을 먹었다! 🍞'))}},
+{name:'스테이크',icon:'🥩',desc:'배고픔 70 회복',price:50,action:()=>{G.hunger=Math.min(100,G.hunger+70);toast(t('스테이크를 먹었다! 🥩'))}},
+{name:'HP 포션',icon:'🧪',desc:'HP 50 회복',price:30,action:()=>{G.hp=Math.min(G.maxHP,G.hp+50);toast(t('HP 회복! 🧪'))}},
+{name:'고급 HP 포션',icon:'⚗️',desc:'HP 완전 회복',price:80,action:()=>{G.hp=G.maxHP;toast(t('HP 완전 회복! ⚗️'))}},
+{name:'기분전환 맥주',icon:'🍺',desc:'기분 40 회복',price:25,action:()=>{G.mood=Math.min(100,G.mood+40);toast(t('기분이 좋아졌다! 🍺'))}},
 ];
 
 const STAT_UPGRADES=[
@@ -318,7 +318,7 @@ const type=allTypes[Math.floor(Math.random()*allTypes.length)];
 const apiItem=await fetchRandomItemFromAPI(type);
 let name,emoji,svgData;
 if(apiItem){name=apiItem.name;emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';svgData=apiItem.svg||null}
-else{const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];const si=Math.floor(Math.random()*suffixes.length);name=`${ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)]} ${ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)]}의 ${suffixes[si]}`;emoji=emojis[si];svgData=null}
+else{const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];const si=Math.floor(Math.random()*suffixes.length);const _p=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];const _m=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];name=LANG==='ko'?`${_p} ${_m}의 ${suffixes[si]}`:`${t(_p)} ${t(_m)} ${t(suffixes[si])}`;emoji=emojis[si];svgData=null}
 const gMult={Unique:2.2,Epic:3.5}[grade];
 const floorMult=1+G.floor*0.1;
 const stats={};const pool=[...STAT_POOL[type]];

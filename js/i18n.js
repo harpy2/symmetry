@@ -1173,6 +1173,9 @@ const I18N = {
   '웨이브': { en: 'Wave' },
   '마리': { en: '' },
   '보스!': { en: 'BOSS!' },
+  '해제 완료!': { en: 'Unlocked!' },
+  '전력': { en: 'Power' },
+  '장착!': { en: 'equipped!' },
 };
 
 /**

@@ -427,10 +427,9 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
       const roll = Math.random() * 100;
       const critChance = (isBoss ? 15 : 10) + member.critBonus;
       let dmgMult = 1, tag = '', isCrit = false;
-      if (roll < critChance) { isCrit = true; dmgMult = (isBoss ? 2.5 : 1.5) + fx.critDmgBonus / 100; tag = '💥크리티컬! '; }
-      else if (isBoss && roll > 70) { dmgMult = 0.3; tag = '❌빗나감... '; }
+      if (roll < critChance) { isCrit = true; dmgMult = (isBoss ? 2.5 : 1.5) + fx.critDmgBonus / 100; tag = t('💥크리티컬! '); }
+      else if (isBoss && roll > 70) { dmgMult = 0.3; tag = t('❌빗나감... '); isMiss = true; }
       else { dmgMult = 0.8 + Math.random() * 0.4; }
-      isMiss = tag.includes('빗나감');
       const isAoe = fx.aoe;
 
       // 공격 실행
@@ -446,13 +445,13 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           alive2.forEach(e => { e.hp -= dmg; if(e.hp<=0){e.alive=false;killed++} });
           totalDmg += dmg * alive2.length;
           const remaining = enemies.filter(e => e.alive).length;
-          const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}타]` : '';
+          const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}${t('타')}]` : '';
           lines.push({ text: `${memberLabel}${skill.icon} ${t(skill.name)}${hitLabel} — ${tag}${t('전체 공격')}!`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           const avgHp=remaining>0?Math.floor(enemies.filter(e=>e.alive).reduce((s,e)=>s+e.hp,0)/remaining):0;
           lines.push({ text: `${enemy} ${alive2.length}${t('마리에게 각')} ${dmg} ${t('피해!')}${killed>0?` ${killed}${t('마리 처치!')}`:''}${remaining>0?` ${t('남은 적')}: ${remaining} (HP: ${avgHp}/${singleHP})`:''}`, type: 'damage' });
           // 네크로맨서: AoE 처치 시 망령 소환
           if(killed>0){const hasNecro=member.skills.some(s=>s.necro);
-          if(hasNecro){for(let nk=0;nk<killed;nk++){const necroHP=Math.floor(singleHP*0.5);summons.push({name:'망령 '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});}
+          if(hasNecro){for(let nk=0;nk<killed;nk++){const necroHP=Math.floor(singleHP*0.5);summons.push({name:t('망령')+' '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});}
           lines.push({text:`${memberLabel}💀 ${t('네크로맨서')}! ${killed}${t('구의 시체가 아군 망령으로 부활!')}`,type:'buff'});}}
         } else {
           const target = alive2[0];
@@ -460,13 +459,13 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           if (fx.execute && target.hp <= singleHP * 0.3) { finalDmg = dmg * 3; if (hit === 0) lines.push({ text: `${memberLabel}⚰️ ${t('처형 발동! 데미지 3배!')}`, type: 'buff' }); }
           if (target.frozen) { finalDmg = Math.floor(finalDmg * 1.5); target.frozen = false; }
           target.hp -= finalDmg; totalDmg += finalDmg;
-          const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}타]` : '';
+          const hitLabel = fx.hits > 1 ? ` [${hit+1}/${fx.hits}${t('타')}]` : '';
           lines.push({ text: `${memberLabel}${skill.icon} ${t(skill.name)}${hitLabel} ${t('시전')}!${tag ? ' — '+tag.trim() : ''}`, type: isCrit ? 'critical' : 'action', hits: fx.hits, charClass: member.name });
           if(target.hp<=0){target.alive=false;const remaining=enemies.filter(e=>e.alive).length;
           lines.push({ text: `${enemy}${t('에게')} ${finalDmg} ${t('피해!')} ${t('처치!')}${enemyCount>1&&remaining>0?' '+t('남은 적')+': '+remaining:''}`, type: 'damage' });
           // 네크로맨서: 처치한 적을 아군 소환수로 부활
           const hasNecro=member.skills.some(s=>s.necro);
-          if(hasNecro){const necroHP=Math.floor(singleHP*0.5);summons.push({name:'망령 '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});
+          if(hasNecro){const necroHP=Math.floor(singleHP*0.5);summons.push({name:t('망령')+' '+enemy,icon:'👻',atk:Math.floor(member.atk*0.6),hp:necroHP,maxHP:necroHP,taunt:false,ownerSlot:member.slot});
           lines.push({text:`${memberLabel}💀 ${t('네크로맨서')}! ${enemy}${t('의 시체가 아군 망령으로 부활!')}`,type:'buff'});}}
           else{lines.push({ text: `${enemy}${t('에게')} ${finalDmg} ${t('피해!')} (HP: ${target.hp}/${singleHP})`, type: 'damage' });}
         }

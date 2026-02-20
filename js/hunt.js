@@ -65,13 +65,13 @@ const enemyCount=isBoss?1:Math.floor(Math.random()*maxByFloor)+1;
 
 // === Phase 1: 이동 로딩 (1~8초) ===
 const loadingText=LOADING_TEXTS[Math.floor(Math.random()*LOADING_TEXTS.length)];
-await addHuntLine(loadingText,'loading',log);
+await addHuntLine(t(loadingText),'loading',log);
 const loadingDelay=1000+Math.floor(Math.random()*7000);
 await wait(loadingDelay);
 
 // === Phase 2: 조우 스토리 ===
 const story=isBoss?BOSS_STORIES[Math.floor(Math.random()*BOSS_STORIES.length)]:NORMAL_STORIES[Math.floor(Math.random()*NORMAL_STORIES.length)];
-await addHuntLine(story.intro.replace('{enemy}',enemy),'story',log);
+await addHuntLine(t(story.intro).replace('{enemy}',enemy),'story',log);
 await wait(700);
 if(isBoss){await addHuntLine(t('⚠️ 보스 출현! {0} {1}!',tmpl.bossEmoji,enemy),'boss',log)}
 else{await addHuntLine(t('{0} {1}마리가 나타났다!',enemy,enemyCount),'story',log)}
@@ -109,7 +109,7 @@ else if(G.party&&G.party[slot]){G.party[slot].hp=Math.max(0,G.party[slot].hp-lin
 updateHuntStatus();
 }
 // 힐/버프 시 HP 회복 표시
-if(line.type==='buff'&&line.text&&(line.text.includes('+')&&line.text.includes('HP')||line.text.includes('흡혈')||line.text.includes('재생')||line.text.includes('힐'))){
+if(line.type==='buff'&&line.text&&(line.text.includes('+')&&line.text.includes('HP')||line.text.includes(t('흡혈'))||line.text.includes(t('재생'))||line.text.includes(t('힐')))){
 updateHuntStatus();
 }
 await wait(500);
@@ -397,7 +397,7 @@ d._isAttack=true;d._isCrit=cls==='critical';
 else if(cls==='enemy-atk'){
 const hitChar=charClass||G.className;
 // 빗나감이면 idle 유지, 맞으면 block
-const isMiss=text.includes('빗나감');
+const isMiss=text.includes('빗나감')||text.includes('Miss');
 if(!isMiss)showBgSprite(hitChar,'block',1);
 d.textContent=text;d.style.textAlign='left';d.style.marginRight='auto';d.style.marginLeft='8px';d.style.color='#ff6b6b';d.classList.add('hunt-slide-left');
 const dmgMatch=text.match(/-(\d+)\s*HP/);
@@ -412,11 +412,11 @@ d.textContent=text;d.style.textAlign='center';d.style.margin='0 auto';
 }
 else if(cls==='damage'){d.textContent=text;d.style.textAlign='right';d.style.marginLeft='auto';d.style.marginRight='8px';d.classList.add('hunt-hit-shake');
 // 데미지 숫자 팝업
-const dmgMatch=text.match(/(\d+)\s*피해/);
+const dmgMatch=text.match(/(\d+)\s*(?:피해|damage)/);
 if(dmgMatch){
 const prevAtk=log.querySelector('.hunt-line.hunt-slide-right:last-of-type');
 const pop=document.createElement('span');pop.className='hunt-dmg-pop enemy-dmg';pop.textContent=dmgMatch[1];
-if(text.includes('처치'))pop.textContent+=' 💀';
+if(text.includes('처치')||text.includes('killed'))pop.textContent+=' 💀';
 d.appendChild(pop);setTimeout(()=>pop.remove(),1500);
 }
 }

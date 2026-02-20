@@ -73,7 +73,7 @@ updateBars();saveGame();
 // 슬롯 해금은 즉시 클라우드 저장 (디바운스 무시)
 cloudSave(serializeState());
 updateSlotUI();
-toast(`캐릭터 슬롯 ${slot+1} 해제 완료! 🎉`);
+toast(`${t('캐릭터 슬롯')} ${slot+1} ${t('해제 완료!')} 🎉`);
 // 해제 후 바로 캐릭터 선택으로
 if(!G.party[slot]){showScreen('class-screen');G._pendingSlot=slot}
 }
@@ -188,8 +188,8 @@ const left=document.getElementById('equip-col-left');
 const right=document.getElementById('equip-col-right');
 if(!left||!right)return;
 function equipSlotIcon(item,fallback){return item?(item.svgData?`<div class="item-svg">${item.svgData}</div>`:item.emoji):fallback}
-left.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${equipSlotIcon(item,s.icon)}</div>`}).join('');
-right.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${s.label}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${equipSlotIcon(item,s.icon)}</div>`}).join('');
+left.innerHTML=EQUIP_SLOTS_LEFT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${t(s.label)}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${equipSlotIcon(item,s.icon)}</div>`}).join('');
+right.innerHTML=EQUIP_SLOTS_RIGHT.map(s=>{const item=G.equipment[s.key];return`<div class="equip-slot ${item?'has-item':''}" onclick="${item?`showEquipPopup('${s.key}')`:`openOverlay('inventory','${s.key}')`}" title="${t(s.label)}" style="${item?'border-color:'+GRADE_COLORS[item.grade]:''}">${equipSlotIcon(item,s.icon)}</div>`}).join('');
 }
 
 // 장비 상세 팝업
@@ -207,7 +207,7 @@ el.innerHTML=`<div class="edp-overlay" onclick="closeEquipPopup()"><div class="e
 <div class="edp-stats">${statsHTML}</div>
 ${modsHTML?'<div class="edp-mods">'+modsHTML+'</div>':''}
 <div class="edp-dur">${t('내구도:')} ${item.durability}/${item.maxDurability}</div>
-<div class="edp-desc">${item.desc||''}</div>
+<div class="edp-desc">${t(item.desc||'')}</div>
 <button class="btn btn-sm btn-secondary" onclick="unequipFromPopup('${slot}')">${t('해제')}</button>
 </div></div>`;
 document.body.appendChild(el);
@@ -273,8 +273,8 @@ charBtns+=`<button class="idp-char-btn disabled" disabled>🔒<span>${t('잠김'
 }
 }
 charBtns+='</div>';
-const actionBtns=`<div class="idp-action-row"><button class="idp-action-btn" onclick="closeDropPopup(this)">📦 인벤토리</button><button class="idp-action-btn idp-discard" onclick="discardFromPopup(this)">🗑️ 버리기</button></div>`;
-el.innerHTML=`<div class="idp-shine"></div>${dropIcon}<div class="idp-label">✦ 아이템 획득 ✦</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${item.grade}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${item.desc||''}</div><div class="idp-buttons">${charBtns}${actionBtns}</div>`;
+const actionBtns=`<div class="idp-action-row"><button class="idp-action-btn" onclick="closeDropPopup(this)">${t('📦 인벤토리')}</button><button class="idp-action-btn idp-discard" onclick="discardFromPopup(this)">${t('🗑️ 버리기')}</button></div>`;
+el.innerHTML=`<div class="idp-shine"></div>${dropIcon}<div class="idp-label">${t('✦ 아이템 획득 ✦')}</div><div class="idp-name" style="color:${gradeColors[item.grade]||'#fff'}">${item.name}</div><div class="idp-grade" style="color:${gradeColors[item.grade]||'#999'}">${t(item.grade)}</div><div class="idp-stats">${statsText}</div>${modsText}<div class="idp-desc">${t(item.desc||'')}</div><div class="idp-buttons">${charBtns}${actionBtns}</div>`;
 document.body.appendChild(el);
 el._item=item;
 
@@ -285,9 +285,9 @@ const cdEl=document.createElement('div');
 cdEl.className='idp-countdown';
 cdEl.style.cssText='text-align:center;color:var(--text2);font-size:11px;margin-top:6px';
 let sec=5;
-cdEl.textContent=`${sec}초 후 자동으로 닫힙니다`;
+cdEl.textContent=`${sec}${t('초 후 자동으로 닫힙니다')}`;
 el.appendChild(cdEl);
-const cdInterval=setInterval(()=>{sec--;if(sec>0)cdEl.textContent=`${sec}초 후 자동으로 닫힙니다`;else clearInterval(cdInterval)},1000);
+const cdInterval=setInterval(()=>{sec--;if(sec>0)cdEl.textContent=`${sec}${t('초 후 자동으로 닫힙니다')}`;else clearInterval(cdInterval)},1000);
 autoTimer=setTimeout(()=>{clearInterval(cdInterval);if(el.parentNode){el.classList.add('closing');setTimeout(()=>el.remove(),300)}},5000);
 el._cdInterval=cdInterval;
 }
@@ -337,8 +337,8 @@ targetChar.equipment[item.type]=item;
 G.party[slot]=targetChar;
 // 현재 캐릭이면 G에도 반영
 if(slot===G.activeSlot)loadSlotToG(slot);
-const charName=targetChar.className||('캐릭'+(slot+1));
-toast(`${item.name} → ${charName} 장착!`);
+const charName=t(targetChar.className)||t('캐릭'+(slot+1));
+toast(`${item.name} → ${charName} ${t('장착!')}`);
 renderEquipRow();renderCharacter();updateBars();saveGame();
 el.classList.add('closing');setTimeout(()=>el.remove(),300);
 }
@@ -416,7 +416,7 @@ if(!s){toast('저장된 데이터가 없습니다');return}
 try{
 if(!restoreState(s)){toast('잘못된 세이브 데이터');return}
 showScreen('main-screen');toast('게임 로드 완료!');
-}catch(e){toast('로드 실패: '+e.message)}
+}catch(e){toast(t('로드 실패:')+' '+e.message)}
 }
 
 // 클라우드에서 로드 (타이틀 화면의 '이어하기'에서 사용)
@@ -460,7 +460,7 @@ else{chosen=cloudData;isCloud=true}
 if(!chosen){toast('저장된 데이터가 없습니다');return}
 if(restoreState(chosen)){
 localStorage.setItem('symmetry_save',_encLocal(chosen));
-showScreen('main-screen');toast(isCloud?'☁️ 서버 세이브 로드 완료!':'📱 로컬 세이브 로드 완료!');
+showScreen('main-screen');toast(isCloud?t('☁️ 서버 세이브 로드 완료!'):t('📱 로컬 세이브 로드 완료!'));
 trackEvent('game_start',{type:'continue',level:G.level,floor:G.floor,class:G.className});
 if(!isCloud&&localData)cloudSave(localData);
 }else{toast('잘못된 세이브 데이터')}
@@ -470,7 +470,7 @@ if(!isCloud&&localData)cloudSave(localData);
 let _changeSlot=-1;
 function startCharChange(){
 const price=500+G.level*50;
-if(G.gold<price)return toast(`골드가 부족합니다! (${price} 필요)`);
+if(G.gold<price)return toast(t('골드가 부족합니다!')+` (${price})`);
 // 슬롯 선택 팝업
 const el=document.createElement('div');el.id='char-change-popup';
 el.innerHTML=`<div class="edp-overlay" onclick="closeCharChange()"><div class="edp-card" onclick="event.stopPropagation()" style="max-width:320px">
@@ -496,7 +496,7 @@ showScreen('class-screen');
 function confirmClassChange(className){
 const slot=G._changeSlotTarget;
 const price=500+G.level*50;
-if(G.gold<price)return toast('골드가 부족합니다!');
+if(G.gold<price)return toast(t('골드가 부족합니다!'));
 G.gold-=price;
 const cls=CLASSES[className];
 // 기존 장비 → 인벤토리
@@ -512,7 +512,7 @@ critBonus:0,hpBonus:0,atkBonus:0,defBonus:0,expBonus:0,_appliedBuffs:[],_statUpg
 if(slot===G.activeSlot){loadSlotToG(slot)}
 delete G._pendingClassChange;delete G._changeSlotTarget;
 saveGame();showScreen('main-screen');
-toast(`${className}(으)로 전직 완료! ⚔️`);
+toast(`${t(className)} ${t('(으)로 전직 완료!')} ⚔️`);
 }
 
 // Init

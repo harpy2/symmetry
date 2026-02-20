@@ -72,7 +72,7 @@ initStats();
 const done=G.achievements||[];
 let html='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;font-size:12px;color:var(--text2)">';
 html+=`<span>${t('완료')}: ${done.length}/${ACHIEVEMENTS.length}</span>`;
-html+=`<span style="margin-left:auto">💎 총 획득: ${ACHIEVEMENTS.filter(a=>done.includes(a.id)).reduce((s,a)=>s+(a.reward.dia||0),0)}</span>`;
+html+=`<span style="margin-left:auto">💎 ${t('총 획득')}: ${ACHIEVEMENTS.filter(a=>done.includes(a.id)).reduce((s,a)=>s+(a.reward.dia||0),0)}</span>`;
 html+='</div>';
 for(const a of ACHIEVEMENTS){
 const isDone=done.includes(a.id);
@@ -263,14 +263,14 @@ if(hdr)hdr.innerHTML='⚔️ <span id="hunt-label">'+t('사냥')+'</span> — <s
 function startDailyBoss(){
 if(G.dailyBossUsed)return toast(t('오늘의 도전 보스는 이미 도전했습니다!'));
 G.dailyBossUsed=true;saveGame();
-enterChallengeMode('👹 일일 도전 보스');
+enterChallengeMode('👹 '+t('일일 도전 보스'));
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
 showBgSprite(G.className,'idle');
 
 const bossFloor=Math.max(G.floor*2,20);
-const bossName='🔥 도전 보스';
+const bossName='🔥 '+t('도전 보스');
 await addHuntLine(t('👹 일일 도전 보스 출현!'),'story',log);
 await addHuntLine(t('난이도: {0}층 상당 (현재 {1}층 x2)',bossFloor,G.floor),'story',log);
 await addHuntLine(t('⚔️ 전투 개시!'),'story',log);
@@ -319,7 +319,7 @@ let _towerActive=false;
 function startTower(){
 if(_towerActive)return;
 _towerActive=true;_towerFloor=0;
-enterChallengeMode('🗼 무한의 탑');
+enterChallengeMode('🗼 '+t('무한의 탑'));
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -330,13 +330,13 @@ while(_towerActive){
 _towerFloor++;
 // 헤더 층수 업데이트
 const hdr=document.querySelector('#overlay-hunt .overlay-header h2');
-if(hdr)hdr.innerHTML=`🗼 무한의 탑 — ${_towerFloor}층`;
+if(hdr)hdr.innerHTML=`🗼 ${t('무한의 탑')} — ${LANG==='ko'?_towerFloor+'층':'Fl.'+_towerFloor}`;
 
 const enemyCount=Math.min(5,1+Math.floor(_towerFloor/5));
 const isBoss=_towerFloor%10===0;
-const enemy=isBoss?`🏛️ 탑의 수호신 ${_towerFloor}층`:`탑의 수호자 ${_towerFloor}층`;
+const enemy=isBoss?`🏛️ ${t('탑의 수호신')} ${LANG==='ko'?_towerFloor+'층':'Fl.'+_towerFloor}`:`${t('탑의 수호자')} ${LANG==='ko'?_towerFloor+'층':'Fl.'+_towerFloor}`;
 
-await addHuntLine(`── 🗼 ${_towerFloor}층 ${isBoss?'⚠️ 보스!':''} ──`,'story',log);
+await addHuntLine(`── 🗼 ${LANG==='ko'?_towerFloor+'층':'Fl.'+_towerFloor} ${isBoss?'⚠️ '+t('보스!'):''}──`,'story',log);
 showBgSprite(G.className,'walk');
 
 const oldFloor=G.floor;
@@ -385,7 +385,7 @@ function startHorde(){
 if(G.dailyHordeUsed)return toast(t('오늘의 무한의 적은 이미 도전했습니다!'));
 if(_hordeActive)return;
 G.dailyHordeUsed=true;_hordeActive=true;saveGame();
-enterChallengeMode('💀 무한의 적');
+enterChallengeMode('💀 '+t('무한의 적'));
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -395,16 +395,16 @@ const totalEnemies=100;
 let killed=0,wave=0;
 
 await addHuntLine(t('💀 무한의 적 — 100마리와의 사투!'),'story',log);
-await addHuntLine(`전력: ⚔️${G.atk+getEquipStat('ATK')} 🛡️${G.def+getEquipStat('DEF')} ❤️${Math.floor(G.hp)}/${G.maxHP}`,'story',log);
+await addHuntLine(`${t('전력')}: ⚔️${G.atk+getEquipStat('ATK')} 🛡️${G.def+getEquipStat('DEF')} ❤️${Math.floor(G.hp)}/${G.maxHP}`,'story',log);
 
 while(killed<totalEnemies&&G.hp>0){
 wave++;
 const remaining=totalEnemies-killed;
 const count=Math.min(remaining,Math.floor(3+Math.random()*5));
 const isBoss=wave%10===0;
-const enemyName=isBoss?`💀 어둠의 대장 (웨이브${wave})`:`어둠의 군단 (웨이브${wave})`;
+const enemyName=isBoss?`💀 ${t('어둠의 대장')} (${t('웨이브')}${wave})`:`${t('어둠의 군단')} (${t('웨이브')}${wave})`;
 
-await addHuntLine(`── 웨이브 ${wave} | ${enemyName} ${count}마리 ──`,'story',log);
+await addHuntLine(`── ${t('웨이브')} ${wave} | ${enemyName} ${count}${t('마리')} ──`,'story',log);
 showBgSprite(G.className,'walk');
 
 const oldFloor=G.floor;
@@ -469,7 +469,7 @@ let _pvpActive=false;
 function startPvP(){
 if(_pvpActive)return;
 _pvpActive=true;
-enterChallengeMode('🤺 PvP 대전');
+enterChallengeMode('🤺 '+t('PvP 대전'));
 
 setTimeout(async()=>{
 const log=document.getElementById('hunt-log');log.innerHTML='';
@@ -506,8 +506,9 @@ const finalDmg=isCrit?Math.floor(baseDmg*1.8):baseDmg;
 eHP-=finalDmg;
 
 showBgSprite(G.className,getActionType(skill.name,G.className),1,true);
-const critTag=isCrit?'💥크리티컬! ':'';
-await addHuntLine(`${skill.icon} ${skill.name} — ${critTag}${finalDmg} 데미지!`,isCrit?'critical':'action',log,1,G.className);
+const critTag=isCrit?t('💥크리티컬! '):'';
+await addHuntLine(`${skill.icon} ${t(skill.name)} — ${critTag}${finalDmg} ${t('데미지!')}`,isCrit?'critical':'action',log,1,G.className);
+
 
 if(eHP<=0){
 await addHuntLine(`${t(oppClass)}${t('에게')} ${finalDmg} ${t('피해!')} ${t('쓰러졌다!')}`,'damage',log);
@@ -520,7 +521,7 @@ if(myAtkSpd>0&&Math.random()*100<myAtkSpd){
 const bonusDmg=Math.max(1,Math.floor(myAtk*(0.8+Math.random()*0.4)-oppDef*0.3));
 eHP-=bonusDmg;
 showBgSprite(G.className,getActionType('',G.className),1,true);
-await addHuntLine(`⚡ 연속 공격! ${bonusDmg} 추가 데미지!`,'action',log,1,G.className);
+await addHuntLine(`⚡ ${t('연속 공격')}! ${bonusDmg} ${t('추가 데미지!')}`,	'action',log,1,G.className);
 if(eHP<=0){await addHuntLine(`${t(oppClass)} ${t('쓰러졌다!')}`,'damage',log);break}
 }
 
