@@ -33,6 +33,7 @@ const ACHIEVEMENTS=[
 {id:'pvp_1',name:'첫 대전',desc:'PvP 1회 참여',icon:'🤺',reward:{dia:10},check:s=>(G.pvpCount||0)>=1},
 {id:'pvp_10',name:'투사',desc:'PvP 10회 승리',icon:'🏆',reward:{dia:30},check:s=>(G.pvpWins||0)>=10},
 {id:'daily_7',name:'개근상',desc:'일일 퀘스트 7일 완료',icon:'📅',reward:{dia:30},check:s=>(G.dailyStreak||0)>=7},
+{id:'horde_1',name:'군단 정복자',desc:'무한의 적 100마리 전멸',icon:'💀',reward:{dia:50},check:s=>(G.hordeClears||0)>=1},
 ];
 
 function initStats(){
@@ -45,6 +46,7 @@ if(!G.dailyQuests)G.dailyQuests={date:'',quests:[],completed:[]};
 if(!G.weeklyQuests)G.weeklyQuests={week:'',quests:[],completed:[]};
 if(!G.dailyStreak)G.dailyStreak=0;
 if(!G.dailyBossUsed)G.dailyBossUsed=false;
+if(!G.dailyHordeUsed)G.dailyHordeUsed=false;
 if(!G.codex)G.codex={monsters:[],items:[]};
 }
 
@@ -152,6 +154,7 @@ const shuffled=[...DAILY_QUEST_POOL].sort(()=>Math.random()-0.5);
 G.dailyQuests={date:today,quests:shuffled.slice(0,3).map(q=>({...q,progress:0})),completed:[]};
 G.dailyStats={dailyBattles:0,dailyKills:0,dailyBossKills:0,dailyCrits:0,dailyItems:0,dailyGoldEarned:0};
 G.dailyBossUsed=false;
+G.dailyHordeUsed=false;
 saveGame();
 }
 }
@@ -330,6 +333,101 @@ await addLine(`💀 ${_towerFloor}층에서 패배...`,'var(--danger)');
 floorLabel.textContent=`🗼 ${_towerFloor}층에서 패배! 최고 기록: ${G.towerBest||0}층`;
 footer.innerHTML=`<button class="btn" style="margin-top:8px" onclick="document.getElementById('tower-overlay').remove()">닫기</button>`;
 }
+}
+
+// ===== ENDLESS HORDE (무한의 적) =====
+function startHorde(){
+if(G.dailyHordeUsed)return toast('오늘의 무한의 적은 이미 도전했습니다!');
+G.dailyHordeUsed=true;saveGame();
+closeOverlay('challenge');
+
+const overlay=document.createElement('div');
+overlay.id='horde-overlay';
+overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;padding:20px';
+overlay.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h2 style="color:var(--danger);margin:0">💀 무한의 적</h2>
+<button class="close-btn" onclick="document.getElementById('horde-overlay').remove()">✕</button></div>
+<div id="horde-status" style="text-align:center;color:var(--orange);font-size:14px;font-weight:700;margin-bottom:8px">⚔️ 100마리와의 사투!</div>
+<div id="horde-log" style="flex:1;overflow-y:auto;padding:8px;font-size:13px"></div>
+<div id="horde-footer" style="text-align:center;padding-top:8px"></div>`;
+document.body.appendChild(overlay);
+
+runHorde();
+}
+
+async function runHorde(){
+const logDiv=document.getElementById('horde-log');
+const status=document.getElementById('horde-status');
+const footer=document.getElementById('horde-footer');
+if(!logDiv)return;
+
+const totalEnemies=100;
+let killed=0;
+let wave=0;
+
+const addLine=(text,color)=>new Promise(r=>{
+const d=document.createElement('div');
+d.style.cssText=`padding:3px 0;color:${color};opacity:0;transition:opacity .2s`;
+d.textContent=text;logDiv.appendChild(d);logDiv.scrollTop=logDiv.scrollHeight;
+requestAnimationFrame(()=>d.style.opacity='1');
+setTimeout(r,200);
+});
+
+await addLine('💀 100마리의 적이 몰려온다!','var(--danger)');
+await addLine(`현재 전력: ATK ${G.atk+getEquipStat('ATK')} / DEF ${G.def+getEquipStat('DEF')} / HP ${G.hp}`,'var(--text2)');
+
+while(killed<totalEnemies&&G.hp>0){
+wave++;
+const remaining=totalEnemies-killed;
+const count=Math.min(remaining,Math.floor(3+Math.random()*5));
+const enemy=`웨이브 ${wave} (${count}마리)`;
+status.textContent=`⚔️ 처치: ${killed}/${totalEnemies} | HP: ${Math.floor(G.hp)}/${G.maxHP}`;
+
+const oldFloor=G.floor;
+G.floor=Math.max(G.floor,10+wave*2);
+const combat=generateCombatLocal('어둠의 군단',count,wave%10===0);
+G.floor=oldFloor;
+
+// 요약만 표시
+const dmgDealt=combat.totalDmg||0;
+const dmgTaken=Object.values(combat.totalTaken).reduce((a,b)=>a+b,0);
+
+if(combat.won){
+killed+=count;
+G.hp=Math.max(1,G.hp-dmgTaken);
+const waveColor=wave%10===0?'var(--gold)':'var(--cyan)';
+await addLine(`웨이브 ${wave}: ${count}마리 처치! (${dmgDealt} 데미지 | -${dmgTaken} HP)`,waveColor);
+if(wave%10===0)await addLine(`🔥 ${wave}웨이브 돌파! 남은 적: ${totalEnemies-killed}`,'var(--orange)');
+}else{
+const partialKill=combat.lines.filter(l=>l.text&&l.text.includes('처치')).length;
+killed+=partialKill;
+G.hp=Math.max(0,G.hp-dmgTaken);
+await addLine(`웨이브 ${wave}: ${partialKill}/${count}마리 처치... 쓰러졌다!`,'var(--danger)');
+break;
+}
+updateBars();
+}
+
+// 결과
+const won=killed>=totalEnemies;
+status.textContent=won?`🏆 100마리 전멸! 웨이브 ${wave}`:`💀 ${killed}/${totalEnemies}마리 처치 후 패배...`;
+
+if(won){
+const goldReward=5000+G.floor*100;
+const diaReward=50;
+G.gold+=goldReward;G.points=(G.points||0)+diaReward;
+G.hordeClears=(G.hordeClears||0)+1;
+G.hp=Math.max(1,Math.floor(G.maxHP*0.3));
+await addLine(`🏆 무한의 적 정복! 💰+${goldReward} 💎+${diaReward}`,'var(--gold)');
+}else{
+const consolation=Math.floor(killed*30);
+G.gold+=consolation;
+G.hp=Math.max(1,Math.floor(G.maxHP*0.5));
+await addLine(`${killed}마리 처치 보상: 💰+${consolation}`,'var(--text2)');
+}
+
+updateBars();saveGame();checkAchievements();
+footer.innerHTML=`<button class="btn" style="margin-top:8px" onclick="document.getElementById('horde-overlay').remove()">닫기</button>`;
 }
 
 // ===== PVP =====
