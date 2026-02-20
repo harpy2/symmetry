@@ -282,7 +282,40 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
   const maxRounds = 999;
 
+  // 선공 판정: 50% 확률로 적이 먼저 공격
+  const enemyFirst = Math.random() < 0.5;
+  if (enemyFirst) {
+    lines.push({ text: '⚠️ 적의 선제공격!', type: 'enemy-atk' });
+    const floorScaleE = floorScale;
+    for (const member of partyMembers) {
+      if (member._dead) continue;
+      const memberLabel = partyMembers.length > 1 ? `[${member.weapon}${member.name}] ` : '';
+      const preAlive = enemies.filter(e => e.alive);
+      const attackers = isBoss ? preAlive : preAlive.filter(() => Math.random() < 0.5);
+      const actual = attackers.length > 0 ? attackers : [preAlive[0]];
+      for (const attacker of actual) {
+        const eRoll = Math.random();
+        const evadeChance = 0.15 + member.evade / 100;
+        if (eRoll < evadeChance) {
+          lines.push({ text: `${enemy}의 공격 → ${memberLabel}빗나감!`, type: 'enemy-atk', dmg: 0, charClass: member.name });
+        } else {
+          const eCrit = eRoll > 0.9;
+          const rawDmg = (isBoss ? (12 + G.floor * 3) : (12 + G.floor * 1.5)) * floorScaleE * (eCrit ? 2.0 : (0.7 + Math.random() * 0.5));
+          let eDmg = Math.max(1, Math.floor(rawDmg - member.def / 3));
+          totalTaken[member.slot] = (totalTaken[member.slot]||0) + eDmg;
+          lines.push({ text: `${eCrit ? '💥 ' : ''}${enemy}의 공격 → ${memberLabel}-${eDmg} HP`, type: 'enemy-atk', dmg: eDmg, charClass: member.name });
+        }
+      }
+      const memberHP = member.hp - (totalTaken[member.slot]||0);
+      if (memberHP <= 0 && !member._dead) { member._dead = true; lines.push({ text: `💀 ${memberLabel}쓰러졌다!`, type: 'defeat', charClass: member.name }); }
+    }
+    if (partyMembers.every(m => m._dead)) { lines.push({ text: '💀 파티가 전멸했다...', type: 'defeat' }); }
+  } else {
+    lines.push({ text: '⚡ 아군의 선제공격!', type: 'action' });
+  }
+
   for (let r = 0; r < maxRounds; r++) {
+    if (partyMembers.every(m => m._dead)) break;
     const aliveEnemies = enemies.filter(e => e.alive);
     if (aliveEnemies.length === 0) break;
 
