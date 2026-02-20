@@ -107,8 +107,8 @@ const tSlot=line.charClass&&G.party?G.party.findIndex(p=>p&&p.className===line.c
 const slot=tSlot>=0?tSlot:G.activeSlot;
 _liveTaken[slot]=(_liveTaken[slot]||0)+line.dmg;
 // 임시로 G.hp 반영 (표시용)
-if(slot===G.activeSlot){G.hp=Math.max(1,G.hp-line.dmg)}
-else if(G.party&&G.party[slot]){G.party[slot].hp=Math.max(1,G.party[slot].hp-line.dmg)}
+if(slot===G.activeSlot){G.hp=Math.max(0,G.hp-line.dmg)}
+else if(G.party&&G.party[slot]){G.party[slot].hp=Math.max(0,G.party[slot].hp-line.dmg)}
 updateHuntStatus();
 }
 // 힐/버프 시 HP 회복 표시
@@ -125,13 +125,13 @@ if(G.party){
   for(let s=0;s<3;s++){
     if(G.party[s]&&takenMap[s]){
       const remaining=Math.max(0,takenMap[s]-(_liveTaken[s]||0));
-      if(remaining>0)G.party[s].hp=Math.max(1,G.party[s].hp-remaining);
+      if(remaining>0)G.party[s].hp=Math.max(0,G.party[s].hp-remaining);
     }
   }
   if(G.party[G.activeSlot])G.hp=G.party[G.activeSlot].hp;
 }else{
   const remaining=Math.max(0,(takenMap[0]||0)-(_liveTaken[0]||0));
-  if(remaining>0)G.hp=Math.max(1,G.hp-remaining);
+  if(remaining>0)G.hp=Math.max(0,G.hp-remaining);
 }
 G.hunger=Math.max(0,G.hunger-(isBoss?8:4));
 
@@ -184,7 +184,16 @@ else if(PASSIVE_LEVELS.includes(sub.level)){await showSkillLearn('passive',_s);}
 else{await showLevelUp(null,_s);}
 }}
 }else{
+// 패배해도 경험치 획득
+let expReward=Math.floor((combat.expReward||15)*moodMult.exp);
+G.exp+=expReward;
+for(let _s=0;_s<3;_s++){if(_s!==G.activeSlot&&G.slotUnlocked[_s]&&G.party[_s]){if(!G.party[_s].exp)G.party[_s].exp=0;G.party[_s].exp+=expReward;}}
+await addHuntLine(`패배했지만 경험치 +${expReward} 획득`,'loot',log);
 G.mood=Math.max(0,G.mood-10);trackEvent('battle_defeat',{floor:G.floor,level:G.level,class:G.className})}
+
+// 사망 캐릭 HP 1로 부활
+if(G.hp<=0)G.hp=1;
+if(G.party){for(let _s=0;_s<3;_s++){if(G.party[_s]&&G.party[_s].hp<=0)G.party[_s].hp=1}}
 
 updateBars();updateHuntStatus();renderCharacter();renderEquipRow();saveGame();
 huntInProgress=false;document.getElementById('hunt-btn').disabled=false;

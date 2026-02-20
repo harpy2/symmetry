@@ -305,6 +305,7 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
 
     // 각 파티 멤버가 순서대로 공격 → 적 반격
     for (const member of partyMembers) {
+      if (member._dead) continue;
       const curAlive = enemies.filter(e => e.alive);
       if (curAlive.length === 0) break;
 
@@ -443,7 +444,20 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
           }
         }
       }
+      // 파티원 HP 추적 — 사망 체크
+      const memberHP = member.hp - (totalTaken[member.slot]||0);
+      if (memberHP <= 0 && !member._dead) {
+        member._dead = true;
+        lines.push({ text: `💀 ${memberLabel}쓰러졌다!`, type: 'defeat', charClass: member.name });
+      }
     } // end party member loop
+
+    // 전멸 체크 — 살아있는 파티원이 없으면 패배
+    const aliveMembers = partyMembers.filter(m => !m._dead);
+    if (aliveMembers.length === 0) {
+      lines.push({ text: '💀 파티가 전멸했다...', type: 'defeat' });
+      break;
+    }
 
     // 소환수 공격 턴
     const aliveSummons = summons.filter(s => s.hp > 0);
@@ -482,16 +496,24 @@ function generateCombatLocal(enemy, enemyCount, isBoss) {
     }
   } // end round loop
 
-  const won = enemies.every(e => !e.alive);
+  const allEnemiesDead = enemies.every(e => !e.alive);
+  const allPartyDead = partyMembers.every(m => m._dead);
+  const won = allEnemiesDead && !allPartyDead;
   const goldMult = 1 + (G.goldBonus || 0) / 100 + getEquipStat('골드 획득') / 100;
   const expMult = 1 + (G.expBonus || 0) / 100 + getEquipStat('경험치 보너스') / 100;
   const goldReward = won ? Math.floor((10 + G.floor * 5) * (isBoss ? 3 : 1) * enemyCount * (0.8 + Math.random() * 0.4) * goldMult) : 0;
-  const expReward = won ? Math.floor((15 + G.floor * 3) * (isBoss ? 2.5 : 1) * enemyCount * expMult) : 0;
+  // 패배해도 경험치는 획득 (승리의 50%)
+  const expReward = Math.floor((15 + G.floor * 3) * (isBoss ? 2.5 : 1) * enemyCount * expMult * (won ? 1 : 0.5));
 
-  if (won) { lines.push({ text: '전투 승리! 🎉', type: 'victory' }); }
-  else { lines.push({ text: '전투 패배... 💀', type: 'defeat' }); }
+  if (won) {
+    const deadNames = partyMembers.filter(m => m._dead).map(m => m.name);
+    if (deadNames.length > 0) lines.push({ text: `⚠️ ${deadNames.join(', ')} 전사했지만 전투 승리! 🎉`, type: 'victory' });
+    else lines.push({ text: '전투 승리! 🎉', type: 'victory' });
+  } else {
+    lines.push({ text: '전투 패배... 💀', type: 'defeat' });
+  }
 
-  return { lines, result: won ? 'win' : 'lose', totalDmg, totalTaken, goldReward, expReward };
+  return { lines, result: won ? 'win' : 'lose', totalDmg, totalTaken, goldReward, expReward, partyDead: partyMembers.filter(m=>m._dead).map(m=>m.slot) };
 }
 
 // ===== AI SKILL GENERATION =====
