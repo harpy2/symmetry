@@ -260,8 +260,8 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="challenge-card" onclick="startTower()">
 <div class="challenge-icon">🗼</div>
 <div class="challenge-info"><div class="challenge-name">무한의 탑</div><div class="challenge-desc">연속 전투! 몇 층까지 올라갈 수 있는가?</div>
-<div style="font-size:11px;color:var(--cyan)">최고 기록: <span id="tower-best">0</span>층</div></div>
-<div class="challenge-reward">💰골드</div>
+<div style="font-size:11px;color:var(--cyan)" id="tower-best-label"></div></div>
+<div class="challenge-reward" id="tower-reward-label"></div>
 </div>
 <div class="challenge-card" onclick="startHorde()">
 <div class="challenge-icon">💀</div>
@@ -271,7 +271,7 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="challenge-card" onclick="startPvP()">
 <div class="challenge-icon">🤺</div>
 <div class="challenge-info"><div class="challenge-name">PvP 대전</div><div class="challenge-desc">비슷한 레벨의 상대와 1:1 대결!</div>
-<div style="font-size:11px;color:var(--cyan)">전적: <span id="pvp-record">0승 0패</span></div></div>
+<div style="font-size:11px;color:var(--cyan)" id="pvp-record-label"></div></div>
 <div class="challenge-reward">💎5 + 💰</div>
 </div>
 </div>
@@ -297,7 +297,7 @@ gtag('config', 'G-XY7YKM0M37');
 <script src="js/data.js?v=35"></script>
 <script src="js/content.js?v=13"></script>
 <script src="js/ai.js?v=48"></script>
-<script src="js/ui.js?v=35"></script>
+<script src="js/ui.js?v=36"></script>
 <script src="js/inventory.js?v=35"></script>
 <script src="js/hunt.js?v=163"></script>
 <script src="js/game.js?v=41"></script>
@@ -377,6 +377,14 @@ document.querySelectorAll('#overlay-inventory button').forEach(function(el){
   if(txt.includes('유니크 이하'))el.textContent='🗑️ '+t('유니크 이하 일괄 판매');
   if(txt.includes('에픽 이하'))el.textContent='🗑️ '+t('에픽 이하 일괄 판매');
 });
+
+// Challenge dynamic labels
+var tbl=document.getElementById('tower-best-label');
+if(tbl)tbl.innerHTML=t('최고 기록:')+' <span id="tower-best">'+(typeof G!=='undefined'?G.towerBest||0:0)+'</span>'+t('층');
+var trl=document.getElementById('tower-reward-label');
+if(trl)trl.textContent='💰'+t('골드');
+var prl=document.getElementById('pvp-record-label');
+if(prl){var w=typeof G!=='undefined'?(G.pvpWins||0):0;var l=typeof G!=='undefined'?((G.pvpCount||0)-w):0;prl.innerHTML=t('전적:')+' <span id="pvp-record">'+w+t('승')+' '+l+t('패')+'</span>';}
 
 // Challenge cards
 document.querySelectorAll('.challenge-name').forEach(function(el){

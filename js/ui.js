@@ -83,8 +83,8 @@ if(name==='quest')renderQuests();
 if(name==='achieve')renderAchievements();
 if(name==='codex')renderCodex();
 if(name==='challenge'){
-const tb=document.getElementById('tower-best');if(tb)tb.textContent=G.towerBest||0;
-const pr=document.getElementById('pvp-record');if(pr)pr.textContent=`${G.pvpWins||0}${t('승')} ${((G.pvpCount||0)-(G.pvpWins||0))}${t('패')}`;
+const tbl=document.getElementById('tower-best-label');if(tbl)tbl.innerHTML=`${t('최고 기록:')} <span id="tower-best">${G.towerBest||0}</span>${t('층')}`;
+const prl=document.getElementById('pvp-record-label');if(prl){const w=G.pvpWins||0;const l=(G.pvpCount||0)-w;prl.innerHTML=`${t('전적:')} <span id="pvp-record">${w}${t('승')} ${l}${t('패')}</span>`;}
 }}
 function closeOverlay(name){document.getElementById('overlay-'+name).classList.remove('active');if(name==='hunt'){G.autoHunt=false;updateAutoHuntUI();if(typeof restoreHuntUI==='function')restoreHuntUI()}}
 
