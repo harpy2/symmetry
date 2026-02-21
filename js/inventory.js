@@ -427,11 +427,49 @@ toast(t('🎁 미션 보상 {0}건 수령! 💰+{1} 💎+{2}',claimData.claimed,
 }catch(e){console.warn('[CPQ] reward check error:',e.message)}
 }
 
+// ── EN local missions ──
+const LOCAL_MISSIONS=[
+{id:'lm_kill50',name:'Kill 50 Monsters',desc:'Slay 50 creatures in battle',stat:'dailyKills',target:50,reward:{gold:500}},
+{id:'lm_floor5',name:'Clear 5 Floors',desc:'Advance through 5 dungeon floors',stat:'_floor',target:5,reward:{gold:800}},
+{id:'lm_boss3',name:'Defeat 3 Bosses',desc:'Take down 3 boss enemies',stat:'dailyBossKills',target:3,reward:{gold:1000}},
+{id:'lm_level10',name:'Reach Level 10',desc:'Train until you reach level 10',stat:'_level',target:10,reward:{dia:5}},
+{id:'lm_equip',name:'Equip All Gear Slots',desc:'Fill every equipment slot',stat:'_equipAll',target:1,reward:{dia:3}},
+{id:'lm_nodeath5',name:'Win 5 Battles Unscathed',desc:'Win 5 battles without dying',stat:'dailyBattles',target:5,reward:{gold:600}},
+{id:'lm_items3',name:'Collect 3 Items',desc:'Find 3 items from monsters',stat:'dailyItems',target:3,reward:{dia:2}},
+{id:'lm_gold5k',name:'Earn 5,000 Gold',desc:'Accumulate 5,000 gold from battles',stat:'dailyGoldEarned',target:5000,reward:{dia:5}},
+{id:'lm_battle20',name:'Complete 20 Hunts',desc:'Finish 20 hunting expeditions',stat:'dailyBattles',target:20,reward:{gold:1200}},
+{id:'lm_crit30',name:'Land 30 Critical Hits',desc:'Strike critically 30 times',stat:'dailyCrits',target:30,reward:{dia:4}},
+];
+
+function _getLocalMissionProgress(m){
+if(m.stat==='_floor')return G.floor||0;
+if(m.stat==='_level')return G.level||1;
+if(m.stat==='_equipAll'){
+const slots=['weapon','armor','accessory','helmet','boots','gloves'];
+const filled=slots.filter(s=>G.equipped&&G.equipped[s]).length;
+return filled>=slots.length?1:0;
+}
+return (G.dailyStats&&G.dailyStats[m.stat])||0;
+}
+
+function claimLocalMission(idx){
+const m=LOCAL_MISSIONS[idx];if(!m)return;
+const prog=_getLocalMissionProgress(m);
+if(prog<m.target)return toast('Not completed yet!');
+if(G.missionCooldowns[m.id])return toast('Already claimed!');
+G.missionCooldowns[m.id]=true;
+if(m.reward.gold){G.gold+=m.reward.gold}
+if(m.reward.dia){G.points=(G.points||0)+m.reward.dia}
+toast(`🎁 Mission reward! ${m.reward.gold?'💰+'+m.reward.gold+' ':''}${m.reward.dia?'💎+'+m.reward.dia:''}`);
+updateBars();saveGame();renderMissions();
+}
+
 async function renderMissions(){
 const body=document.getElementById('mission-body');
 body.innerHTML=`<div style="text-align:center;color:var(--text2);padding:20px">${t('📋 미션 불러오는 중...')}</div>`;
 
-// 먼저 미수령 보상 체크
+if(LANG==='ko'){
+// ── Korean: ADBC campaigns ──
 await checkPendingRewards();
 
 try{
@@ -468,6 +506,38 @@ ${actionHTML}
 </div>`);
 }
 body.innerHTML=`<div class="mission-list">${cards.join('')}</div>`;
+
+}else{
+// ── English: local gameplay missions ──
+const cards=[];
+for(let i=0;i<LOCAL_MISSIONS.length;i++){
+const m=LOCAL_MISSIONS[i];
+const npc=NPC_POOL[i%NPC_POOL.length];
+const prog=_getLocalMissionProgress(m);
+const claimed=!!G.missionCooldowns[m.id];
+const done=prog>=m.target;
+
+const rewardTags=`${m.reward.gold?'<span class="reward-tag gold">💰 '+m.reward.gold+'</span>':''}${m.reward.dia?'<span class="reward-tag dia">💎 '+m.reward.dia+'</span>':''}`;
+const progressBar=`<div style="margin-top:4px;font-size:11px;color:var(--text2)">${Math.min(prog,m.target)} / ${m.target}</div>`;
+
+let actionHTML='';
+if(claimed){
+actionHTML=`<div class="mc-action"><div class="cooldown">✅ Claimed</div></div>`;
+}else if(done){
+actionHTML=`<div class="mc-action"><button class="btn cpq-link-btn" onclick="claimLocalMission(${i})">🎁 Claim Reward</button></div>`;
+}else{
+actionHTML=`<div class="mc-action"><div class="cooldown" style="opacity:.5">⏳ In Progress</div></div>`;
+}
+
+cards.push(`<div class="mission-card${claimed?' mission-done':''}">
+<div class="mc-header"><div class="npc-avatar" style="background:${npc.color}">${npc.avatar}</div>
+<div class="mc-header-info"><div class="npc-name">${t(npc.npc)}</div><div class="mission-title">${m.name}</div></div></div>
+<div class="mc-body"><div class="mission-desc" style="font-size:12px;color:var(--text2);margin-bottom:4px">${m.desc}</div><div class="mission-reward">${rewardTags}</div>${progressBar}</div>
+${actionHTML}
+</div>`);
+}
+body.innerHTML=`<div class="mission-list">${cards.join('')}</div>`;
+}
 }
 
 async function joinCPQ(idx){
