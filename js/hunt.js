@@ -272,8 +272,9 @@ var buffMap={};var buffOrder=[];
 G._appliedBuffs.forEach(function(b){
 var name=typeof b==='string'?b:b.name;
 var desc=typeof b==='object'&&b.desc?b.desc:'';
-if(buffMap[name]){buffMap[name].count++}
-else{buffMap[name]={desc:desc,count:1};buffOrder.push(name)}
+var tName=t(name);
+if(buffMap[tName]){buffMap[tName].count++}
+else{buffMap[tName]={desc:t(desc),count:1};buffOrder.push(tName)}
 });
 buffOrder.forEach(function(name){
 var b=buffMap[name];
