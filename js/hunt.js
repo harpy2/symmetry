@@ -297,7 +297,7 @@ const el=document.getElementById('hunt-stat-list').cloneNode(true);
 el.querySelectorAll('.hs-row').forEach(row=>{const label=row.querySelector('.hs-label');if(!label)return;const d=descs[label.textContent.trim()];if(d){const desc=document.createElement('div');desc.style.cssText='font-size:10px;color:var(--text2);margin-top:1px;padding-left:2px';desc.textContent=d;row.appendChild(desc);row.style.flexWrap='wrap'}});
 let statHtml=el.innerHTML;
 for(let s=0;s<3;s++){if(s===G.activeSlot||!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;const c=G.party[s];const cls=CLASSES[c.className];if(!cls)continue;
-statHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${c.className} (Lv.${c.level})</div><div style="font-size:12px;line-height:1.8;color:var(--text1)">❤️ HP: ${Math.floor(c.hp)}/${c.maxHP}<br>⚔️ ATK: ${c.atk}<br>🛡️ DEF: ${c.def}<br>🎯 치명타: ${10+(c.critBonus||0)}%<br>📊 EXP: ${c.exp||0}%</div></div>`}
+statHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${t(c.className)} (Lv.${c.level})</div><div style="font-size:12px;line-height:1.8;color:var(--text1)">❤️ HP: ${Math.floor(c.hp)}/${c.maxHP}<br>⚔️ ATK: ${c.atk}<br>🛡️ DEF: ${c.def}<br>🎯 ${t('치명타')}: ${10+(c.critBonus||0)}%<br>📊 EXP: ${c.exp||0}%</div></div>`}
 body.innerHTML=statHtml;
 }else if(type==='skills'){
 title.textContent=t('🗡️ 스킬');
@@ -308,7 +308,7 @@ if(s===G.activeSlot||s===0){char={className:G.className,level:G.level,equippedSk
 else{if(!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;char=G.party[s];cls=CLASSES[char.className]}
 if(!cls)continue;
 const actives=char.equippedSkills||[];const passives=char.equippedPassives||[];
-html+=`<div style="margin-bottom:10px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${char.className} (Lv.${char.level})</div>`;
+html+=`<div style="margin-bottom:10px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${t(char.className)} (Lv.${char.level})</div>`;
 if(actives.length>0){actives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0">${sk.icon} <b>${sk.name}</b> <span style="color:var(--text2)">${sk.desc||''}</span></div>`})}
 if(passives.length>0){passives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0;color:var(--cyan)">${sk.icon} <b>${sk.name}</b> <span style="opacity:.7">${sk.desc||''}</span></div>`})}
 if(actives.length===0&&passives.length===0)html+=`<div style="font-size:12px;color:var(--text2)">${t('스킬 없음')}</div>`;
