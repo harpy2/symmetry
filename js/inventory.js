@@ -103,9 +103,18 @@ const apiItem=await fetchRandomItemFromAPI(type);
 let name,emoji,svgData;
 console.log('[ITEM] apiItem:',apiItem?'loaded':'null','type:',type);
 if(apiItem){
-name=apiItem.name;
 emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';
 svgData=apiItem.svg||null;
+if(LANG==='ko'){name=apiItem.name}else{
+// API returns Korean names; generate English name locally
+let suffixes;
+if(type==='weapon'&&CLASS_WEAPONS[G.className]){suffixes=CLASS_WEAPONS[G.className].names}
+else{suffixes=ITEM_SUFFIX[type]}
+const si=Math.floor(Math.random()*suffixes.length);
+const prefix=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];
+const material=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];
+name=`${t(prefix)} ${t(material)} ${t(suffixes[si])}`;
+}
 }else{
 let suffixes,emojis;
 if(type==='weapon'&&CLASS_WEAPONS[G.className]){
@@ -317,7 +326,8 @@ const allTypes=['helmet','chest','gloves','pants','boots','weapon','necklace','r
 const type=allTypes[Math.floor(Math.random()*allTypes.length)];
 const apiItem=await fetchRandomItemFromAPI(type);
 let name,emoji,svgData;
-if(apiItem){name=apiItem.name;emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';svgData=apiItem.svg||null}
+if(apiItem){emoji=apiItem.svg?'':ITEM_EMOJIS[type]?.[Math.floor(Math.random()*(ITEM_EMOJIS[type]?.length||1))]||'📦';svgData=apiItem.svg||null;
+if(LANG==='ko'){name=apiItem.name}else{const suffixes=ITEM_SUFFIX[type];const si=Math.floor(Math.random()*suffixes.length);const _p=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];const _m=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];name=`${t(_p)} ${t(_m)} ${t(suffixes[si])}`}}
 else{const suffixes=ITEM_SUFFIX[type];const emojis=ITEM_EMOJIS[type];const si=Math.floor(Math.random()*suffixes.length);const _p=ITEM_PREFIX[Math.floor(Math.random()*ITEM_PREFIX.length)];const _m=ITEM_MATERIAL[Math.floor(Math.random()*ITEM_MATERIAL.length)];name=LANG==='ko'?`${_p} ${_m}의 ${suffixes[si]}`:`${t(_p)} ${t(_m)} ${t(suffixes[si])}`;emoji=emojis[si];svgData=null}
 const gMult={Unique:2.2,Epic:3.5}[grade];
 const floorMult=1+G.floor*0.1;
