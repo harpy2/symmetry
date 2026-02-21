@@ -1401,3 +1401,16 @@ function initLangToggle() {
   const label = document.getElementById('lang-label');
   if (label) label.textContent = LANG === 'ko' ? 'EN' : 'KO';
 }
+
+// Translate stat key for display
+function tStat(key) {
+  const STAT_I18N = {
+    '치명타': 'Crit', '공격속도': 'ATK Spd', '관통': 'Pen', '출혈 데미지': 'Bleed DMG',
+    '막기 확률': 'Block%', '반사 데미지': 'Reflect DMG', '저항력': 'Resist', '기분 유지': 'Mood Keep',
+    'HP 회복': 'HP Regen', '피해감소': 'DMG Reduce', '연속공격': 'Multi-hit', '회피율': 'Evasion',
+    '이동속도': 'Move Spd', '선제공격': 'First Strike', '연속턴': 'Extra Turn', '스킬 데미지': 'Skill DMG',
+    '쿨다운 감소': 'CDR', '골드 획득': 'Gold Find', '경험치 보너스': 'EXP Bonus', '드롭률': 'Drop Rate', '행운': 'Luck'
+  };
+  if (LANG === 'ko') return key;
+  return STAT_I18N[key] || key;
+}

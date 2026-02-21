@@ -170,7 +170,7 @@ if(isPC){
 const iconSmall=item.svgData?`<div class="item-svg">${item.svgData}</div>`:`<span style="font-size:16px">${item.emoji}</span>`;
 const bgIcon=item.svgData?`<div class="inv-bg-icon"><div class="item-svg">${item.svgData}</div></div>`:`<div class="inv-bg-icon">${item.emoji}</div>`;
 const nameColor=GRADE_COLORS[item.grade]||'var(--text1)';
-const stats=Object.entries(item.stats).map(([k,v])=>`${k}+${v}`).join(' / ');
+const stats=Object.entries(item.stats).map(([k,v])=>`${tStat(k)}+${v}`).join(' / ');
 const mods=(item.skillMods&&item.skillMods.length)?item.skillMods.map(m=>`✦ ${m.mod}`).join('<br>'):'';
 d.innerHTML=`${bgIcon}<div class="inv-item-header">${iconSmall}<span class="inv-item-name" style="color:${nameColor}">${item.name}</span></div><div class="inv-item-stats">${stats}</div>${mods?`<div class="inv-item-mods">${mods}</div>`:''}<div class="dur-bar"><div class="dur-fill" style="width:${item.durability/item.maxDurability*100}%"></div></div>`;
 }else{
@@ -183,7 +183,7 @@ grid.appendChild(d)}}
 
 function showItemDetail(idx){const item=G.inventory[idx];if(!item)return;
 const d=document.getElementById('item-detail-area');
-const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${k}: +${v}</div>`).join('');
+const statsHTML=Object.entries(item.stats).map(([k,v])=>`<div>${tStat(k)}: +${v}</div>`).join('');
 const modsHTML=(item.skillMods&&item.skillMods.length)?`<div class="item-mods"><div style="color:var(--gold);font-size:11px;margin-top:6px">${t('✦ 스킬 옵션')}</div>`+item.skillMods.map(m=>`<div style="color:var(--cyan);font-size:12px">• ${m.mod}</div>`).join('')+'</div>':'';
 const slotNameMap={weapon:t('주무기'),offhand:t('보조무기'),helmet:t('투구'),chest:t('상의'),gloves:t('장갑'),pants:t('바지'),boots:t('신발'),necklace:t('목걸이'),ring1:t('반지'),ring2:t('반지')};
 const isEquipped=Object.values(G.equipment).some(e=>e&&e.id===item.id);

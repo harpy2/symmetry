@@ -254,7 +254,7 @@ var slotNames={helmet:t('투구'),chest:t('상의'),gloves:t('장갑'),pants:t('
 Object.keys(G.equipment).forEach(function(slot){
 var item=G.equipment[slot];if(!item)return;
 var statsArr=[];
-Object.entries(item.stats).forEach(function(e){if(e[1])statsArr.push(e[0]+' +'+e[1])});
+Object.entries(item.stats).forEach(function(e){if(e[1])statsArr.push(tStat(e[0])+' +'+e[1])});
 var modsArr=[];
 if(item.skillMods&&item.skillMods.length){item.skillMods.forEach(function(m){modsArr.push(m.mod||m)})}
 var itemIcon=item.svgData?'<span class="item-svg item-svg-sm">'+item.svgData+'</span>':(item.emoji||'');
