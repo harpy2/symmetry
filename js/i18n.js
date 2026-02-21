@@ -1026,6 +1026,8 @@ const I18N = {
   // === Confirm Messages ===
   '골드로 해제': { en: 'gold to unlock' },
   '골드로 캐릭터 슬롯': { en: 'gold to unlock character slot' },
+  '💰 2,000 골드로 해제': { en: '💰 Unlock for 2,000 Gold' },
+  '💰 5,000 골드로 해제': { en: '💰 Unlock for 5,000 Gold' },
   '을 해제할까요?': { en: '?' },
 
   // === PvP ===

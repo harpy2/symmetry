@@ -293,7 +293,7 @@ gtag('config', 'G-XY7YKM0M37');
 <div class="levelup-choices" id="levelup-choices"></div>
 </div>
 
-<script src="js/i18n.js?v=5"></script>
+<script src="js/i18n.js?v=6"></script>
 <script src="js/data.js?v=35"></script>
 <script src="js/content.js?v=13"></script>
 <script src="js/ai.js?v=48"></script>
@@ -398,6 +398,12 @@ document.querySelectorAll('.challenge-desc').forEach(function(el){
 
 // Lock overlay text
 document.querySelectorAll('.lock-text').forEach(function(el){
+  var txt=el.textContent.trim();
+  if(I18N[txt])el.textContent=t(txt);
+});
+
+// Lock overlay unlock buttons
+document.querySelectorAll('.locked-overlay .btn').forEach(function(el){
   var txt=el.textContent.trim();
   if(I18N[txt])el.textContent=t(txt);
 });
