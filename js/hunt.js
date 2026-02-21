@@ -292,10 +292,21 @@ const title=document.getElementById('mobile-popup-title');
 const body=document.getElementById('mobile-popup-body');
 if(type==='stat'){
 title.textContent=t('📊 상태');
-const descs={};descs['❤️ HP']=t('체력 — 0이 되면 전투 불능');descs['⚔️ '+t('공격력')]=t('스킬/평타 데미지에 반영. 소환수도 ATK 기반');descs['🛡️ '+t('방어력')]=t('받는 피해 감소');descs['💥 '+t('치명타')]=t('크리티컬 확률 — 발동 시 1.5~2.5배 데미지');descs['⚡ '+t('공격속도')]=t('추가 공격 확률 — 턴당 2회 공격 (캡 50%)');descs['🍖 '+t('배고픔')]=t('낮으면 사냥 불가');descs['😊 '+t('기분')]=t('낮으면 사냥 불가, 패배 시 감소');
-const el=document.getElementById('hunt-stat-list').cloneNode(true);
-el.querySelectorAll('.hs-row').forEach(row=>{const label=row.querySelector('.hs-label');if(!label)return;const d=descs[label.textContent.trim()];if(d){const desc=document.createElement('div');desc.style.cssText='font-size:10px;color:var(--text2);margin-top:1px;padding-left:2px';desc.textContent=d;row.appendChild(desc);row.style.flexWrap='wrap'}});
-let statHtml=el.innerHTML;
+const statRows=[
+{icon:'❤️',label:'HP',value:Math.floor(G.hp)+'/'+G.maxHP,desc:t('체력 — 0이 되면 전투 불능')},
+{icon:'⚔️',label:t('공격력'),value:G.atk,desc:t('스킬/평타 데미지에 반영. 소환수도 ATK 기반')},
+{icon:'🛡️',label:t('방어력'),value:G.def,desc:t('받는 피해 감소')},
+{icon:'💥',label:t('치명타'),value:(10+(G.critBonus||0))+'%',desc:t('크리티컬 확률 — 발동 시 1.5~2.5배 데미지')},
+{icon:'⚡',label:t('공격속도'),value:(G.atkSpd||0)+'%',desc:t('추가 공격 확률 — 턴당 2회 공격 (캡 50%)')},
+{icon:'🍖',label:t('배고픔'),value:Math.floor(G.hunger)+'%',desc:t('낮으면 사냥 불가')},
+{icon:'😊',label:t('기분'),value:Math.floor(G.mood)+'%',desc:t('낮으면 사냥 불가, 패배 시 감소')},
+{icon:'⭐',label:t('레벨'),value:G.level,desc:t('레벨업 시 스탯 보상 선택 가능')},
+{icon:'💰',label:t('골드'),value:G.gold,desc:t('상점에서 스탯 업그레이드 구매 가능')},
+{icon:'🏔️',label:t('층'),value:G.floor,desc:t('현재 사냥 층수. 높을수록 적이 강해지고 보상 증가')}
+];
+let statHtml='<div style="display:flex;flex-direction:column;gap:8px">';
+statRows.forEach(r=>{statHtml+=`<div style="display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.03)"><div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--text2);font-weight:600;font-size:12px">${r.icon} ${r.label}</span><span style="color:var(--text);font-weight:700;font-size:12px">${r.value}</span></div><div style="font-size:10px;color:var(--text3);padding-left:2px">${r.desc}</div></div>`});
+statHtml+='</div>';
 for(let s=0;s<3;s++){if(s===G.activeSlot||!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;const c=G.party[s];const cls=CLASSES[c.className];if(!cls)continue;
 statHtml+=`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${t(c.className)} (Lv.${c.level})</div><div style="font-size:12px;line-height:1.8;color:var(--text1)">❤️ HP: ${Math.floor(c.hp)}/${c.maxHP}<br>⚔️ ATK: ${c.atk}<br>🛡️ DEF: ${c.def}<br>🎯 ${t('치명타')}: ${10+(c.critBonus||0)}%<br>📊 EXP: ${c.exp||0}%</div></div>`}
 body.innerHTML=statHtml;
@@ -309,8 +320,8 @@ else{if(!G.slotUnlocked||!G.slotUnlocked[s]||!G.party||!G.party[s])continue;char
 if(!cls)continue;
 const actives=char.equippedSkills||[];const passives=char.equippedPassives||[];
 html+=`<div style="margin-bottom:10px"><div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px">${cls.weapon} ${t(char.className)} (Lv.${char.level})</div>`;
-if(actives.length>0){actives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0">${sk.icon} <b>${sk.name}</b> <span style="color:var(--text2)">${sk.desc||''}</span></div>`})}
-if(passives.length>0){passives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0;color:var(--cyan)">${sk.icon} <b>${sk.name}</b> <span style="opacity:.7">${sk.desc||''}</span></div>`})}
+if(actives.length>0){actives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0">${sk.icon} <b>${t(sk.name)}</b> <span style="color:var(--text2)">${t(sk.desc||'')}</span></div>`})}
+if(passives.length>0){passives.forEach(sk=>{html+=`<div style="font-size:12px;padding:2px 0;color:var(--cyan)">${sk.icon} <b>${t(sk.name)}</b> <span style="opacity:.7">${t(sk.desc||'')}</span></div>`})}
 if(actives.length===0&&passives.length===0)html+=`<div style="font-size:12px;color:var(--text2)">${t('스킬 없음')}</div>`;
 html+='</div>';
 }
